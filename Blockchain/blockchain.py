@@ -87,16 +87,16 @@ class Blockchain:
         self.pending_transactions = []
         
     def is_chain_valid(self):
-      for i in range(1, len(self.chain)):
-        current = self.chain[i]
-        prev = self.chain[i-1]
-        
-        if current.hash != current.calculate_hash():
-          return False
-        
-        if current.previous_hash != prev.hash:
-          return False 
-        
+        for i in range(1, len(self.chain)):
+            current = self.chain[i]
+            prev = self.chain[i-1]
+            
+            if current.hash != current.calculate_hash():
+                return False
+            
+            if current.previous_hash != prev.hash:
+                return False 
+    
         return True
 
 
