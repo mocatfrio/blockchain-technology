@@ -13,7 +13,7 @@ Pada modul ini, implementasi blockchain mencakup:
 5. Validasi blockchain
 6. Pengukuran waktu eksekusi dan penggunaan memori
 
-Berikut adalah [full code](blockchain/blockchain.py) yang dibahas pada modul ini.
+Berikut adalah [full code](basic-blockchain/blockchain.py) yang dibahas pada modul ini.
 
 ## Prasyarat
 
