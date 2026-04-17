@@ -4,15 +4,13 @@
 
 Modul ini membahas bagaimana blockchain beroperasi dalam sebuah jaringan terdesentralisasi. Selain memahami konsep jaringan P2P (Peer-to-Peer), mahasiswa akan mengimplementasikan sebuah node blockchain yang dapat berkomunikasi dengan node lain melalui REST API menggunakan Flask.
 
-Pada modul ini, implementasi blockchain network mencakup:
+Topik yang dibahas pada modul ini:
 
-1. Konsep jaringan blockchain terdesentralisasi
-2. Membangun REST API untuk node blockchain menggunakan Flask
-3. Registrasi dan penemuan node dalam jaringan
-4. Simulasi multi-node di satu mesin (port berbeda)
-5. Algoritma Consensus: mengganti chain lokal dengan chain terpanjang yang valid
-
-Berikut adalah [full code](blockchain-network/app.py) yang dibahas pada modul ini.
+1. **Blockchain Network** – Konsep jaringan blockchain terdesentralisasi
+2. **REST API Node** – Pembangunan API node blockchain menggunakan Flask
+3. **Node Registration** – Registrasi dan penemuan node dalam jaringan
+4. **Multi-Node Simulation** – Simulasi beberapa node pada satu mesin dengan port berbeda
+5. **Consensus Algorithm** – Mekanisme sinkronisasi chain dengan memilih rantai valid terpanjang
 
 ## Prasyarat
 
@@ -20,8 +18,7 @@ Sebelum mempelajari modul ini, mahasiswa sebaiknya:
 
 1. [Menginstall Python dan Visual Studio Code](module-01.md)
 2. Memahami [konsep dasar blockchain](module-02.md)
-3. Memahami [Advanced Blockchain Concepts](module-03.md)
-4. Memahami dasar REST API dan HTTP method (GET, POST)
+3. Memahami dasar REST API dan HTTP method (GET, POST)
 
 Install dependensi yang dibutuhkan:
 
@@ -59,8 +56,6 @@ pip install flask requests
   - [3.3 Registrasi Node](#33-registrasi-node)
   - [3.4 Resolve Consensus](#34-resolve-consensus)
 - [Latihan](#latihan)
-
----
 
 ## 1. Teori Dasar Blockchain Network
 
@@ -147,8 +142,6 @@ node C: [Genesis] → [Block 1] → [Block 2] → [Block 3]  ← PEMENANG (4 blo
 ```
 
 Jika node B menerima chain dari node A atau C, node B akan mengganti chain lokalnya.
-
----
 
 ## 2. Implementasi Program
 
@@ -570,8 +563,6 @@ GET http://127.0.0.1:5001/nodes/resolve
 ```
 
 node 2 kini memiliki chain yang sama dengan node 1.
-
----
 
 ## Latihan
 

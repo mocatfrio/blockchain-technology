@@ -72,8 +72,6 @@ Sebelum mempelajari modul ini, pastikan telah:
 - [10. Program Lengkap](#10-program-lengkap)
 - [Latihan](#latihan)
 
----
-
 ## 1. Double Spending Prevention
 
 ### 1.1 Apa itu Double Spending?
@@ -170,8 +168,6 @@ class DoubleSpendingPrevention:
                         return True
         return False
 ```
-
----
 
 ## 2. Transaction Broadcasting
 
@@ -282,8 +278,6 @@ class TransactionBroadcaster:
             results[node_url] = False
 ```
 
----
-
 ## 3. Block Confirmation
 
 ### 3.1 Apa itu Konfirmasi?
@@ -385,8 +379,6 @@ class ConfirmationTracker:
 
         return False, self.get_confirmations(tx_hash)[0]
 ```
-
----
 
 ## 4. UTXO Model
 
@@ -601,8 +593,6 @@ class UTXOSet:
         return UTXOTransaction(inputs, outputs)
 ```
 
----
-
 ## 5. ECDSA (Elliptic Curve Digital Signature)
 
 ### 5.1 Mengapa ECDSA?
@@ -739,8 +729,6 @@ class ECDSAWallet:
         return ripemd160_hash.hex()
 ```
 
----
-
 ## 6. Address Format (Base58Check)
 
 ### 6.1 Mengapa Base58?
@@ -871,8 +859,6 @@ class AddressGenerator:
         else:
             return "UNKNOWN"
 ```
-
----
 
 ## 7. HD Wallet (Hierarchical Deterministic)
 
@@ -1046,8 +1032,6 @@ class HDWallet:
             addresses.append(addr_info)
         return addresses
 ```
-
----
 
 ## 8. Mnemonic Phrase (BIP39)
 
@@ -1364,7 +1348,6 @@ class SPVClient:
         return results
 ```
 
----
 
 ## 10. Program Lengkap
 
@@ -1436,8 +1419,6 @@ if __name__ == "__main__":
     print("Demo selesai!")
     print("=" * 60)
 ```
-
----
 
 ## Latihan
 

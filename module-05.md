@@ -9,8 +9,8 @@ Modul ini merupakan kelanjutan dari [Module 04](module-04.md) dan menjadi **solu
 | Mining Reward      | [Module 03](module-03.md) |
 | Multi-Node Network | [Module 04](module-04.md) |
 | Flask API          | [Module 04](module-04.md) |
-| Digital Signature  | Modul ini              |
-| Wallet             | Modul ini              |
+| Digital Signature  | Modul ini                 |
+| Wallet             | Modul ini                 |
 
 Fitur yang diimplementasikan pada modul ini:
 
@@ -20,8 +20,6 @@ Fitur yang diimplementasikan pada modul ini:
 4. **Mining Reward** - Memberikan insentif kepada miner yang berhasil menambang block
 5. **Multi-Node Network** - Mensimulasikan jaringan blockchain terdistribusi dengan minimal 3 node
 6. **Consensus (Longest Chain)** - Sinkronisasi antar-node menggunakan aturan chain terpanjang
-
-Berikut adalah [full code](blockchain-project/blockchain.py) dan [Flask app](blockchain-project/app.py) yang dibahas pada modul ini.
 
 ## Prasyarat
 
@@ -70,8 +68,6 @@ Sebelum mempelajari modul ini, pastikan telah:
   - [7.4 Validasi Digital Signature](#74-validasi-digital-signature)
   - [7.5 Sinkronisasi Antar-Node](#75-sinkronisasi-antar-node)
 
----
-
 ## 1. Cryptocurrency vs Cryptocurrency Transaction
 
 Sebelum membahas implementasi, penting untuk memahami perbedaan antara **Cryptocurrency** dan **Cryptocurrency Transaction** karena keduanya sering dianggap sama padahal memiliki cakupan yang berbeda.
@@ -84,8 +80,8 @@ Cryptocurrency mencakup keseluruhan ekosistem:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         CRYPTOCURRENCY SYSTEM                            │
-│                                                                          │
+│                         CRYPTOCURRENCY SYSTEM                           │
+│                                                                         │
 │   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌────────────┐  │
 │   │   Wallet    │   │   Mining    │   │  Network    │   │ Consensus  │  │
 │   │             │   │             │   │             │   │            │  │
@@ -93,7 +89,7 @@ Cryptocurrency mencakup keseluruhan ekosistem:
 │   │ • Address   │   │ • Reward    │   │ • Broadcast │   │ • Longest  │  │
 │   │ • Balance   │   │ • Difficulty│   │ • Sync      │   │   Chain    │  │
 │   └─────────────┘   └─────────────┘   └─────────────┘   └────────────┘  │
-│                                                                          │
+│                                                                         │
 │   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐                   │
 │   │ Transaction │   │   Block     │   │ Blockchain  │                   │
 │   │             │   │             │   │             │                   │
@@ -120,30 +116,30 @@ Cryptocurrency mencakup keseluruhan ekosistem:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                     CRYPTOCURRENCY TRANSACTION                           │
-│                                                                          │
+│                     CRYPTOCURRENCY TRANSACTION                          │
+│                                                                         │
 │   ┌──────────┐                                      ┌──────────┐        │
 │   │  SENDER  │                                      │ RECEIVER │        │
 │   │          │                                      │          │        │
 │   │  Alice   │ ─────────── 10 Coins ──────────────► │   Bob    │        │
 │   │          │                                      │          │        │
 │   └──────────┘                                      └──────────┘        │
-│        │                                                                 │
-│        │  1. Create Transaction                                          │
-│        │  2. Sign with Private Key                                       │
-│        │  3. Broadcast to Network                                        │
-│        │  4. Validation by Nodes                                         │
-│        │  5. Include in Block (Mining)                                   │
-│        │  6. Confirmation                                                │
-│        ▼                                                                 │
+│        │                                                                │
+│        │  1. Create Transaction                                         │
+│        │  2. Sign with Private Key                                      │
+│        │  3. Broadcast to Network                                       │
+│        │  4. Validation by Nodes                                        │
+│        │  5. Include in Block (Mining)                                  │
+│        │  6. Confirmation                                               │
+│        ▼                                                                │
 │   ┌─────────────────────────────────────────────────────────────────┐   │
-│   │                    TRANSACTION DATA                              │   │
+│   │                    TRANSACTION DATA                             │   │
 │   ├─────────────────────────────────────────────────────────────────┤   │
-│   │  sender      : Alice's Public Key                                │   │
-│   │  receiver    : Bob's Public Key                                  │   │
-│   │  amount      : 10                                                │   │
-│   │  timestamp   : 2024-01-15 10:30:00                               │   │
-│   │  signature   : [Digital Signature dari Alice]                    │   │
+│   │  sender      : Alice's Public Key                               │   │
+│   │  receiver    : Bob's Public Key                                 │   │
+│   │  amount      : 10                                               │   │
+│   │  timestamp   : 2024-01-15 10:30:00                              │   │
+│   │  signature   : [Digital Signature dari Alice]                   │   │
 │   └─────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -167,21 +163,21 @@ Cryptocurrency mencakup keseluruhan ekosistem:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     CRYPTOCURRENCY                           │
-│                    (Sistem Lengkap)                          │
-│                                                              │
+│                     CRYPTOCURRENCY                          │
+│                    (Sistem Lengkap)                         │
+│                                                             │
 │   ┌───────────────────────────────────────────────────┐     │
-│   │           CRYPTOCURRENCY TRANSACTION               │     │
-│   │              (Komponen Transaksi)                  │     │
-│   │                                                    │     │
-│   │  • Create  • Sign  • Broadcast  • Verify  • Confirm│    │
+│   │           CRYPTOCURRENCY TRANSACTION              │     │
+│   │              (Komponen Transaksi)                 │     │
+│   │                                                   │     │
+│   │ • Create  • Sign  • Broadcast  • Verify • Confirm │     │
 │   └───────────────────────────────────────────────────┘     │
-│                                                              │
-│   + Wallet                                                   │
-│   + Mining                                                   │
-│   + Network                                                  │
-│   + Consensus                                                │
-│   + Block & Blockchain                                       │
+│                                                             │
+│   + Wallet                                                  │
+│   + Mining                                                  │
+│   + Network                                                 │
+│   + Consensus                                               │
+│   + Block & Blockchain                                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -197,8 +193,6 @@ Cryptocurrency mencakup keseluruhan ekosistem:
 
 - **Module 05** membahas **Cryptocurrency** secara keseluruhan: Wallet, Digital Signature, Mining Reward, Multi-Node Network
 - **Module 06** membahas **aspek lanjutan Transaction**: Double Spending, Broadcasting, Confirmation, UTXO, dll.
-
----
 
 ## 2. Teori Digital Signature
 

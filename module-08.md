@@ -1,576 +1,1074 @@
-# Module 08. Smart Contracts
+# Module 08. Smart Contract dengan Solidity dan Remix IDE
 
 ## Deskripsi
 
-Modul ini membahas konsep Smart Contract dan implementasi sederhananya menggunakan Python. Selain memahami struktur kode, mahasiswa juga akan mempelajari teori dasar Smart Contract, seperti bagaimana kontrak disimpan di blockchain, bagaimana kondisi eksekusi bekerja secara otomatis, dan bagaimana state kontrak dijaga integritasnya dalam rantai blok.
+Modul ini merupakan panduan hands-on untuk memahami dasar-dasar smart contract menggunakan Remix IDE. Fokus modul ini adalah **pemahaman konsep dan logika**, bukan menulis kode dari nol.
 
-Pada modul ini, implementasi Smart Contract mencakup:
+**Tools:** Browser, Remix Ethereum IDE
+**Prasyarat:** Paham dasar blockchain, transaksi, wallet, dan konsep address secara umum
 
-1. Pembuatan Smart Contract sebagai class Python
-2. Deploy contract ke blockchain
-3. Eksekusi contract melalui transaksi
-4. Penyimpanan state contract di dalam block
-5. Simulasi use case Escrow (penitipan dana)
-6. Validasi blockchain yang mengandung contract transaction
+## Tujuan Pembelajaran
 
-Berikut adalah [full code](smart-contract/smart_contract.py) yang dibahas pada modul ini.
+Setelah mengikuti modul ini, peserta diharapkan mampu:
 
-## Prasyarat
-
-Sebelum mempelajari modul ini, mahasiswa sebaiknya:
-
-1. Memahami [konsep dasar blockchain](module-02.md)
-2. Memahami [Cryptocurrency](module-05.md) dan [Advanced Cryptocurrency](module-06.md)
-3. Memahami [konsep class dan inheritance di Python](https://github.com/mocatfrio/data-structure-oop/blob/main/module-02.md)
-4. Memahami [dictionary dan JSON di Python](https://nbviewer.org/github/Python-Crash-Course/Python101/blob/master/Session%203%20-%20Functions/Session%203%20-%20Functions.ipynb)
+1. Menjelaskan apa itu smart contract
+2. Mengenali bagian dasar kode Solidity
+3. Menjalankan smart contract sederhana di Remix
+4. Membedakan function, state, dan constructor
+5. Memahami `require`, `msg.sender`, dan owner-only access
+6. Menguji skenario transaksi berhasil dan gagal
 
 ## List of Contents
 
-- [Deskripsi](#deskripsi)
-- [Prasyarat](#prasyarat)
-- [List of Contents](#list-of-contents)
-- [1. Teori Dasar Smart Contract](#1-teori-dasar-smart-contract)
-  - [1.1 Apa itu Smart Contract?](#11-apa-itu-smart-contract)
-  - [1.2 Mengapa Smart Contract Penting?](#12-mengapa-smart-contract-penting)
-  - [1.3 Komponen Utama Smart Contract](#13-komponen-utama-smart-contract)
-  - [1.4 Bagaimana Smart Contract Dieksekusi?](#14-bagaimana-smart-contract-dieksekusi)
-  - [1.5 State pada Smart Contract](#15-state-pada-smart-contract)
-  - [1.6 Jenis Use Case Smart Contract](#16-jenis-use-case-smart-contract)
-  - [1.7 Perbedaan Blockchain dengan dan tanpa Smart Contract](#17-perbedaan-blockchain-dengan-dan-tanpa-smart-contract)
-- [2. Implementasi Program](#2-implementasi-program)
-  - [2.1 Import Library](#21-import-library)
-  - [2.2 Membuat Class SmartContract (Base)](#22-membuat-class-smartcontract-base)
-  - [2.3 Membuat Class EscrowContract](#23-membuat-class-escrowcontract)
-  - [2.4 Eksekusi Contract](#24-eksekusi-contract)
-  - [2.5 Modifikasi Class Transaction](#25-modifikasi-class-transaction)
-  - [2.6 Class Block](#26-class-block)
-  - [2.7 Modifikasi Class Blockchain](#27-modifikasi-class-blockchain)
-  - [2.8 Deploy Contract ke Blockchain](#28-deploy-contract-ke-blockchain)
-  - [2.9 Eksekusi Contract via Blockchain](#29-eksekusi-contract-via-blockchain)
-  - [2.10 Program Utama](#210-program-utama)
-- [Latihan](#latihan)
+- [Module 07. Smart Contract dengan Remix IDE](#module-07-smart-contract-dengan-remix-ide)
+  - [Deskripsi](#deskripsi)
+  - [Tujuan Pembelajaran](#tujuan-pembelajaran)
+  - [List of Contents](#list-of-contents)
+  - [1. Konsep Dasar Smart Contract](#1-konsep-dasar-smart-contract)
+    - [1.1 Apa itu Smart Contract?](#11-apa-itu-smart-contract)
+    - [1.2 Perbedaan dengan Program Biasa](#12-perbedaan-dengan-program-biasa)
+    - [1.3 Istilah Penting](#13-istilah-penting)
+  - [2. Mengenal Remix IDE](#2-mengenal-remix-ide)
+    - [2.1 Apa itu Remix?](#21-apa-itu-remix)
+    - [2.2 Komponen Utama Remix](#22-komponen-utama-remix)
+  - [3. Implementasi Contract: Simple Voting](#3-implementasi-contract-simple-voting)
+    - [3.1 License dan Pragma](#31-license-dan-pragma)
+    - [3.2 State Variables](#32-state-variables)
+    - [3.3 Constructor](#33-constructor)
+    - [3.4 Function voteYes()](#34-function-voteyes)
+    - [3.5 Function resetVoting()](#35-function-resetvoting)
+  - [4. Langkah Praktik di Remix](#4-langkah-praktik-di-remix)
+    - [4.1 Membuka Remix](#41-membuka-remix)
+    - [4.2 Membuat File Contract](#42-membuat-file-contract)
+    - [4.3 Compile Contract](#43-compile-contract)
+    - [4.4 Deploy Contract](#44-deploy-contract)
+    - [4.5 Berinteraksi dengan Contract](#45-berinteraksi-dengan-contract)
+    - [4.6 Modifikasi 1: Tambah Vote &#34;No&#34;](#46-modifikasi-1-tambah-vote-no)
+    - [4.7 Modifikasi 2: Total Vote](#47-modifikasi-2-total-vote)
+    - [4.8 Modifikasi 3: Voting Open/Close](#48-modifikasi-3-voting-openclose)
+    - [4.9 Modifikasi 4: Event](#49-modifikasi-4-event)
+  - [5. Mengenal Solidity](#5-mengenal-solidity)
+    - [5.1 Tipe Data Solidity](#51-tipe-data-solidity)
+      - [Value Types](#value-types)
+      - [Reference Types](#reference-types)
+      - [Mapping](#mapping)
+    - [5.2 Visibility Modifiers](#52-visibility-modifiers)
+    - [5.3 Function Modifiers](#53-function-modifiers)
+      - [State Mutability](#state-mutability)
+    - [5 Custom Modifiers](#5-custom-modifiers)
+  - [9. Gas dan Biaya Transaksi](#9-gas-dan-biaya-transaksi)
+    - [9.1 Apa itu Gas?](#91-apa-itu-gas)
+    - [9.2 Estimasi Gas di Remix](#92-estimasi-gas-di-remix)
+    - [9.3 Tips Menghemat Gas](#93-tips-menghemat-gas)
+  - [10. Skenario Testing](#10-skenario-testing)
+    - [10.1 Test Case: Voting Berhasil](#101-test-case-voting-berhasil)
+    - [10.2 Test Case: Double Voting (Gagal)](#102-test-case-double-voting-gagal)
+    - [10.3 Test Case: Reset oleh Non-Owner (Gagal)](#103-test-case-reset-oleh-non-owner-gagal)
+    - [10.4 Membaca Error Message](#104-membaca-error-message)
+  - [11. Langkah Selanjutnya](#11-langkah-selanjutnya)
+  - [Latihan](#latihan)
+    - [Latihan 1: Eksplorasi Tipe Data](#latihan-1-eksplorasi-tipe-data)
+    - [Latihan 2: Visibility Testing](#latihan-2-visibility-testing)
+    - [Latihan 3: Modifier dan Access Control](#latihan-3-modifier-dan-access-control)
+    - [Latihan 4: Gas Analysis](#latihan-4-gas-analysis)
+    - [Latihan 5: Complete Voting System](#latihan-5-complete-voting-system)
+    - [Latihan 6: Deploy ke Testnet](#latihan-6-deploy-ke-testnet)
+    - [Latihan 7: Challenge - Token Sederhana](#latihan-7-challenge---token-sederhana)
 
-## 1. Teori Dasar Smart Contract
+## 1. Konsep Dasar Smart Contract
 
 ### 1.1 Apa itu Smart Contract?
 
-**Smart Contract** adalah program komputer yang berjalan secara otomatis di atas blockchain ketika kondisi tertentu terpenuhi. Tidak ada pihak ketiga yang mengontrol eksekusinya, kode yang mengatur segalanya.
+**Smart contract** adalah program yang berjalan di blockchain untuk menjalankan aturan secara otomatis. Bayangkan seperti mesin penjual otomatis (vending machine):
 
-Secara sederhana, Smart Contract dapat dipahami sebagai:
-
-- Perjanjian digital yang ditulis dalam bentuk kode
-- Berjalan otomatis tanpa perantara
-- Tersimpan permanen di dalam blockchain
-- Hasilnya transparan dan dapat diverifikasi siapa saja
-
-Analogi sederhana: Smart Contract seperti mesin penjual otomatis, masukkan uang, tekan tombol, barang keluar.
-
-![smart contract diagram](image/module-08/1_smart_contract_overview.png)
-
-### 1.2 Mengapa Smart Contract Penting?
-
-Smart Contract penting karena menawarkan beberapa karakteristik utama:
-
-1. **Otomatisasi**: Eksekusi terjadi secara otomatis saat kondisi terpenuhi, tanpa campur tangan manusia
-2. **Transparansi**: Kode dan hasilnya dapat dilihat oleh semua pihak di jaringan
-3. **Keamanan**: Setelah di-deploy, kode tidak dapat diubah secara sepihak
-4. **Efisiensi**: Menghilangkan kebutuhan perantara (notaris, bank, broker)
-5. **Kepercayaan**: Pihak-pihak yang bertransaksi tidak perlu saling percaya karena kontrak yang menjamin
-
-> Pada modul ini, kita belum membangun smart contract di jaringan blockchain nyata seperti Ethereum. Kita membuat simulasi Smart Contract dalam Python untuk memahami konsep dasarnya.
-
-### 1.3 Komponen Utama Smart Contract
-
-Secara umum, Smart Contract terdiri dari tiga komponen utama:
-
-1. **State**: Data yang disimpan oleh contract, misalnya saldo, status, atau data pengguna.
-
-   Contoh:
-   - `released: False` → dana belum dilepas
-   - `amount: 50` → jumlah dana yang dititipkan
-
-2. **Action**: Fungsi yang dapat dipanggil untuk mengubah state contract.
-
-   Contoh:
-   - `release` → melepaskan dana ke penerima
-   - `check` → memeriksa kondisi contract
-
-3. **Condition**: Syarat yang harus dipenuhi sebelum action dapat dieksekusi.
-
-   Contoh:
-   - Hanya `owner` yang boleh memanggil `release`
-   - Dana hanya boleh dilepas satu kali
-
-![komponen smart contract](image/module-08/2_smart_contract_components.png)
-
-### 1.4 Bagaimana Smart Contract Dieksekusi?
-
-Smart Contract dieksekusi melalui transaksi khusus yang dikirim ke alamat contract di blockchain.
-
-Alur eksekusi:
-
-1. Pengguna mengirim transaksi dengan menyertakan `contract_id`, `action`, dan `params`
-2. Blockchain meneruskan transaksi ke contract yang dituju
-3. Contract memeriksa kondisi (condition)
-4. Jika kondisi terpenuhi, state diperbarui
-5. Hasil eksekusi dicatat dalam transaksi dan disimpan ke block
-
-![alur eksekusi](image/module-08/3_contract_execution_flow.png)
-
-### 1.5 State pada Smart Contract
-
-**State** adalah data yang tersimpan di dalam Smart Contract dan dapat berubah seiring waktu melalui eksekusi action.
-
-Karakteristik state:
-
-- Tersimpan permanen di blockchain selama contract aktif
-- Hanya dapat diubah melalui action yang sudah didefinisikan
-- Setiap perubahan state dicatat dalam transaksi
-
-Contoh perubahan state pada EscrowContract:
-
-```text
-State awal   : { 'released': False, 'amount': 50, 'receiver': 'Bob' }
-Setelah release: { 'released': True,  'amount': 50, 'receiver': 'Bob' }
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    VENDING MACHINE                          │
+│                                                             │
+│  1. Masukkan uang ──────► Cek jumlah uang                   │
+│  2. Pilih minuman  ──────► Cek ketersediaan                 │
+│  3. Jika valid     ──────► Keluarkan minuman + kembalian    │
+│  4. Jika tidak     ──────► Batalkan transaksi               │
+│                                                             │
+│  Tidak ada manusia yang mengoperasikan!                     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-Karena state lama tersimpan di block sebelumnya, riwayat perubahan tetap dapat ditelusuri.
+Smart contract bekerja dengan cara yang sama:
 
-### 1.6 Jenis Use Case Smart Contract
+- **Input:** Data/perintah dari pengguna
+- **Logic:** Aturan yang sudah terprogram
+- **Output:** Hasil eksekusi (perubahan state atau penolakan)
 
-Smart Contract memiliki banyak penerapan di dunia nyata:
+### 1.2 Perbedaan dengan Program Biasa
 
-| Use Case                   | Deskripsi                                                     |
-| -------------------------- | ------------------------------------------------------------- |
-| **Escrow**                 | Dana dititipkan dan hanya dilepas saat kondisi terpenuhi      |
-| **Token / Cryptocurrency** | Aturan pencetakan dan transfer token ditentukan oleh contract |
-| **Voting**                 | Proses pemungutan suara yang transparan dan anti-manipulasi   |
-| **Supply Chain**           | Pelacakan perpindahan barang secara otomatis                  |
-| **Asuransi**               | Klaim otomatis berdasarkan data eksternal (oracle)            |
-| **NFT**                    | Kepemilikan aset digital yang dapat diverifikasi              |
+| Aspek                 | Program Biasa            | Smart Contract                |
+| --------------------- | ------------------------ | ----------------------------- |
+| **Lokasi**      | Server/komputer tertentu | Blockchain (terdistribusi)    |
+| **Kontrol**     | Pemilik server           | Tidak ada yang bisa mengubah  |
+| **Eksekusi**    | Satu mesin               | Semua node di jaringan        |
+| **Kepercayaan** | Perlu trust ke pemilik   | Trustless (kode adalah hukum) |
+| **Perubahan**   | Bisa diubah kapan saja   | Immutable (tidak bisa diubah) |
 
-Pada modul ini, use case yang diimplementasikan adalah **Escrow**.
+### 1.3 Istilah Penting
 
-### 1.7 Perbedaan Blockchain dengan dan tanpa Smart Contract
+| Istilah                  | Penjelasan                                                | Analogi                    |
+| ------------------------ | --------------------------------------------------------- | -------------------------- |
+| **State Variable** | Data yang disimpan oleh contract                          | Variabel di database       |
+| **Function**       | Aksi yang bisa dijalankan pada contract                   | Method/fungsi program      |
+| **Constructor**    | Function khusus yang berjalan sekali saat contract dibuat | Setup awal                 |
+| **msg.sender**     | Address yang sedang memanggil function                    | "Siapa yang login?"        |
+| **require**        | Syarat yang harus dipenuhi, jika tidak transaksi gagal    | if-else dengan auto-reject |
+| **revert**         | Keadaan saat transaksi dibatalkan                         | Rollback transaction       |
+| **owner**          | Address pemilik contract (biasanya pembuat)               | Admin sistem               |
 
-| Aspek               | Blockchain Biasa     | Blockchain + Smart Contract |
-| ------------------- | -------------------- | --------------------------- |
-| Data yang disimpan  | Transaksi saja       | Transaksi + kode + state    |
-| Eksekusi logika     | Manual oleh pengguna | Otomatis oleh contract      |
-| Kebutuhan perantara | Bisa ada             | Tidak diperlukan            |
-| Fleksibilitas       | Terbatas             | Tinggi                      |
-| Contoh              | Bitcoin              | Ethereum                    |
+## 2. Mengenal Remix IDE
 
-## 2. Implementasi Program
+### 2.1 Apa itu Remix?
 
-### 2.1 Import Library
+**Remix IDE** adalah Integrated Development Environment berbasis web untuk menulis, compile, deploy, dan menguji smart contract Ethereum.
 
-```python
-import hashlib
-import datetime
-import json
-import time
-import tracemalloc
+**URL:** https://remix.ethereum.org
+
+Kelebihan Remix:
+
+- Tidak perlu instalasi
+- Gratis dan open source
+- Mendukung simulasi blockchain (Remix VM)
+- Cocok untuk belajar dan prototyping
+
+### 2.2 Komponen Utama Remix
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        REMIX IDE                                │
+├─────────────┬───────────────────────────────────────────────────┤
+│             │                                                   │
+│   SIDEBAR   │              EDITOR AREA                          │
+│             │                                                   │
+│  ┌───────┐  │  ┌─────────────────────────────────────────────┐  │
+│  │ Files │  │  │ // SPDX-License-Identifier: MIT             │  │
+│  │       │  │  │ pragma solidity ^0.8.20;                    │  │
+│  │ ────  │  │  │                                             │  │
+│  │ ────  │  │  │ contract SimpleVoting {                     │  │
+│  │ ────  │  │  │     address public owner;                   │  │
+│  └───────┘  │  │     ...                                     │  │
+│             │  └─────────────────────────────────────────────┘  │
+│  ┌───────┐  ├───────────────────────────────────────────────────┤
+│  │Compile│  │              TERMINAL / OUTPUT                    │
+│  └───────┘  │  ┌─────────────────────────────────────────────┐  │
+│             │  │ [Transaction Log]                           │  │
+│  ┌───────┐  │  │ [Compile Status]                            │  │
+│  │Deploy │  │  │ [Error Messages]                            │  │
+│  └───────┘  │  └─────────────────────────────────────────────┘  │
+└─────────────┴───────────────────────────────────────────────────┘
 ```
 
-Penjelasan:
+**Komponen yang perlu diperhatikan:**
 
-- `hashlib` digunakan untuk membuat hash SHA-256
-- `datetime` digunakan untuk mencatat waktu pembuatan block
-- `json` digunakan untuk mengubah isi block dan contract menjadi string terstruktur
-- `time` digunakan untuk mengukur lama proses mining
-- `tracemalloc` digunakan untuk memantau penggunaan memori
+1. **File Explorer** (icon folder)
 
-### 2.2 Membuat Class SmartContract (Base)
+   - Tempat menyimpan dan mengelola file contract
+   - Bisa membuat folder dan file baru
+2. **Solidity Compiler** (icon S)
 
-```python
-class SmartContract:
-    def __init__(self, contract_id, owner, initial_state=None):
-        self.contract_id = contract_id
-        self.owner = owner
-        self.state = initial_state if initial_state else {}
-        self.is_deployed = False
+   - Compile kode Solidity menjadi bytecode
+   - Menampilkan error jika ada kesalahan syntax
+3. **Deploy & Run Transactions** (icon Ethereum)
 
-    def deploy(self):
-        self.is_deployed = True
-        print(f"contract '{self.contract_id}' deployed oleh {self.owner}")
+   - Deploy contract ke blockchain (VM atau testnet)
+   - Menjalankan function pada contract
+   - Mengatur account dan environment
+4. **Deployed Contracts**
 
-    def execute(self, action, params):
-        raise NotImplementedError('Subclass harus mengimplementasikan execute()')
+   - Daftar contract yang sudah di-deploy
+   - Tempat untuk berinteraksi dengan contract
 
-    def to_dict(self):
-        return {
-            'contract_id': self.contract_id,
-            'owner': self.owner,
-            'state': self.state,
-            'is_deployed': self.is_deployed
-        }
+## 3. Implementasi Contract: Simple Voting
 
-    def print(self):
-        print(json.dumps(self.to_dict(), indent=2))
+Salin dan gunakan kode berikut di Remix:
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract SimpleVoting {
+    address public owner;          
+    uint public yesCount;          
+    mapping(address => bool) public hasVoted;  
+
+    constructor() {
+        owner = msg.sender;  // Pembuat contract menjadi owner
+    }
+
+    function voteYes() public {
+        require(!hasVoted[msg.sender], "You have already voted");
+        hasVoted[msg.sender] = true;
+        yesCount += 1;
+    }
+
+    function resetVoting() public {
+        require(msg.sender == owner, "Only owner can reset voting");
+        yesCount = 0;
+    }
+}
 ```
 
-`SmartContract` adalah **base class** (parent class) yang mendefinisikan kerangka dasar sebuah contract.
+### 3.1 License dan Pragma
 
-Penjelasan komponen:
-
-- `contract_id`: identitas unik contract
-- `owner`: alamat pemilik contract, biasanya yang men-deploy
-- `state`: dictionary yang menyimpan data internal contract
-- `is_deployed`: status apakah contract sudah aktif di blockchain
-
-Method:
-
-- `deploy()`: mengaktifkan contract
-- `execute()`: method abstrak yang harus diimplementasikan oleh subclass
-- `to_dict()`: mengubah contract menjadi dictionary untuk disimpan ke JSON
-- `print()`: menampilkan isi contract
-
-### 2.3 Membuat Class EscrowContract
-
-```python
-class EscrowContract(SmartContract):
-    def __init__(self, contract_id, owner, receiver, amount):
-        self.contract_id = contract_id
-        self.owner = owner
-        self.state = {
-            'receiver': receiver,
-            'amount': amount,
-            'released': False
-        }
-        self.is_deployed = False
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 ```
 
-`EscrowContract` adalah turunan dari `SmartContract` yang mengimplementasikan logika penitipan dana (escrow).
+- `SPDX-License-Identifier`: Lisensi kode (MIT = open source)
+- `pragma solidity`: Versi compiler yang digunakan
 
-State awal escrow:
+### 3.2 State Variables
 
-- `receiver`: pihak yang akan menerima dana
-- `amount`: jumlah dana yang dititipkan
-- `released`: status apakah dana sudah dilepas
-
-### 2.4 Eksekusi Contract
-
-Fungsi ini berada pada Class EscrowContract.
-
-```python
-def execute(self, action, params):
-    if not self.is_deployed:
-        return {'status': 'failed', 'message': 'Contract belum di-deploy'}
-
-    if action == 'release':
-        caller = params.get('caller')
-        if caller != self.owner:
-            return {'status': 'failed', 'message': 'Hanya owner yang dapat melepas dana'}
-        if self.state['released']:
-            return {'status': 'failed', 'message': 'Dana sudah pernah dilepas'}
-        self.state['released'] = True
-        return {
-            'status': 'success',
-            'message': f"Dana sebesar {self.state['amount']} berhasil dikirim ke {self.state['receiver']}'
-        }
-
-    if action == 'check':
-        return {'status': 'info', 'state': self.state}
-
-    return {'status': 'failed', 'message': f"Aksi '{action}' tidak dikenali'}
+```sol
+address public owner;
+uint public yesCount;
+mapping(address => bool) public hasVoted;
 ```
 
-Method `execute()` mengimplementasikan logika bisnis contract. Setiap action diperiksa kondisinya sebelum dieksekusi.
+| Variable     | Tipe        | Fungsi                             |
+| ------------ | ----------- | ---------------------------------- |
+| `owner`    | `address` | Menyimpan address pemilik contract |
+| `yesCount` | `uint`    | Menyimpan jumlah vote "yes"        |
+| `hasVoted` | `mapping` | Mencatat apakah address sudah vote |
 
-Penjelasan alur `release`:
+**Kata kunci `public`:** Membuat variable dapat dibaca dari luar contract
 
-1. Periksa apakah contract sudah di-deploy
-2. Periksa apakah pemanggil adalah owner
-3. Periksa apakah dana belum pernah dilepas
-4. Ubah state `released` menjadi `True`
-5. Kembalikan hasil eksekusi
+### 3.3 Constructor
 
-![escrow flow](image/module-08/5_escrow_flow.png)
-
-### 2.5 Modifikasi Class Transaction
-
-```python
-class Transaction:
-    def __init__(self, sender, receiver, amount,
-                 tx_type='transfer', contract_id=None, action=None, params=None):
-        self.sender = sender
-        self.receiver = receiver
-        self.amount = amount
-        self.tx_type = tx_type
-        self.contract_id = contract_id
-        self.action = action
-        self.params = params or {}
-
-    def to_dict(self):
-        return {
-            'sender': self.sender,
-            'receiver': self.receiver,
-            'amount': self.amount,
-            'tx_type': self.tx_type,
-            'contract_id': self.contract_id,
-            'action': self.action,
-            'params': self.params
-        }
-
-    def print(self):
-        print(self.to_dict())
+```sol
+constructor() {
+    owner = msg.sender;
+}
 ```
 
-Class `Transaction` diperluas untuk mendukung dua jenis transaksi:
+- Dijalankan **sekali saja** saat contract dibuat
+- `msg.sender` = address yang men-deploy contract
+- Menjadikan deployer sebagai `owner`
 
-| `tx_type`    | Deskripsi                                              |
-| ------------ | ------------------------------------------------------ |
-| `'transfer'` | Transaksi pengiriman koin biasa (seperti di Module 02) |
-| `'contract'` | Transaksi eksekusi Smart Contract                      |
+### 3.4 Function voteYes()
 
-Atribut tambahan untuk transaksi contract:
-
-- `contract_id`: ID contract yang dituju
-- `action`: aksi yang dipanggil
-- `params`: parameter untuk aksi tersebut
-
-### 2.6 Class Block
-
-Class `Block` tidak mengalami perubahan dari Module 02. Block tetap menyimpan daftar transaksi, termasuk transaksi bertipe `'contract'`.
-
-```python
-class Block:
-    def __init__(self, index, transactions, previous_hash):
-        self.index = index
-        self.transactions = transactions
-        self.previous_hash = previous_hash
-        self.nonce = 0
-        self.timestamp = str(datetime.datetime.now())
-        self.hash = self.calculate_hash()
-
-    def calculate_hash(self):
-        block = {
-            'index': self.index,
-            'transactions': [t.to_dict() for t in self.transactions],
-            'previous_hash': self.previous_hash,
-            'timestamp': self.timestamp,
-            'nonce': self.nonce,
-        }
-        block_string = json.dumps(block, sort_keys=True)
-        generated_hash = hashlib.sha256(block_string.encode()).hexdigest()
-        return generated_hash
-
-    def mine_block(self, difficulty):
-        start = time.time()
-        tracemalloc.start()
-
-        while self.hash[:difficulty] != '0' * difficulty:
-            self.nonce += 1
-            self.hash = self.calculate_hash()
-        print('block mined:', self.hash)
-
-        end = time.time()
-        print('waktu eksekusi:', end - start, 'detik')
-
-        current, peak = tracemalloc.get_traced_memory()
-        print('memory sekarang:', current / 10**6, 'MB')
-        print('memory maksimum:', peak / 10**6, 'MB')
-        tracemalloc.stop()
+```sol
+function voteYes() public {
+    require(!hasVoted[msg.sender], "You have already voted");
+    hasVoted[msg.sender] = true;
+    yesCount += 1;
+}
 ```
 
-Karena `to_dict()` pada class `Transaction` sudah menyertakan field `tx_type`, `contract_id`, `action`, dan `params`, maka block secara otomatis menyimpan informasi eksekusi contract di dalamnya.
+**Alur kerja:**
 
-### 2.7 Modifikasi Class Blockchain
-
-```python
-class Blockchain:
-    def __init__(self):
-        self.chain = [self.init_genesis_block()]
-        self.pending_transactions = []
-        self.difficulty = 3
-        self.contracts = {}
-
-    def init_genesis_block(self):
-        return Block(0, [], '0')
-
-    def get_latest_block(self):
-        return self.chain[-1]
-
-    def add_transaction(self, transaction):
-        self.pending_transactions.append(transaction)
-
-    def mine_pending_transactions(self):
-        index = len(self.chain)
-        previous_hash = self.get_latest_block().hash
-        block = Block(index, self.pending_transactions, previous_hash)
-        block.mine_block(self.difficulty)
-        self.chain.append(block)
-        self.pending_transactions = []
-
-    def is_chain_valid(self):
-        for i in range(1, len(self.chain)):
-            current = self.chain[i]
-            prev = self.chain[i - 1]
-            if current.hash != current.calculate_hash():
-                return False
-            if current.previous_hash != prev.hash:
-                return False
-        return True
+```
+┌────────────────────────────────────────────────────────────┐
+│                   voteYes() dipanggil                      │
+└─────────────────────────┬──────────────────────────────────┘
+                          │
+                          ▼
+            ┌─────────────────────────────┐
+            │ hasVoted[msg.sender] == true?│
+            └──────────────┬──────────────┘
+                   ┌───────┴───────┐
+                   │               │
+                  YES             NO
+                   │               │
+                   ▼               ▼
+            ┌──────────┐    ┌────────────────────┐
+            │  REVERT  │    │ hasVoted = true    │
+            │  (gagal) │    │ yesCount += 1      │
+            └──────────┘    │ (berhasil)         │
+                            └────────────────────┘
 ```
 
-Perubahan pada class `Blockchain`:
+### 3.5 Function resetVoting()
 
-- Ditambahkan atribut `contracts`: dictionary yang menyimpan semua contract yang sudah di-deploy, dengan `contract_id` sebagai key
-- Method `add_transactions` diubah nama menjadi `add_transaction` (singular) agar lebih konsisten
-
-### 2.8 Deploy Contract ke Blockchain
-
-Fungsi ini berada pada Class Blockchain.
-
-```python
-def deploy_contract(self, contract):
-    contract.deploy()
-    self.contracts[contract.contract_id] = contract
+```sol
+function resetVoting() public {
+    require(msg.sender == owner, "Only owner can reset voting");
+    yesCount = 0;
+}
 ```
 
-**Deploy** adalah proses mendaftarkan Smart Contract ke blockchain agar dapat dieksekusi.
+**Access Control:**
 
-Method ini:
+- Hanya `owner` yang bisa menjalankan function ini
+- Jika bukan owner, transaksi akan revert
 
-1. Memanggil `deploy()` pada contract untuk mengaktifkannya
-2. Menyimpan contract ke dictionary `self.contracts`
+## 4. Langkah Praktik di Remix
 
-Setelah di-deploy, contract dapat dipanggil kapan saja melalui transaksi.
+### 4.1 Membuka Remix
 
-### 2.9 Eksekusi Contract via Blockchain
+1. Buka browser (Chrome/Firefox recommended)
+2. Akses https://remix.ethereum.org
+3. Tunggu sampai IDE selesai loading
 
-Fungsi ini berada pada Class Blockchain.
+![1776435668140](image/module-07/1776435668140.png)
 
-```python
-def execute_contract(self, contract_id, action, params):
-    if contract_id not in self.contracts:
-        print(f"contract '{contract_id}' tidak ditemukan")
-        return None
+### 4.2 Membuat File Contract
 
-    contract = self.contracts[contract_id]
-    result = contract.execute(action, params)
+1. Klik icon **File Explorer** di sidebar
+2. Klik icon **Create New File** (atau klik kanan → New File)
+3. Beri nama: `SimpleVoting.sol`
+4. Salin kode contract ke file tersebut
 
-    tx = Transaction(
-        sender=params.get('caller', 'unknown'),
-        receiver=contract_id,
-        amount=0,
-        tx_type='contract',
-        contract_id=contract_id,
-        action=action,
-        params=params
-    )
-    self.pending_transactions.append(tx)
-    return result
+### 4.3 Compile Contract
+
+1. Klik icon **Solidity Compiler** di sidebar
+2. Pastikan versi compiler sesuai (0.8.x)
+3. Klik tombol **Compile SimpleVoting.sol**
+4. Jika berhasil, akan muncul centang hijau
+
+**Jika ada error:**
+
+- Baca pesan error dengan teliti
+- Biasanya typo atau versi tidak sesuai
+
+### 4.4 Deploy Contract
+
+1. Klik icon **Deploy & Run Transactions** di sidebar
+2. Pengaturan:
+   - **Environment:** `Remix VM (Cancun)` atau `Remix VM (Shanghai)`
+   - **Account:** Pilih salah satu (ada 10 test account dengan 100 ETH masing-masing)
+   - **Contract:** Pastikan `SimpleVoting` terpilih
+3. Klik tombol **Deploy**
+4. Contract akan muncul di bagian **Deployed Contracts**
+
+### 4.5 Berinteraksi dengan Contract
+
+Setelah deploy, di bagian **Deployed Contracts** akan muncul:
+
+```
+▼ SIMPLEVOTING AT 0x...
+   ├── owner          [button]  ← Baca owner address
+   ├── yesCount       [button]  ← Baca jumlah vote
+   ├── hasVoted       [input]   ← Cek apakah address sudah vote
+   ├── voteYes        [button]  ← Berikan vote
+   └── resetVoting    [button]  ← Reset voting (owner only)
 ```
 
-Setiap eksekusi contract dicatat sebagai transaksi bertipe `'contract'` dan masuk ke `pending_transactions`. Artinya, eksekusi baru benar-benar tersimpan permanen di blockchain setelah blok dimining.
+**Warna tombol:**
 
-Method ini:
+- **Biru:** Function read-only (gratis, tidak mengubah state)
+- **Orange:** Function yang mengubah state (membutuhkan transaksi)
 
-1. Memeriksa apakah contract terdaftar di blockchain
-2. Memanggil `execute()` pada contract
-3. Membuat transaksi pencatatan eksekusi
-4. Menambahkan transaksi ke pending
-5. Mengembalikan hasil eksekusi
+### 4.6 Modifikasi 1: Tambah Vote "No"
 
-### 2.10 Program Utama
+```sol
+uint public noCount;
 
-```python
-if __name__ == '__main__':
-    my_blockchain = Blockchain()
-
-    # deploy escrow contract
-    print('deploy smart contract')
-    escrow = EscrowContract('escrow-001', owner='Alice', receiver='Bob', amount=50)
-    my_blockchain.deploy_contract(escrow)
-    print()
-
-    # cek state awal contract
-    print('cek state awal contract')
-    result = my_blockchain.execute_contract('escrow-001', 'check', {'caller': 'Alice'})
-    print(result)
-    print()
-
-    # tambahkan transaksi biasa
-    print('tambah transaksi biasa')
-    tx1 = Transaction('Alice', 'Bob', 50)
-    tx1.print()
-    my_blockchain.add_transaction(tx1)
-    print()
-
-    # mining block 1
-    print('mining block 1')
-    my_blockchain.mine_pending_transactions()
-    print()
-
-    # eksekusi contract: release dana
-    print('eksekusi contract: release dana')
-    result = my_blockchain.execute_contract('escrow-001', 'release', {'caller': 'Alice'})
-    print(result)
-    print()
-
-    # coba release lagi (harus gagal)
-    print('eksekusi contract: release dana (kedua kali)')
-    result = my_blockchain.execute_contract('escrow-001', 'release', {'caller': 'Alice'})
-    print(result)
-    print()
-
-    # mining block 2
-    print('mining block 2')
-    my_blockchain.mine_pending_transactions()
-    print()
-
-    # validasi blockchain
-    print('blockchain valid?', my_blockchain.is_chain_valid())
+function voteNo() public {
+    require(!hasVoted[msg.sender], "You have already voted");
+    hasVoted[msg.sender] = true;
+    noCount += 1;
+}
 ```
 
-Penjelasan alur program:
+### 4.7 Modifikasi 2: Total Vote
 
-1. Membuat objek blockchain
-2. Membuat dan men-deploy EscrowContract
-3. Mengecek state awal contract
-4. Menambahkan transaksi biasa ke pending
-5. Mining block pertama (menyimpan transaksi biasa + cek state)
-6. Mengeksekusi contract untuk melepas dana
-7. Mencoba melepas dana kedua kali (harus gagal karena kondisi tidak terpenuhi)
-8. Mining block kedua (menyimpan kedua eksekusi contract)
-9. Memvalidasi seluruh blockchain
-
-Contoh output program:
-
-```text
-deploy smart contract
-contract 'escrow-001' deployed oleh Alice
-
-cek state awal contract
-{'status': 'info', 'state': {'receiver': 'Bob', 'amount': 50, 'released': False}}
-
-tambah transaksi biasa
-{'sender': 'Alice', 'receiver': 'Bob', 'amount': 50, 'tx_type': 'transfer', ...}
-
-mining block 1
-block mined: 000a3f...
-waktu eksekusi: 0.312 detik
-
-eksekusi contract: release dana
-{'status': 'success', 'message': 'Dana sebesar 50 berhasil dikirim ke Bob'}
-
-eksekusi contract: release dana (kedua kali)
-{'status': 'failed', 'message': 'Dana sudah pernah dilepas'}
-
-mining block 2
-block mined: 000b7c...
-waktu eksekusi: 0.287 detik
-
-blockchain valid? True
+```sol
+function getTotalVotes() public view returns (uint) {
+    return yesCount + noCount;
+}
 ```
+
+### 4.8 Modifikasi 3: Voting Open/Close
+
+```sol
+bool public votingOpen = true;
+
+modifier onlyWhenOpen() {
+    require(votingOpen, "Voting is closed");
+    _;
+}
+
+function voteYes() public onlyWhenOpen {
+    // ... kode vote
+}
+
+function closeVoting() public {
+    require(msg.sender == owner, "Only owner");
+    votingOpen = false;
+}
+```
+
+### 4.9 Modifikasi 4: Event
+
+```sol
+event VoteCasted(address indexed voter, bool vote);
+
+function voteYes() public {
+    require(!hasVoted[msg.sender], "Already voted");
+    hasVoted[msg.sender] = true;
+    yesCount += 1;
+    emit VoteCasted(msg.sender, true);  // Emit event
+}
+```
+
+## 5. Mengenal Solidity
+
+### 5.1 Tipe Data Solidity
+
+Solidity adalah bahasa **statically typed**, artinya setiap variabel harus dideklarasikan tipenya.
+
+#### Value Types
+
+Value types menyimpan data langsung di memory.
+
+| Tipe                     | Deskripsi                     | Contoh                                |
+| ------------------------ | ----------------------------- | ------------------------------------- |
+| `bool`                 | Boolean (true/false)          | `bool isActive = true;`             |
+| `uint`                 | Unsigned integer (>= 0)       | `uint age = 25;`                    |
+| `int`                  | Signed integer (bisa negatif) | `int temperature = -5;`             |
+| `address`              | Alamat Ethereum (20 bytes)    | `address owner = msg.sender;`       |
+| `bytes1` - `bytes32` | Fixed-size byte arrays        | `bytes32 hash = keccak256("data");` |
+
+**Variasi uint dan int:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    INTEGER TYPES                                │
+├─────────────────────────────────────────────────────────────────┤
+│  uint8   : 0 to 255                                             │
+│  uint16  : 0 to 65,535                                          │
+│  uint32  : 0 to 4,294,967,295                                   │
+│  uint64  : 0 to 18,446,744,073,709,551,615                      │
+│  uint128 : 0 to 340,282,366,920,938,463,463,374,607,431,768,... │
+│  uint256 : 0 to 2^256 - 1  (default untuk "uint")               │
+├─────────────────────────────────────────────────────────────────┤
+│  int8    : -128 to 127                                          │
+│  int256  : -(2^255) to (2^255 - 1)  (default untuk "int")       │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Contoh penggunaan:**
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract DataTypes {
+    bool public isActive = true;
+    uint256 public totalSupply = 1000000;
+    int256 public temperature = -10;
+    address public contractOwner;
+
+    enum Status { Pending, Active, Completed, Cancelled }
+    Status public currentStatus = Status.Pending;
+
+    constructor() {
+        contractOwner = msg.sender;
+    }
+}
+```
+
+#### Reference Types
+
+Reference types menyimpan referensi ke lokasi data (memory, storage, calldata).
+
+| Tipe       | Deskripsi               | Contoh                     |
+| ---------- | ----------------------- | -------------------------- |
+| `string` | Text dinamis (UTF-8)    | `string name = "Alice";` |
+| `bytes`  | Dynamic byte array      | `bytes data = "hello";`  |
+| `array`  | Kumpulan elemen sejenis | `uint[] numbers;`        |
+| `struct` | Custom data structure   | `struct Person { ... }`  |
+
+**Contoh penggunaan:**
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract ReferenceTypes {
+    // String
+    string public name = "My Contract";
+
+    // Dynamic array
+    uint[] public numbers;
+
+    // Fixed-size array
+    uint[5] public fixedNumbers = [1, 2, 3, 4, 5];
+
+    // Struct
+    struct Person {
+        string name;
+        uint age;
+        address wallet;
+    }
+
+    Person[] public people;
+
+    function addPerson(string memory _name, uint _age) public {
+        people.push(Person({
+            name: _name,
+            age: _age,
+            wallet: msg.sender
+        }));
+    }
+
+    function addNumber(uint _num) public {
+        numbers.push(_num);
+    }
+
+    function getNumbersLength() public view returns (uint) {
+        return numbers.length;
+    }
+}
+```
+
+#### Mapping
+
+Mapping adalah struktur data key-value seperti dictionary/hashmap.
+
+```sol
+// Syntax: mapping(KeyType => ValueType) visibility name;
+
+mapping(address => uint) public balances;
+mapping(address => bool) public isRegistered;
+mapping(uint => string) public idToName;
+
+// Nested mapping
+mapping(address => mapping(address => uint)) public allowances;
+```
+
+**Karakteristik Mapping:**
+
+| Fitur              | Keterangan                                      |
+| ------------------ | ----------------------------------------------- |
+| Default value      | Semua key memiliki default value (0, false, "") |
+| Tidak bisa di-loop | Tidak ada cara untuk iterate semua keys         |
+| Tidak ada length   | Tidak bisa tahu berapa banyak entries           |
+| Key types          | Hanya value types (uint, address, bytes32, dll) |
+
+**Contoh lengkap:**
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract MappingExample {
+    mapping(address => uint) public balances;
+    mapping(address => bool) public hasAccount;
+
+    function createAccount() public {
+        require(!hasAccount[msg.sender], "Account exists");
+        hasAccount[msg.sender] = true;
+        balances[msg.sender] = 100; // Bonus awal
+    }
+
+    function deposit(uint amount) public {
+        require(hasAccount[msg.sender], "No account");
+        balances[msg.sender] += amount;
+    }
+
+    function getBalance() public view returns (uint) {
+        return balances[msg.sender];
+    }
+}
+```
+
+### 5.2 Visibility Modifiers
+
+Visibility menentukan siapa yang bisa mengakses function atau variable.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    VISIBILITY MODIFIERS                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  public     ████████████████████  Bisa diakses dari mana saja   │
+│  external   ████████████████░░░░  Hanya dari luar contract      │
+│  internal   ████████████░░░░░░░░  Contract ini + turunannya     │
+│  private    ████████░░░░░░░░░░░░  Hanya contract ini            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+| Visibility   | Dari Contract | Dari Turunan | Dari Luar |
+| ------------ | ------------- | ------------ | --------- |
+| `public`   | Ya            | Ya           | Ya        |
+| `external` | Tidak*        | Tidak        | Ya        |
+| `internal` | Ya            | Ya           | Tidak     |
+| `private`  | Ya            | Tidak        | Tidak     |
+
+*external bisa dipanggil dengan `this.functionName()`
+
+**Contoh penggunaan:**
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract VisibilityExample {
+    uint public publicVar = 1;      // Bisa dibaca siapa saja
+    uint private privateVar = 2;    // Hanya contract ini
+    uint internal internalVar = 3;  // Contract ini + turunan
+
+    // Public: bisa dipanggil dari mana saja
+    function publicFunction() public view returns (uint) {
+        return publicVar;
+    }
+
+    // Private: hanya bisa dipanggil di dalam contract ini
+    function privateFunction() private view returns (uint) {
+        return privateVar;
+    }
+
+    // Internal: contract ini + contract turunan
+    function internalFunction() internal view returns (uint) {
+        return internalVar;
+    }
+
+    // External: hanya bisa dipanggil dari luar
+    function externalFunction() external view returns (uint) {
+        return publicVar;
+    }
+
+    // Memanggil private function dari public function
+    function callPrivate() public view returns (uint) {
+        return privateFunction(); // OK
+    }
+}
+
+// Contract turunan
+contract ChildContract is VisibilityExample {
+    function accessParent() public view returns (uint) {
+        // return privateVar;      // ERROR: private
+        // return privateFunction(); // ERROR: private
+        return internalVar;         // OK: internal
+    }
+}
+```
+
+**Best Practices:**
+
+| Gunakan      | Kapan                                                      |
+| ------------ | ---------------------------------------------------------- |
+| `private`  | Data sensitif, helper functions internal                   |
+| `internal` | Functions yang akan di-override oleh turunan               |
+| `public`   | Functions yang perlu diakses dari mana saja                |
+| `external` | Functions yang hanya dipanggil dari luar (lebih hemat gas) |
+
+### 5.3 Function Modifiers
+
+#### State Mutability
+
+Menentukan bagaimana function berinteraksi dengan blockchain state.
+
+| Modifier    | Baca State | Ubah State | Terima ETH | Gas Cost  |
+| ----------- | ---------- | ---------- | ---------- | --------- |
+| (none)      | Ya         | Ya         | Tidak      | Bayar gas |
+| `view`    | Ya         | Tidak      | Tidak      | Gratis*   |
+| `pure`    | Tidak      | Tidak      | Tidak      | Gratis*   |
+| `payable` | Ya         | Ya         | Ya         | Bayar gas |
+
+*Gratis jika dipanggil secara external (bukan dari transaksi)
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract FunctionModifiers {
+    uint public counter = 0;
+
+    // Regular function - bisa baca dan ubah state
+    function increment() public {
+        counter += 1;  // Mengubah state
+    }
+
+    // VIEW - hanya membaca state, tidak mengubah
+    function getCounter() public view returns (uint) {
+        return counter;  // Membaca state
+    }
+
+    // PURE - tidak membaca atau mengubah state
+    function add(uint a, uint b) public pure returns (uint) {
+        return a + b;  // Hanya komputasi
+    }
+
+    // PAYABLE - bisa menerima ETH
+    function deposit() public payable {
+        // msg.value berisi jumlah ETH yang dikirim
+        // ETH otomatis masuk ke contract
+    }
+
+    // Cek balance contract
+    function getBalance() public view returns (uint) {
+        return address(this).balance;
+    }
+}
+```
+
+**Kapan menggunakan:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  view   → Getter functions, cek kondisi                         │
+│  pure   → Kalkulasi matematika, hash, validasi format           │
+│  payable → Menerima pembayaran, donation, purchase              │
+│  (none) → Setter functions, update state                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 5.4 Custom Modifiers
+
+Modifier memungkinkan kita membuat "pre-condition" yang reusable.
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract CustomModifiers {
+    address public owner;
+    bool public paused = false;
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    // Modifier: hanya owner yang bisa akses
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not owner");
+        _;  // Lanjutkan eksekusi function
+    }
+
+    // Modifier: hanya saat tidak di-pause
+    modifier whenNotPaused() {
+        require(!paused, "Contract is paused");
+        _;
+    }
+
+    // Modifier: dengan parameter
+    modifier minimumValue(uint _min) {
+        require(msg.value >= _min, "Value too low");
+        _;
+    }
+
+    // Menggunakan modifier
+    function pause() public onlyOwner {
+        paused = true;
+    }
+
+    function unpause() public onlyOwner {
+        paused = false;
+    }
+
+    // Kombinasi multiple modifiers
+    function doSomething() public whenNotPaused onlyOwner {
+        // Hanya bisa dijalankan jika:
+        // 1. Contract tidak di-pause
+        // 2. Caller adalah owner
+    }
+
+    // Modifier dengan parameter
+    function buyItem() public payable minimumValue(0.01 ether) whenNotPaused {
+        // Hanya jika value >= 0.01 ETH dan tidak paused
+    }
+}
+```
+
+**Alur eksekusi modifier:**
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│  function doSomething() public whenNotPaused onlyOwner { ... } │
+└────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+              ┌───────────────────────────────┐
+              │  1. whenNotPaused             │
+              │     require(!paused, ...)     │
+              │     _; ──────────────────┐    │
+              └──────────────────────────┼────┘
+                                         │
+                                         ▼
+              ┌───────────────────────────────┐
+              │  2. onlyOwner                 │
+              │     require(msg.sender == ...) │
+              │     _; ──────────────────┐    │
+              └──────────────────────────┼────┘
+                                         │
+                                         ▼
+              ┌───────────────────────────────┐
+              │  3. Function body             │
+              │     { ... actual code ... }   │
+              └───────────────────────────────┘
+```
+
+## 6. Gas dan Biaya Transaksi
+
+### 6.1 Apa itu Gas?
+
+**Gas** adalah unit yang mengukur komputasi di Ethereum. Setiap operasi membutuhkan gas.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         GAS CONCEPT                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Transaction Fee = Gas Used × Gas Price                         │
+│                                                                 │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────────────┐    │
+│  │  Gas Used   │ × │  Gas Price  │ = │  Transaction Fee    │    │
+│  │  (units)    │   │  (Gwei)     │   │  (ETH)              │    │
+│  └─────────────┘   └─────────────┘   └─────────────────────┘    │
+│                                                                 │
+│  Contoh:                                                        │
+│  21,000 gas × 30 Gwei = 630,000 Gwei = 0.00063 ETH              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Biaya operasi umum:**
+
+| Operasi                   | Gas Cost (approx)       |
+| ------------------------- | ----------------------- |
+| Transfer ETH              | 21,000                  |
+| SSTORE (simpan data baru) | 20,000                  |
+| SSTORE (update data)      | 5,000                   |
+| SLOAD (baca data)         | 2,100                   |
+| ADD, SUB, MUL             | 3-5                     |
+| Deployment contract       | 32,000 + (200 × bytes) |
+
+### 6.2 Estimasi Gas di Remix
+
+Setelah menjalankan transaksi di Remix, lihat **Terminal** untuk informasi gas:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  [vm] from: 0x5B3...eddC4                                       │
+│  to: SimpleVoting.voteYes()                                     │
+│  value: 0 wei                                                   │
+│  data: 0xc6...                                                  │
+│  logs: 0                                                        │
+│  hash: 0x123...                                                 │
+│                                                                  │
+│  transaction cost: 46,213 gas  ← Total gas yang digunakan       │
+│  execution cost: 24,925 gas    ← Gas untuk eksekusi saja        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+- **Transaction cost**: Total gas termasuk overhead transaksi
+- **Execution cost**: Gas untuk menjalankan kode contract
+
+### 6.3 Tips Menghemat Gas
+
+| Tips                 | Penjelasan                         | Contoh                             |
+| -------------------- | ---------------------------------- | ---------------------------------- |
+| Gunakan `uint256`  | Default size, tidak perlu konversi | `uint256` bukan `uint8`        |
+| Pack variables       | Variabel kecil berdekatan          | `uint128 a; uint128 b;`          |
+| Gunakan `calldata` | Untuk parameter read-only          | `function f(string calldata s)`  |
+| Hindari loop besar   | Loop = gas × iterations           | Batasi array size                  |
+| Short-circuit        | Kondisi murah di depan             | `require(a && expensiveCheck())` |
+| Gunakan events       | Lebih murah dari storage           | `emit` vs `array.push()`       |
+
+**Contoh optimasi:**
+
+```sol
+// KURANG OPTIMAL
+contract BadGas {
+    uint8 a;    // 1 byte
+    uint256 b;  // 32 bytes
+    uint8 c;    // 1 byte - slot baru!
+    // Total: 3 storage slots
+}
+
+// LEBIH OPTIMAL
+contract GoodGas {
+    uint8 a;    // 1 byte  ┐
+    uint8 c;    // 1 byte  ├── Packed dalam 1 slot
+    uint256 b;  // 32 bytes - slot terpisah
+    // Total: 2 storage slots
+}
+```
+
+## 7. Skenario Testing
+
+### 7.1 Test Case: Voting Berhasil
+
+**Langkah:**
+
+1. Deploy contract SimpleVoting
+2. Pastikan Account 1 terpilih (deployer = owner)
+3. Klik tombol `voteYes`
+4. Klik tombol `yesCount` untuk verifikasi
+
+**Expected Result:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ✓ Transaksi berhasil (hijau di terminal)                       │
+│  ✓ yesCount berubah dari 0 menjadi 1                            │
+│  ✓ hasVoted[Account1] = true                                    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 7.2 Test Case: Double Voting (Gagal)
+
+**Langkah:**
+
+1. Setelah voting pertama berhasil
+2. Klik `voteYes` lagi dengan account yang sama
+
+**Expected Result:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ✗ Transaksi gagal (merah di terminal)                          │
+│  ✗ Error: "You have already voted"                              │
+│  ✗ yesCount tetap 1 (tidak berubah)                             │
+│  ✗ Gas tetap digunakan untuk validasi                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 7.3 Test Case: Reset oleh Non-Owner (Gagal)
+
+**Langkah:**
+
+1. Ganti ke Account 2 (bukan owner) di dropdown Account
+2. Klik tombol `resetVoting`
+
+**Expected Result:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ✗ Transaksi gagal (merah di terminal)                          │
+│  ✗ Error: "Only owner can reset voting"                         │
+│  ✗ yesCount tidak berubah                                       │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 7.4 Membaca Error Message
+
+Ketika transaksi gagal, Remix menampilkan informasi di Terminal:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  transact to SimpleVoting.voteYes errance:                      │
+│                                                                 │
+│  revert                                                         │
+│    The transaction has been reverted to the initial state.      │
+│                                                                 │
+│  Reason provided by the contract:                               │
+│    "You have already voted"   ← Pesan dari require()            │
+│                                                                 │
+│  Debug the transaction to get more information.                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Tips Debugging:**
+
+1. **Baca error message** - Biasanya cukup jelas
+2. **Cek account aktif** - Pastikan menggunakan account yang benar
+3. **Cek value** - Untuk function payable, pastikan mengirim ETH
+4. **Gunakan Debugger** - Klik "Debug" untuk step-by-step execution
 
 ## Latihan
 
-1. tambahkan validasi bahwa contract hanya bisa di-deploy satu kali (cegah deploy ulang dengan `contract_id` yang sama)
-2. buat class `VotingContract` yang menyimpan daftar kandidat dan menghitung suara
-3. tambahkan action `refund` pada `EscrowContract` yang memungkinkan owner menarik kembali dana jika belum di-release
-4. tampilkan seluruh isi blockchain beserta jenis transaksi (`transfer` atau `contract`) secara rapi
-5. ubah state contract secara langsung (tanpa melalui `execute()`), lalu cek apakah blockchain tetap valid — amati perbedaannya
-6. buat `TokenContract` sederhana yang memiliki method `mint` (cetak token) dan `transfer` (kirim token antar alamat)
+Kerjakan latihan berikut di rumah untuk memperdalam pemahaman:
+
+### Latihan 1: Eksplorasi Tipe Data
+
+1. Deklarasikan variabel untuk setiap tipe data:
+
+   - bool, uint, int, address, string
+2. Buat struct "Product" dengan field:
+
+   - name (string)
+   - price (uint)
+   - isAvailable (bool)
+3. Buat array products dan mapping owner ke Product
+4. Implementasi function:
+
+   - addProduct(name, price)
+   - toggleAvailability(index)
+   - getProduct(index) returns Product
+
+### Latihan 2: Visibility Testing
+
+1. Buat contract "Parent" dengan:
+
+   - publicVar, privateVar, internalVar
+   - publicFunc(), privateFunc(), internalFunc()
+2. Buat contract "Child is Parent" dan coba akses:
+
+   - Mana yang bisa diakses?
+   - Mana yang error?
+
+### Latihan 3: Modifier dan Access Control
+
+1. State variables:
+
+   - owner (address)
+   - balance (uint)
+   - paused (bool)
+2. Modifiers:
+
+   - onlyOwner
+   - whenNotPaused
+   - minimumDeposit(uint _min)
+3. Functions:
+
+   - deposit() payable - minimal 0.01 ether
+   - withdraw(uint amount) - hanya owner
+   - pause() / unpause() - hanya owner
+   - transferOwnership(address newOwner)
+
+### Latihan 4: Gas Analysis
+
+1. Deploy SimpleVoting
+2. Catat gas cost untuk:
+
+   - voteYes() pertama kali
+   - voteYes() kedua kali (gagal)
+   - resetVoting()
+3. Bandingkan:
+
+   - Transaksi berhasil vs gagal
+   - Function yang baca state vs ubah state
+4. Buat tabel perbandingan hasil
+
+### Latihan 5: Complete Voting System
+
+1. State:
+
+   - owner, yesCount, noCount
+   - votingOpen (bool)
+   - votingDeadline (uint timestamp)
+   - voters (mapping address => bool)
+   - voterList (address[]) - untuk tracking
+2. Events:
+
+   - VoteCasted(voter, choice)
+   - VotingClosed(yesCount, noCount, winner)
+3. Modifiers:
+
+   - onlyOwner
+   - onlyWhenOpen
+   - beforeDeadline
+4. Functions:
+
+   - constructor(uint durationInMinutes)
+   - voteYes()
+   - voteNo()
+   - closeVoting() - owner only
+   - getResults() returns (yes, no, winner)
+   - getVoterCount() returns uint
+   - hasVoted(address) returns bool
+5. Testing:
+
+   - Deploy dengan duration 5 menit
+   - Vote dari 3 account berbeda
+   - Coba vote setelah deadline
+   - Close voting dan cek hasil
+
+### Latihan 6: Buat contoh Smart Contract lain
+
+Kelompok 1: Sistem Kehadiran
+Kelompok 2: Sistem Sewa Barang
+Kelompok 3: Escrow Pembayaran
+Kelompok 4: Crowdfunding

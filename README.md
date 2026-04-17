@@ -16,13 +16,14 @@ Blockchain technology is a database mechanism that enables transparent informati
 - Remix IDE
 - Foundry / Hardhat
 - Ganache
+- MetaMask
 
 ## Topics
 
 - Blockchain fundamentals
 - Cryptocurrency
 - Smart Contracts
-- dApp
+- Wallet & dApp Integration
 
 ## Modules
 
@@ -34,23 +35,24 @@ Blockchain technology is a database mechanism that enables transparent informati
 | 4      | Blockchain Network dengan Flask API | [Go to module](module-04.md) |
 | 5      | Cryptocurrency                      | [Go to module](module-05.md) |
 | 6      | Advanced Cryptocurrency             | [Go to module](module-06.md) |
-| 7      | Smart Contract dengan Remix IDE     | [Go to module](module-07.md) |
-| 8      | Smart Contracts (Python)            | [Go to module](module-08.md) |
+| 8      | Smart Contracts (Python)            | [Go to module](module-07.md) |
+| 7      | Smart Contract dengan Remix IDE     | [Go to module](module-08.md) |
 | 9      | Smart Contract dengan Solidity      | [Go to module](module-09.md) |
+| 10     | Hands-on MetaMask                   | [Go to module](module-10.md) |
 
 ## Concept Mapping
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                           BLOCKCHAIN TECHNOLOGY                                  │
-│                                                                                  │
-│   ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐           │
-│   │   BLOCKCHAIN    │────►│ CRYPTOCURRENCY  │────►│ SMART CONTRACT  │           │
-│   │   (Foundation)  │     │  (Application)  │     │   (Extension)   │           │
-│   └────────┬────────┘     └────────┬────────┘     └────────┬────────┘           │
-│            │                       │                       │                     │
-│     Module 01-04             Module 05-06             Module 07-09               │
-└─────────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│                           BLOCKCHAIN TECHNOLOGY                                             │
+│                                                                                             │
+│   ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌───────────────┐ │
+│   │   BLOCKCHAIN    │────►│ CRYPTOCURRENCY  │────►│ SMART CONTRACT  │────►│ WALLET & dApp │ │
+│   │   (Foundation)  │     │  (Application)  │     │   (Extension)   │     │ (Integration) │ │
+│   └────────┬────────┘     └────────┬────────┘     └────────┬────────┘     └───────┬───────┘ │
+│            │                       │                       │                      │         │
+│     Module 01-04             Module 05-06             Module 07-09           Module 10      │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 1. Blockchain (Foundation)
@@ -105,6 +107,8 @@ Blockchain technology is a database mechanism that enables transparent informati
 | **Solidity**            | Smart Contract Language               | [Module 09](module-09.md)                         |
 | **Hardhat**             | Development Framework                 | [Module 09](module-09.md)                         |
 | **Contract Testing**    | Automated Test                        | [Module 09](module-09.md)                         |
+| **MetaMask**            | Wallet, dApp Connection               | [Module 10](module-10.md)                         |
+| **Testnet Deployment**  | Faucet, Sepolia, Deploy via MetaMask  | [Module 10](module-10.md)                         |
 
 ### Learning Path
 
@@ -136,6 +140,14 @@ Blockchain technology is a database mechanism that enables transparent informati
           │   Module 07 ───────► Module 08 ───────► Module 09   │
           │   Remix IDE       Python Simulation    Solidity     │
           │                                                     │
+          └──────────────────────────┬──────────────────────────┘
+                                     │
+          ┌──────────────────────────┼──────────────────────────┐
+          │                     WALLET & dApp                   │
+          │                                                     │
+          │                     Module 10                       │
+          │                  Hands-on MetaMask                  │
+          │                                                     │
           └─────────────────────────────────────────────────────┘
 ```
 
@@ -146,3 +158,4 @@ Blockchain technology is a database mechanism that enables transparent informati
 | **Blockchain**     | Python, Flask                                 | Module 01-04 |
 | **Cryptocurrency** | Python, Flask, RSA/ECDSA                      | Module 05-06 |
 | **Smart Contract** | Remix IDE, Python, Solidity, Hardhat, Ganache | Module 07-09 |
+| **Wallet & dApp**  | MetaMask, Testnet Faucet, Etherscan           | Module 10    |

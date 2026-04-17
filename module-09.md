@@ -1,4 +1,4 @@
-# Module 09. Smart Contract dengan Solidity
+# Module 09. Smart Contract dengan Solidity dan Hardhat
 
 ## Deskripsi
 
@@ -19,7 +19,7 @@ Sebelum mempelajari modul ini, mahasiswa sebaiknya:
 
 1. [Menginstall Python dan Visual Studio Code](module-01.md)
 2. Memahami [konsep dasar blockchain](module-02.md)
-3. Memahami [konsep Smart Contract (simulasi Python)](module-08.md)
+3. Memahami [konsep Smart Contract (simulasi Python)](module-09.md)
 4. Menginstall [Node.js](https://nodejs.org) versi 18 ke atas
 5. Menginstall salah satu local blockchain node: [Ganache](https://trufflesuite.com/ganache), [Anvil](https://book.getfoundry.sh/anvil/) (Foundry), atau menggunakan Hardhat Network bawaan
 
@@ -104,11 +104,11 @@ Karakteristik EVM:
 - **Terisolasi**: contract tidak dapat mengakses sistem file, jaringan, atau data eksternal secara langsung
 - **Berbasis gas**: setiap operasi memiliki biaya komputasi (gas) untuk mencegah penyalahgunaan sumber daya
 
-![diagram EVM 1](image/module-08/evm.png)
+![diagram EVM 1](image/module-09/evm.png)
 
 Kode Solidity tidak langsung dieksekusi - ia terlebih dahulu dikompilasi menjadi **bytecode** yang dipahami EVM.
 
-![diagram EVM](image/module-08/evm2.png)
+![diagram EVM](image/module-09/evm2.png)
 
 ### 1.3 Apa itu Solidity?
 
@@ -191,7 +191,7 @@ function tarikDana() external {
 }
 ```
 
-![komponen solidity](image/module-08/sol2.png)
+![komponen solidity](image/module-09/sol2.png)
 
 ### 1.5 Apa itu Hardhat?
 
@@ -226,7 +226,7 @@ Beberapa pilihan yang umum digunakan:
 
 Semua pilihan di atas menyediakan akun dengan saldo ETH gratis dan RPC endpoint yang kompatibel dengan ethers.js - pilih sesuai preferensi dan kebutuhan.
 
-![local blockchain tools](image/module-08/bc-tools.png)
+![local blockchain tools](image/module-09/bc-tools.png)
 
 Perbedaan utama antara Hardhat Network dan tool eksternal (Ganache/Anvil):
 

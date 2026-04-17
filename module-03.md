@@ -12,8 +12,6 @@ Topik yang dibahas pada modul ini:
 4. **Mempool** - Manajemen transaksi yang menunggu konfirmasi
 5. **Difficulty Adjustment** - Penyesuaian tingkat kesulitan mining
 
-Berikut adalah [full code](advanced-blockchain/blockchain.py) yang dibahas pada modul ini.
-
 ## Prasyarat
 
 Sebelum mempelajari modul ini, pastikan telah:
@@ -60,8 +58,6 @@ Sebelum mempelajari modul ini, pastikan telah:
   - [7.2 Menguji Mining Reward](#72-menguji-mining-reward)
   - [7.3 Menguji Balance Tracking](#73-menguji-balance-tracking)
 - [Latihan](#latihan)
-
----
 
 ## 1. Teori Merkle Tree
 
@@ -168,8 +164,6 @@ Untuk membuktikan Tx B ada dalam block:
 
 Dengan 3 hash saja, kita bisa membuktikan Tx B ada dalam block yang berisi 4 transaksi.
 
----
-
 ## 2. Teori Mining Reward
 
 ### 2.1 Mengapa Mining Reward Diperlukan?
@@ -237,8 +231,6 @@ Pada Bitcoin, block subsidy mengalami **halving** (pengurangan setengah) setiap 
 
 Halving memastikan total supply Bitcoin terbatas (21 juta BTC).
 
----
-
 ## 3. Teori Balance Tracking
 
 ### 3.1 UTXO vs Account Model
@@ -293,8 +285,6 @@ def get_balance(address):
     return balance
 ```
 
----
-
 ## 4. Teori Mempool
 
 ### 4.1 Apa itu Mempool?
@@ -308,20 +298,20 @@ def get_balance(address):
 ┌─────────────────────────────────────────────────────┐
 │                     MEMPOOL                         │
 ├─────────────────────────────────────────────────────┤
-│  Tx #1: Alice → Bob (10 coins)     Fee: 0.5        │
-│  Tx #2: Charlie → Diana (5 coins)  Fee: 0.3        │
+│  Tx #1: Alice → Bob (10 coins)     Fee: 0.5         │
+│  Tx #2: Charlie → Diana (5 coins)  Fee: 0.3         │
 │  Tx #3: Eve → Frank (20 coins)     Fee: 0.8  ← prioritas tinggi
-│  Tx #4: Grace → Henry (2 coins)    Fee: 0.1        │
+│  Tx #4: Grace → Henry (2 coins)    Fee: 0.1         │
 └─────────────────────────────────────────────────────┘
                          │
                          ▼ Mining
 ┌─────────────────────────────────────────────────────┐
 │                    NEW BLOCK                        │
-│  Coinbase: SYSTEM → Miner (50 + 1.7 coins)         │
-│  Tx #3: Eve → Frank (20 coins)     ← fee tertinggi │
-│  Tx #1: Alice → Bob (10 coins)                     │
-│  Tx #2: Charlie → Diana (5 coins)                  │
-│  Tx #4: Grace → Henry (2 coins)                    │
+│  Coinbase: SYSTEM → Miner (50 + 1.7 coins)          │
+│  Tx #3: Eve → Frank (20 coins)     ← fee tertinggi  │
+│  Tx #1: Alice → Bob (10 coins)                      │
+│  Tx #2: Charlie → Diana (5 coins)                   │
+│  Tx #4: Grace → Henry (2 coins)                     │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -336,11 +326,8 @@ Miner biasanya memprioritaskan transaksi berdasarkan:
 Dalam implementasi sederhana, kita bisa menggunakan fee sebagai prioritas:
 
 ```python
-# Urutkan transaksi berdasarkan fee (tertinggi dulu)
 sorted_transactions = sorted(mempool, key=lambda tx: tx.fee, reverse=True)
 ```
-
----
 
 ## 5. Teori Difficulty Adjustment
 
@@ -373,31 +360,17 @@ actual_time = waktu_N_block_terakhir
 expected_time = N * target_block_time
 
 if actual_time < expected_time:
-    # Mining terlalu cepat, naikkan difficulty
     difficulty += 1
+
 elif actual_time > expected_time * 2:
-    # Mining terlalu lambat, turunkan difficulty
     difficulty -= 1
 ```
 
----
-
 ## 6. Implementasi Program
-
-### 6.1 Struktur Project
-
-Buat folder baru `advanced-blockchain` dengan struktur:
-
-```
-advanced-blockchain/
-├── blockchain.py    # Core blockchain dengan fitur baru
-└── test.py          # Testing (opsional)
-```
 
 ### 6.2 Import Library
 
 ```python
-# blockchain.py
 import hashlib
 import json
 import time
@@ -408,21 +381,12 @@ from datetime import datetime
 
 ```python
 class MerkleTree:
-    """
-    Implementasi Merkle Tree untuk verifikasi transaksi.
-    """
-
     @staticmethod
     def hash(data):
-        """Membuat hash SHA-256 dari data."""
         return hashlib.sha256(data.encode()).hexdigest()
 
     @staticmethod
     def build_tree(transactions):
-        """
-        Membangun Merkle Tree dari list transaksi.
-        Mengembalikan Merkle Root.
-        """
         if not transactions:
             return MerkleTree.hash("")
 
@@ -448,10 +412,7 @@ class MerkleTree:
 
     @staticmethod
     def get_proof(transactions, target_index):
-        """
-        Mendapatkan Merkle Proof untuk transaksi pada index tertentu.
-        Mengembalikan list of (hash, position) tuples.
-        """
+       
         if not transactions or target_index >= len(transactions):
             return []
 
@@ -490,9 +451,6 @@ class MerkleTree:
 
     @staticmethod
     def verify_proof(tx_hash, proof, merkle_root):
-        """
-        Memverifikasi Merkle Proof.
-        """
         current_hash = tx_hash
 
         for sibling_hash, position in proof:
@@ -509,10 +467,6 @@ class MerkleTree:
 
 ```python
 class Transaction:
-    """
-    Transaksi dengan tambahan fee untuk prioritas.
-    """
-
     def __init__(self, sender, receiver, amount, fee=0):
         self.sender = sender
         self.receiver = receiver
@@ -537,10 +491,6 @@ class Transaction:
 
 ```python
 class Block:
-    """
-    Block dengan Merkle Root untuk verifikasi transaksi efisien.
-    """
-
     def __init__(self, index, transactions, previous_hash, miner=None):
         self.index = index
         self.timestamp = time.time()
@@ -556,7 +506,6 @@ class Block:
         self.hash = self.calculate_hash()
 
     def calculate_hash(self):
-        """Menghitung hash block menggunakan Merkle Root."""
         block_data = {
             'index': self.index,
             'timestamp': self.timestamp,
@@ -569,7 +518,6 @@ class Block:
         return hashlib.sha256(block_string.encode()).hexdigest()
 
     def mine(self, difficulty):
-        """Mining block dengan Proof of Work."""
         target = '0' * difficulty
         start_time = time.time()
 
@@ -581,9 +529,6 @@ class Block:
         return mining_time
 
     def verify_transaction(self, tx_index):
-        """
-        Memverifikasi transaksi dalam block menggunakan Merkle Proof.
-        """
         if tx_index >= len(self.transactions):
             return False
 
@@ -610,14 +555,6 @@ class Block:
 
 ```python
 class Blockchain:
-    """
-    Blockchain dengan fitur:
-    - Mining reward
-    - Balance tracking
-    - Mempool dengan prioritas
-    - Difficulty adjustment
-    """
-
     # Konstanta
     INITIAL_DIFFICULTY = 4
     BLOCK_REWARD = 50
@@ -635,28 +572,20 @@ class Blockchain:
         self._create_genesis_block()
 
     def _create_genesis_block(self):
-        """Membuat block pertama (genesis block)."""
         genesis = Block(0, [], "0", miner="GENESIS")
         genesis.mine(self.difficulty)
         self.chain.append(genesis)
         print(f"Genesis block created: {genesis.hash[:16]}...")
 
     def get_latest_block(self):
-        """Mengambil block terakhir."""
         return self.chain[-1]
 
     def get_block_reward(self):
-        """
-        Menghitung block reward dengan halving.
-        """
         halvings = len(self.chain) // self.HALVING_INTERVAL
         reward = self.BLOCK_REWARD / (2 ** halvings)
         return reward
 
     def add_transaction(self, transaction):
-        """
-        Menambahkan transaksi ke mempool setelah validasi.
-        """
         # Validasi: sender harus punya cukup saldo
         if transaction.sender != "COINBASE":
             sender_balance = self.get_balance(transaction.sender)
@@ -673,15 +602,9 @@ class Blockchain:
         return True
 
     def get_mempool_sorted(self):
-        """
-        Mengurutkan mempool berdasarkan fee (prioritas tertinggi dulu).
-        """
         return sorted(self.mempool, key=lambda tx: tx.fee, reverse=True)
 
     def mine_block(self, miner_address):
-        """
-        Mining block baru dengan transaksi dari mempool.
-        """
         if not self.mempool:
             print("Mempool kosong, tidak ada transaksi untuk di-mining.")
             return None
@@ -740,9 +663,6 @@ class Blockchain:
         return new_block
 
     def _adjust_difficulty(self):
-        """
-        Menyesuaikan difficulty berdasarkan waktu mining.
-        """
         if len(self.chain) % self.ADJUSTMENT_INTERVAL != 0:
             return
 
@@ -772,10 +692,6 @@ class Blockchain:
             print(f"Difficulty tetap: {self.difficulty}")
 
     def get_balance(self, address):
-        """
-        Menghitung saldo address berdasarkan semua transaksi.
-        (Account-based model)
-        """
         balance = 0
 
         for block in self.chain:
@@ -793,9 +709,6 @@ class Blockchain:
         return balance
 
     def get_all_balances(self):
-        """
-        Mendapatkan saldo semua address yang pernah bertransaksi.
-        """
         addresses = set()
 
         for block in self.chain:
@@ -807,9 +720,6 @@ class Blockchain:
         return {addr: self.get_balance(addr) for addr in addresses}
 
     def is_chain_valid(self):
-        """
-        Memvalidasi keseluruhan blockchain.
-        """
         for i in range(1, len(self.chain)):
             current = self.chain[i]
             previous = self.chain[i - 1]
@@ -833,9 +743,6 @@ class Blockchain:
         return True
 
     def print_chain(self):
-        """
-        Menampilkan seluruh blockchain.
-        """
         print("\n" + "=" * 60)
         print("BLOCKCHAIN")
         print("=" * 60)
@@ -926,8 +833,6 @@ if __name__ == "__main__":
         print(f"  {addr}: {balance:.2f}")
 ```
 
----
-
 ## 7. Pengujian
 
 ### 7.1 Menguji Merkle Tree
@@ -1009,8 +914,6 @@ try:
 except ValueError as e:
     print(f"\nError (expected): {e}")
 ```
-
----
 
 ## Latihan
 
