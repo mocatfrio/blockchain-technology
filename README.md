@@ -31,6 +31,8 @@ Blockchain technology is a database mechanism that enables transparent informati
 | 1      | Introduction to Python       | [Go to module](module-01.md) |
 | 2      | Blockchain Fundamentals      | [Go to module](module-02.md) |
 | 3      | Advanced Blockchain Concepts | [Go to module](module-03.md) |
-| 4      | Smart Contracts              | [Go to module](module-04.md) |
-| 5      | Blockchain Network           | [Go to module](module-05.md) |
-| 6      | Smart Contract dengan Solidity | [Go to module](module-06.md) |
+| 4      | Blockchain Network dengan Flask API | [Go to module](module-04.md) |
+| 5      | Cryptocurrency               | [Go to module](module-05.md) |
+| 6      | Advanced Cryptocurrency      | [Go to module](module-06.md) |
+| 7      | Smart Contracts (Python)     | [Go to module](module-07.md) |
+| 8      | Smart Contract dengan Solidity | [Go to module](module-08.md) |

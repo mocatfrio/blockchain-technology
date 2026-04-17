@@ -1,6 +1,6 @@
 draft/
-blockchain-nodes/
-blockchain-flask1/
+# blockchain-nodes/
+# blockchain-flask1/
 .venv
 __pycache__
 demo
