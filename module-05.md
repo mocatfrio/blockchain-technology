@@ -36,41 +36,173 @@ Sebelum mempelajari modul ini, pastikan telah:
 
 ## List of Contents
 
-- [1. Teori Digital Signature](#1-teori-digital-signature)
-  - [1.1 Apa itu Digital Signature?](#11-apa-itu-digital-signature)
-  - [1.2 Asymmetric Cryptography](#12-asymmetric-cryptography)
-  - [1.3 RSA vs ECDSA](#13-rsa-vs-ecdsa)
-  - [1.4 Proses Signing dan Verification](#14-proses-signing-dan-verification)
-- [2. Teori Mining Reward](#2-teori-mining-reward)
-  - [2.1 Mengapa Mining Reward Diperlukan?](#21-mengapa-mining-reward-diperlukan)
-  - [2.2 Coinbase Transaction](#22-coinbase-transaction)
-- [3. Teori Multi-Node Network](#3-teori-multi-node-network)
-  - [3.1 Desentralisasi](#31-desentralisasi)
-  - [3.2 Consensus Mechanism](#32-consensus-mechanism)
-  - [3.3 Longest Chain Rule](#33-longest-chain-rule)
-- [4. Implementasi Program](#4-implementasi-program)
-  - [4.1 Struktur Project](#41-struktur-project)
-  - [4.2 Import Library](#42-import-library)
-  - [4.3 Class Wallet](#43-class-wallet)
-  - [4.4 Class Transaction dengan Digital Signature](#44-class-transaction-dengan-digital-signature)
-  - [4.5 Class Block](#45-class-block)
-  - [4.6 Class Blockchain dengan Mining Reward](#46-class-blockchain-dengan-mining-reward)
-  - [4.7 Flask API](#47-flask-api)
-- [5. Menjalankan Multi-Node](#5-menjalankan-multi-node)
-  - [5.1 Menjalankan 3 Node](#51-menjalankan-3-node)
-  - [5.2 Mendaftarkan Node](#52-mendaftarkan-node)
-- [6. Pengujian dengan Postman](#6-pengujian-dengan-postman)
-  - [6.1 Membuat Wallet](#61-membuat-wallet)
-  - [6.2 Menambahkan Transaksi](#62-menambahkan-transaksi)
-  - [6.3 Mining Block](#63-mining-block)
-  - [6.4 Validasi Digital Signature](#64-validasi-digital-signature)
-  - [6.5 Sinkronisasi Antar-Node](#65-sinkronisasi-antar-node)
+- [1. Cryptocurrency vs Cryptocurrency Transaction](#1-cryptocurrency-vs-cryptocurrency-transaction)
+  - [1.1 Apa itu Cryptocurrency?](#11-apa-itu-cryptocurrency)
+  - [1.2 Apa itu Cryptocurrency Transaction?](#12-apa-itu-cryptocurrency-transaction)
+  - [1.3 Hubungan Keduanya](#13-hubungan-keduanya)
+- [2. Teori Digital Signature](#2-teori-digital-signature)
+  - [2.1 Apa itu Digital Signature?](#21-apa-itu-digital-signature)
+  - [2.2 Asymmetric Cryptography](#22-asymmetric-cryptography)
+  - [2.3 RSA vs ECDSA](#23-rsa-vs-ecdsa)
+  - [2.4 Proses Signing dan Verification](#24-proses-signing-dan-verification)
+- [3. Teori Mining Reward](#3-teori-mining-reward)
+  - [3.1 Mengapa Mining Reward Diperlukan?](#31-mengapa-mining-reward-diperlukan)
+  - [3.2 Coinbase Transaction](#32-coinbase-transaction)
+- [4. Teori Multi-Node Network](#4-teori-multi-node-network)
+  - [4.1 Desentralisasi](#41-desentralisasi)
+  - [4.2 Consensus Mechanism](#42-consensus-mechanism)
+  - [4.3 Longest Chain Rule](#43-longest-chain-rule)
+- [5. Implementasi Program](#5-implementasi-program)
+  - [5.1 Struktur Project](#51-struktur-project)
+  - [5.2 Import Library](#52-import-library)
+  - [5.3 Class Wallet](#53-class-wallet)
+  - [5.4 Class Transaction dengan Digital Signature](#54-class-transaction-dengan-digital-signature)
+  - [5.5 Class Block](#55-class-block)
+  - [5.6 Class Blockchain dengan Mining Reward](#56-class-blockchain-dengan-mining-reward)
+  - [5.7 Flask API](#57-flask-api)
+- [6. Menjalankan Multi-Node](#6-menjalankan-multi-node)
+  - [6.1 Menjalankan 3 Node](#61-menjalankan-3-node)
+  - [6.2 Mendaftarkan Node](#62-mendaftarkan-node)
+- [7. Pengujian dengan Postman](#7-pengujian-dengan-postman)
+  - [7.1 Membuat Wallet](#71-membuat-wallet)
+  - [7.2 Menambahkan Transaksi](#72-menambahkan-transaksi)
+  - [7.3 Mining Block](#73-mining-block)
+  - [7.4 Validasi Digital Signature](#74-validasi-digital-signature)
+  - [7.5 Sinkronisasi Antar-Node](#75-sinkronisasi-antar-node)
 
 ---
 
-## 1. Teori Digital Signature
+## 1. Cryptocurrency vs Cryptocurrency Transaction
 
-### 1.1 Apa itu Digital Signature?
+Sebelum membahas implementasi, penting untuk memahami perbedaan antara **Cryptocurrency** dan **Cryptocurrency Transaction** karena keduanya sering dianggap sama padahal memiliki cakupan yang berbeda.
+
+### 1.1 Apa itu Cryptocurrency?
+
+**Cryptocurrency** adalah **sistem mata uang digital** yang menggunakan kriptografi untuk mengamankan transaksi, mengontrol penciptaan unit baru, dan memverifikasi transfer aset.
+
+Cryptocurrency mencakup keseluruhan ekosistem:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         CRYPTOCURRENCY SYSTEM                            │
+│                                                                          │
+│   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌────────────┐  │
+│   │   Wallet    │   │   Mining    │   │  Network    │   │ Consensus  │  │
+│   │             │   │             │   │             │   │            │  │
+│   │ • Key Pair  │   │ • PoW       │   │ • P2P       │   │ • Rules    │  │
+│   │ • Address   │   │ • Reward    │   │ • Broadcast │   │ • Longest  │  │
+│   │ • Balance   │   │ • Difficulty│   │ • Sync      │   │   Chain    │  │
+│   └─────────────┘   └─────────────┘   └─────────────┘   └────────────┘  │
+│                                                                          │
+│   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐                   │
+│   │ Transaction │   │   Block     │   │ Blockchain  │                   │
+│   │             │   │             │   │             │                   │
+│   │ • Send/Recv │   │ • Hash      │   │ • Chain     │                   │
+│   │ • Signature │   │ • Merkle    │   │ • Validation│                   │
+│   │ • Verify    │   │ • Nonce     │   │ • History   │                   │
+│   └─────────────┘   └─────────────┘   └─────────────┘                   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Komponen utama Cryptocurrency:**
+
+| Komponen | Deskripsi | Dibahas di |
+|----------|-----------|------------|
+| Wallet | Menyimpan keypair untuk kepemilikan coin | Module 05, 06 |
+| Digital Signature | Membuktikan kepemilikan dan keaslian | Module 05 |
+| Mining | Proses pembuatan block baru | Module 02, 03, 05 |
+| Network | Komunikasi antar node | Module 04, 05 |
+| Consensus | Kesepakatan state blockchain | Module 04, 05 |
+
+### 1.2 Apa itu Cryptocurrency Transaction?
+
+**Cryptocurrency Transaction** adalah **proses transfer** nilai (coin) dari satu pihak ke pihak lain dalam sistem cryptocurrency.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     CRYPTOCURRENCY TRANSACTION                           │
+│                                                                          │
+│   ┌──────────┐                                      ┌──────────┐        │
+│   │  SENDER  │                                      │ RECEIVER │        │
+│   │          │                                      │          │        │
+│   │  Alice   │ ─────────── 10 Coins ──────────────► │   Bob    │        │
+│   │          │                                      │          │        │
+│   └──────────┘                                      └──────────┘        │
+│        │                                                                 │
+│        │  1. Create Transaction                                          │
+│        │  2. Sign with Private Key                                       │
+│        │  3. Broadcast to Network                                        │
+│        │  4. Validation by Nodes                                         │
+│        │  5. Include in Block (Mining)                                   │
+│        │  6. Confirmation                                                │
+│        ▼                                                                 │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │                    TRANSACTION DATA                              │   │
+│   ├─────────────────────────────────────────────────────────────────┤   │
+│   │  sender      : Alice's Public Key                                │   │
+│   │  receiver    : Bob's Public Key                                  │   │
+│   │  amount      : 10                                                │   │
+│   │  timestamp   : 2024-01-15 10:30:00                               │   │
+│   │  signature   : [Digital Signature dari Alice]                    │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Fokus Cryptocurrency Transaction:**
+
+| Aspek | Deskripsi | Dibahas di |
+|-------|-----------|------------|
+| Transaction Structure | Format data transaksi (sender, receiver, amount) | Module 02, 05 |
+| Transaction Signing | Penandatanganan dengan private key | Module 05 |
+| Transaction Verification | Verifikasi keaslian transaksi | Module 05 |
+| Transaction Broadcasting | Penyebaran ke seluruh network | Module 06 |
+| Double Spending Prevention | Mencegah penggunaan coin ganda | Module 06 |
+| Block Confirmation | Tingkat keamanan berdasarkan konfirmasi | Module 06 |
+| Transaction Fee | Biaya transaksi untuk miner | Module 03, 06 |
+| UTXO Model | Model input/output transaksi | Module 06 |
+
+### 1.3 Hubungan Keduanya
+
+**Cryptocurrency** adalah **sistem keseluruhan**, sedangkan **Cryptocurrency Transaction** adalah **salah satu komponen** di dalam sistem tersebut.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     CRYPTOCURRENCY                           │
+│                    (Sistem Lengkap)                          │
+│                                                              │
+│   ┌───────────────────────────────────────────────────┐     │
+│   │           CRYPTOCURRENCY TRANSACTION               │     │
+│   │              (Komponen Transaksi)                  │     │
+│   │                                                    │     │
+│   │  • Create  • Sign  • Broadcast  • Verify  • Confirm│    │
+│   └───────────────────────────────────────────────────┘     │
+│                                                              │
+│   + Wallet                                                   │
+│   + Mining                                                   │
+│   + Network                                                  │
+│   + Consensus                                                │
+│   + Block & Blockchain                                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Analogi sederhana:**
+
+| Analogi | Cryptocurrency | Cryptocurrency Transaction |
+|---------|----------------|---------------------------|
+| Perbankan | Sistem perbankan (ATM, rekening, transfer, bunga) | Proses transfer uang antar rekening |
+| E-commerce | Platform belanja online (toko, keranjang, pembayaran) | Proses checkout dan pembayaran |
+| Email | Sistem email (inbox, compose, contacts) | Proses pengiriman satu email |
+
+**Dalam modul ini:**
+
+- **Module 05** membahas **Cryptocurrency** secara keseluruhan: Wallet, Digital Signature, Mining Reward, Multi-Node Network
+- **Module 06** membahas **aspek lanjutan Transaction**: Double Spending, Broadcasting, Confirmation, UTXO, dll.
+
+---
+
+## 2. Teori Digital Signature
+
+### 2.1 Apa itu Digital Signature?
 
 **Digital Signature** adalah mekanisme kriptografi yang digunakan untuk:
 
@@ -86,7 +218,7 @@ Dalam konteks blockchain:
 
 ![1776399817950](image/module-05/1776399817950.png)
 
-### 1.2 Asymmetric Cryptography
+### 2.2 Asymmetric Cryptography
 
 **Asymmetric Cryptography** (Kriptografi Asimetris) menggunakan sepasang kunci:
 
@@ -103,7 +235,7 @@ Karakteristik penting:
 
 ![1776399874219](image/module-05/1776399874219.png)
 
-### 1.3 RSA vs ECDSA
+### 2.3 RSA vs ECDSA
 
 Dua algoritma digital signature yang umum digunakan:
 
@@ -117,7 +249,7 @@ Dua algoritma digital signature yang umum digunakan:
 
 Pada modul ini, kita menggunakan **RSA** karena lebih mudah dipahami untuk pembelajaran.
 
-### 1.4 Proses Signing dan Verification
+### 2.4 Proses Signing dan Verification
 
 **Proses Signing (Penandatanganan):**
 
@@ -134,9 +266,9 @@ Pada modul ini, kita menggunakan **RSA** karena lebih mudah dipahami untuk pembe
 
 ![1776399796653](image/module-05/1776399796653.png)
 
-## 2. Teori Mining Reward
+## 3. Teori Mining Reward
 
-### 2.1 Mengapa Mining Reward Diperlukan?
+### 3.1 Mengapa Mining Reward Diperlukan?
 
 Mining adalah proses yang membutuhkan sumber daya komputasi. Tanpa insentif, tidak ada motivasi bagi node untuk melakukan mining. **Mining Reward** memberikan:
 
@@ -150,7 +282,7 @@ Pada Bitcoin:
 - Halving setiap 210.000 block (~4 tahun)
 - Reward saat ini: 3.125 BTC per block (2024)
 
-### 2.2 Coinbase Transaction
+### 3.2 Coinbase Transaction
 
 **Coinbase Transaction** adalah transaksi khusus yang:
 
@@ -180,9 +312,9 @@ Pada Bitcoin:
 └─────────────────────────────────────────┘
 ```
 
-## 3. Teori Multi-Node Network
+## 4. Teori Multi-Node Network
 
-### 3.1 Desentralisasi
+### 4.1 Desentralisasi
 
 Blockchain yang sebenarnya berjalan di banyak node (komputer) yang tersebar. Setiap node:
 
@@ -197,7 +329,7 @@ Keuntungan desentralisasi:
 - **Tahan sensor** - tidak ada otoritas tunggal
 - **Transparansi** - semua node bisa memverifikasi
 
-### 3.2 Consensus Mechanism
+### 4.2 Consensus Mechanism
 
 **Consensus** adalah mekanisme agar semua node menyetujui state blockchain yang sama. Masalah yang harus diselesaikan:
 
@@ -211,7 +343,7 @@ Beberapa mekanisme konsensus:
 - **Proof of Stake (PoS)** - Ethereum 2.0, Cardano
 - **Delegated Proof of Stake (DPoS)** - EOS, Tron
 
-### 3.3 Longest Chain Rule
+### 4.3 Longest Chain Rule
 
 Pada implementasi sederhana, kita menggunakan **Longest Chain Rule**:
 
@@ -232,9 +364,9 @@ Setelah sinkronisasi, semua node akan mengadopsi chain dari Node C
 karena memiliki chain terpanjang.
 ```
 
-## 4. Implementasi Program
+## 5. Implementasi Program
 
-### 4.1 Struktur Project
+### 5.1 Struktur Project
 
 Buat folder baru `blockchain-project` dengan struktur:
 
@@ -245,7 +377,7 @@ blockchain-project/
 └── test_local.py    # Testing tanpa API (opsional)
 ```
 
-### 4.2 Import Library
+### 5.2 Import Library
 
 ```python
 # blockchain.py
@@ -267,7 +399,7 @@ Penjelasan library:
 - `cryptography` - library kriptografi untuk digital signature
 - `base64` - untuk encoding signature agar bisa disimpan sebagai string
 
-### 4.3 Class Wallet
+### 5.3 Class Wallet
 
 Wallet menyimpan keypair (private key dan public key) untuk user.
 
@@ -319,7 +451,7 @@ Penjelasan:
 - `get_address` - Membuat alamat wallet dari hash public key (mirip Bitcoin address)
 - `sign` - Menandatangani pesan menggunakan private key
 
-### 4.4 Class Transaction dengan Digital Signature
+### 5.4 Class Transaction dengan Digital Signature
 
 ```python
 class Transaction:
@@ -400,7 +532,7 @@ Penjelasan:
 - `sign_transaction` - Menandatangani transaksi menggunakan wallet
 - `is_valid` - Memverifikasi bahwa signature valid
 
-### 4.5 Class Block
+### 5.5 Class Block
 
 ```python
 class Block:
@@ -452,7 +584,7 @@ Penjelasan:
 
 - `has_valid_transactions` - Method baru untuk memverifikasi semua transaksi dalam block memiliki signature yang valid
 
-### 4.6 Class Blockchain dengan Mining Reward
+### 5.6 Class Blockchain dengan Mining Reward
 
 ```python
 class Blockchain:
@@ -604,7 +736,7 @@ Penjelasan fitur baru:
 - `register_node` - Mendaftarkan node lain
 - `replace_chain` - Mengganti chain dengan chain yang lebih panjang (consensus)
 
-### 4.7 Flask API
+### 5.7 Flask API
 
 ```python
 # app.py
@@ -862,9 +994,9 @@ if __name__ == '__main__':
 
 ---
 
-## 5. Menjalankan Multi-Node
+## 6. Menjalankan Multi-Node
 
-### 5.1 Menjalankan 3 Node
+### 6.1 Menjalankan 3 Node
 
 Buka 3 terminal berbeda dan jalankan:
 
@@ -889,7 +1021,7 @@ cd blockchain-project
 python app.py 5002
 ```
 
-### 5.2 Mendaftarkan Node
+### 6.2 Mendaftarkan Node
 
 Setelah semua node berjalan, daftarkan node satu sama lain.
 
@@ -917,9 +1049,9 @@ curl -X POST http://localhost:5002/nodes/register \
   -d '{"nodes": ["http://localhost:5000", "http://localhost:5001"]}'
 ```
 
-## 6. Pengujian dengan Postman
+## 7. Pengujian dengan Postman
 
-### 6.1 Membuat Wallet
+### 7.1 Membuat Wallet
 
 **Request:**
 
@@ -940,7 +1072,7 @@ GET http://localhost:5000/wallet/new
 
 Buat beberapa wallet untuk testing (minimal 2).
 
-### 6.2 Menambahkan Transaksi
+### 7.2 Menambahkan Transaksi
 
 Sebelum bisa mengirim coin, wallet harus memiliki saldo. Saldo didapat dari mining reward.
 
@@ -992,7 +1124,7 @@ Content-Type: application/json
 
 ![Add Transaction](image/module-05/postman-add-transaction.png)
 
-### 6.3 Mining Block
+### 7.3 Mining Block
 
 **Request:**
 
@@ -1024,7 +1156,7 @@ Content-Type: application/json
 
 ![Mining](image/module-05/postman-mining.png)
 
-### 6.4 Validasi Digital Signature
+### 7.4 Validasi Digital Signature
 
 **Request:**
 
@@ -1060,7 +1192,7 @@ Content-Type: application/json
 }
 ```
 
-### 6.5 Sinkronisasi Antar-Node
+### 7.5 Sinkronisasi Antar-Node
 
 **Skenario:**
 

@@ -1,726 +1,576 @@
-# Module 08. Smart Contract dengan Solidity
+# Module 08. Smart Contracts
 
 ## Deskripsi
 
-Modul ini adalah kelanjutan dari Module 07, di mana Smart Contract disimulasikan menggunakan Python. Pada modul ini, Smart Contract diimplementasikan secara nyata menggunakan **Solidity** - bahasa pemrograman khusus untuk Smart Contract di jaringan Ethereum - dan di-deploy ke blockchain lokal menggunakan **Hardhat** dan local blockchain node.
+Modul ini membahas konsep Smart Contract dan implementasi sederhananya menggunakan Python. Selain memahami struktur kode, mahasiswa juga akan mempelajari teori dasar Smart Contract, seperti bagaimana kontrak disimpan di blockchain, bagaimana kondisi eksekusi bekerja secara otomatis, dan bagaimana state kontrak dijaga integritasnya dalam rantai blok.
 
 Pada modul ini, implementasi Smart Contract mencakup:
 
-1. Menulis Smart Contract menggunakan bahasa Solidity
-2. Mengkompilasi dan men-deploy contract menggunakan Hardhat
-3. Berinteraksi dengan contract yang sudah di-deploy menggunakan ethers.js
-4. Menguji kebenaran contract secara otomatis menggunakan Hardhat Test
+1. Pembuatan Smart Contract sebagai class Python
+2. Deploy contract ke blockchain
+3. Eksekusi contract melalui transaksi
+4. Penyimpanan state contract di dalam block
+5. Simulasi use case Escrow (penitipan dana)
+6. Validasi blockchain yang mengandung contract transaction
 
-Berikut adalah [full code](smart-contract/contracts/) yang dibahas pada modul ini.
+Berikut adalah [full code](smart-contract/smart_contract.py) yang dibahas pada modul ini.
 
 ## Prasyarat
 
 Sebelum mempelajari modul ini, mahasiswa sebaiknya:
 
-1. [Menginstall Python dan Visual Studio Code](module-01.md)
-2. Memahami [konsep dasar blockchain](module-02.md)
-3. Memahami [konsep Smart Contract (simulasi Python)](module-07.md)
-4. Menginstall [Node.js](https://nodejs.org) versi 18 ke atas
-5. Menginstall salah satu local blockchain node: [Ganache](https://trufflesuite.com/ganache), [Anvil](https://book.getfoundry.sh/anvil/) (Foundry), atau menggunakan Hardhat Network bawaan
-
-Install dependensi yang dibutuhkan:
-
-```bash
-cd smart-contract/contracts
-pnpm install
-```
+1. Memahami [konsep dasar blockchain](module-02.md)
+2. Memahami [Cryptocurrency](module-05.md) dan [Advanced Cryptocurrency](module-06.md)
+3. Memahami [konsep class dan inheritance di Python](https://github.com/mocatfrio/data-structure-oop/blob/main/module-02.md)
+4. Memahami [dictionary dan JSON di Python](https://nbviewer.org/github/Python-Crash-Course/Python101/blob/master/Session%203%20-%20Functions/Session%203%20-%20Functions.ipynb)
 
 ## List of Contents
 
 - [Deskripsi](#deskripsi)
 - [Prasyarat](#prasyarat)
 - [List of Contents](#list-of-contents)
-- [1. Teori Dasar](#1-teori-dasar)
-  - [1.1 Dari Simulasi ke Implementasi Nyata](#11-dari-simulasi-ke-implementasi-nyata)
-  - [1.2 Ethereum Virtual Machine (EVM)](#12-ethereum-virtual-machine-evm)
-  - [1.3 Apa itu Solidity?](#13-apa-itu-solidity)
-  - [1.4 Komponen Utama Solidity](#14-komponen-utama-solidity)
-  - [1.5 Apa itu Hardhat?](#15-apa-itu-hardhat)
-  - [1.6 Local Blockchain untuk Development](#16-local-blockchain-untuk-development)
-  - [1.7 Alur Kerja Smart Contract di Ethereum](#17-alur-kerja-smart-contract-di-ethereum)
+- [1. Teori Dasar Smart Contract](#1-teori-dasar-smart-contract)
+  - [1.1 Apa itu Smart Contract?](#11-apa-itu-smart-contract)
+  - [1.2 Mengapa Smart Contract Penting?](#12-mengapa-smart-contract-penting)
+  - [1.3 Komponen Utama Smart Contract](#13-komponen-utama-smart-contract)
+  - [1.4 Bagaimana Smart Contract Dieksekusi?](#14-bagaimana-smart-contract-dieksekusi)
+  - [1.5 State pada Smart Contract](#15-state-pada-smart-contract)
+  - [1.6 Jenis Use Case Smart Contract](#16-jenis-use-case-smart-contract)
+  - [1.7 Perbedaan Blockchain dengan dan tanpa Smart Contract](#17-perbedaan-blockchain-dengan-dan-tanpa-smart-contract)
 - [2. Implementasi Program](#2-implementasi-program)
-  - [2.1 Struktur Proyek](#21-struktur-proyek)
-  - [2.2 Menulis Smart Contract](#22-menulis-smart-contract)
-  - [2.3 State Variables](#23-state-variables)
-  - [2.4 Constructor](#24-constructor)
-  - [2.5 Functions dan Access Control](#25-functions-dan-access-control)
-  - [2.6 Konfigurasi Hardhat](#26-konfigurasi-hardhat)
-  - [2.7 Kompilasi Contract](#27-kompilasi-contract)
+  - [2.1 Import Library](#21-import-library)
+  - [2.2 Membuat Class SmartContract (Base)](#22-membuat-class-smartcontract-base)
+  - [2.3 Membuat Class EscrowContract](#23-membuat-class-escrowcontract)
+  - [2.4 Eksekusi Contract](#24-eksekusi-contract)
+  - [2.5 Modifikasi Class Transaction](#25-modifikasi-class-transaction)
+  - [2.6 Class Block](#26-class-block)
+  - [2.7 Modifikasi Class Blockchain](#27-modifikasi-class-blockchain)
   - [2.8 Deploy Contract ke Blockchain](#28-deploy-contract-ke-blockchain)
-  - [2.9 Interaksi dengan Contract](#29-interaksi-dengan-contract)
+  - [2.9 Eksekusi Contract via Blockchain](#29-eksekusi-contract-via-blockchain)
   - [2.10 Program Utama](#210-program-utama)
-- [3. Pengujian Contract](#3-pengujian-contract)
-  - [3.1 Mengapa Contract Perlu Diuji?](#31-mengapa-contract-perlu-diuji)
-  - [3.2 Struktur Test](#32-struktur-test)
-  - [3.3 Menulis Test Case](#33-menulis-test-case)
-  - [3.4 Menjalankan Test](#34-menjalankan-test)
 - [Latihan](#latihan)
 
----
+## 1. Teori Dasar Smart Contract
 
-## 1. Teori Dasar
+### 1.1 Apa itu Smart Contract?
 
-### 1.1 Dari Simulasi ke Implementasi Nyata
+**Smart Contract** adalah program komputer yang berjalan secara otomatis di atas blockchain ketika kondisi tertentu terpenuhi. Tidak ada pihak ketiga yang mengontrol eksekusinya, kode yang mengatur segalanya.
 
-Pada Module 07, Smart Contract disimulasikan menggunakan Python untuk memahami konsepnya secara mendasar. Simulasi tersebut berjalan di memori Python biasa - tidak ada blockchain sungguhan, tidak ada kriptografi nyata, dan tidak ada jaringan.
+Secara sederhana, Smart Contract dapat dipahami sebagai:
 
-Pada modul ini, konsep yang sama diimplementasikan secara nyata:
+- Perjanjian digital yang ditulis dalam bentuk kode
+- Berjalan otomatis tanpa perantara
+- Tersimpan permanen di dalam blockchain
+- Hasilnya transparan dan dapat diverifikasi siapa saja
 
-| Aspek      | Module 07 (Python)          | Module 08 (Solidity)                             |
-| ---------- | --------------------------- | ------------------------------------------------ |
-| Bahasa     | Python                      | Solidity                                         |
-| Lingkungan | Memori Python               | Ethereum Virtual Machine (EVM)                   |
-| Blockchain | Dibuat sendiri              | Local blockchain (Ganache/Anvil/Hardhat Network) |
-| Deploy     | Panggil fungsi Python       | Transaksi ke blockchain                          |
-| Verifikasi | `is_chain_valid()` manual | Test otomatis (Hardhat)                          |
+Analogi sederhana: Smart Contract seperti mesin penjual otomatis, masukkan uang, tekan tombol, barang keluar.
 
-> Pada Module 07 bahkan sudah disebutkan: _"kita belum membangun smart contract di jaringan blockchain nyata seperti Ethereum."_ - Modul ini mengimplementasikan dari pernyataan tersebut.
+![smart contract diagram](image/module-08/1_smart_contract_overview.png)
 
-Perbandingan komponen antara simulasi Python dan implementasi Solidity:
+### 1.2 Mengapa Smart Contract Penting?
 
-| Komponen                    | Python (Module 07) | Solidity (Module 08)                  |
-| --------------------------- | ------------------ | ------------------------------------- |
-| `self.contract_id`        | `string`         | `string public contractId`          |
-| `self.owner`              | `string`         | `address private owner`             |
-| `self.is_deployed`        | `bool`           | `bool public isDeployed`            |
-| `self.state['released']`  | `bool`           | `bool public released`              |
-| `def deploy()`            | method Python      | `function deployContract() public`  |
-| `execute('release')`      | method Python      | `function setRelease() external`    |
-| `execute('check')`        | method Python      | `function getState() external view` |
-| `if caller != self.owner` | validasi manual    | `require(msg.sender == owner, ...)` |
+Smart Contract penting karena menawarkan beberapa karakteristik utama:
 
-### 1.2 Ethereum Virtual Machine (EVM)
+1. **Otomatisasi**: Eksekusi terjadi secara otomatis saat kondisi terpenuhi, tanpa campur tangan manusia
+2. **Transparansi**: Kode dan hasilnya dapat dilihat oleh semua pihak di jaringan
+3. **Keamanan**: Setelah di-deploy, kode tidak dapat diubah secara sepihak
+4. **Efisiensi**: Menghilangkan kebutuhan perantara (notaris, bank, broker)
+5. **Kepercayaan**: Pihak-pihak yang bertransaksi tidak perlu saling percaya karena kontrak yang menjamin
 
-**EVM (Ethereum Virtual Machine)** adalah mesin komputasi terdesentralisasi yang mengeksekusi smart contract. Setiap node Ethereum di seluruh dunia menjalankan EVM yang identik, sehingga hasil eksekusi contract selalu sama di mana pun dijalankan.
+> Pada modul ini, kita belum membangun smart contract di jaringan blockchain nyata seperti Ethereum. Kita membuat simulasi Smart Contract dalam Python untuk memahami konsep dasarnya.
 
-Karakteristik EVM:
+### 1.3 Komponen Utama Smart Contract
 
-- **Deterministik**: input yang sama selalu menghasilkan output yang sama
-- **Terisolasi**: contract tidak dapat mengakses sistem file, jaringan, atau data eksternal secara langsung
-- **Berbasis gas**: setiap operasi memiliki biaya komputasi (gas) untuk mencegah penyalahgunaan sumber daya
+Secara umum, Smart Contract terdiri dari tiga komponen utama:
 
-![diagram EVM 1](image/module-08/evm.png)
+1. **State**: Data yang disimpan oleh contract, misalnya saldo, status, atau data pengguna.
 
-Kode Solidity tidak langsung dieksekusi - ia terlebih dahulu dikompilasi menjadi **bytecode** yang dipahami EVM.
+   Contoh:
+   - `released: False` → dana belum dilepas
+   - `amount: 50` → jumlah dana yang dititipkan
 
-![diagram EVM](image/module-08/evm2.png)
+2. **Action**: Fungsi yang dapat dipanggil untuk mengubah state contract.
 
-### 1.3 Apa itu Solidity?
+   Contoh:
+   - `release` → melepaskan dana ke penerima
+   - `check` → memeriksa kondisi contract
 
-**[Solidity](https://docs.soliditylang.org)** adalah bahasa pemrograman statically-typed yang dirancang khusus untuk menulis Smart Contract yang berjalan di EVM. Bahasa ini terinspirasi dari JavaScript, C++, dan Python.
+3. **Condition**: Syarat yang harus dipenuhi sebelum action dapat dieksekusi.
 
-Ciri khas Solidity dibanding bahasa pemrograman umum:
+   Contoh:
+   - Hanya `owner` yang boleh memanggil `release`
+   - Dana hanya boleh dilepas satu kali
 
-- Memiliki tipe data khusus blockchain seperti `address` dan `uint`
-- Setiap variabel yang tersimpan di contract otomatis tersimpan di blockchain
-- Memiliki konsep `msg.sender` - alamat wallet yang memanggil fungsi
-- Tidak ada penanganan exception seperti `try/except` - menggunakan `require()` untuk validasi
+![komponen smart contract](image/module-08/2_smart_contract_components.png)
 
-Contoh contract Solidity paling sederhana:
+### 1.4 Bagaimana Smart Contract Dieksekusi?
 
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+Smart Contract dieksekusi melalui transaksi khusus yang dikirim ke alamat contract di blockchain.
 
-contract Simpan {
-    uint public angka;
+Alur eksekusi:
 
-    function simpan(uint _angka) public {
-        angka = _angka;
-    }
-}
+1. Pengguna mengirim transaksi dengan menyertakan `contract_id`, `action`, dan `params`
+2. Blockchain meneruskan transaksi ke contract yang dituju
+3. Contract memeriksa kondisi (condition)
+4. Jika kondisi terpenuhi, state diperbarui
+5. Hasil eksekusi dicatat dalam transaksi dan disimpan ke block
+
+![alur eksekusi](image/module-08/3_contract_execution_flow.png)
+
+### 1.5 State pada Smart Contract
+
+**State** adalah data yang tersimpan di dalam Smart Contract dan dapat berubah seiring waktu melalui eksekusi action.
+
+Karakteristik state:
+
+- Tersimpan permanen di blockchain selama contract aktif
+- Hanya dapat diubah melalui action yang sudah didefinisikan
+- Setiap perubahan state dicatat dalam transaksi
+
+Contoh perubahan state pada EscrowContract:
+
+```text
+State awal   : { 'released': False, 'amount': 50, 'receiver': 'Bob' }
+Setelah release: { 'released': True,  'amount': 50, 'receiver': 'Bob' }
 ```
 
-Contract di atas hanya menyimpan satu angka. Siapapun dapat memanggil `simpan()` dan membaca `angka`. Meskipun sederhana, ini sudah merupakan Smart Contract yang valid dan bisa di-deploy ke Ethereum.
+Karena state lama tersimpan di block sebelumnya, riwayat perubahan tetap dapat ditelusuri.
 
-### 1.4 Komponen Utama Solidity
+### 1.6 Jenis Use Case Smart Contract
 
-#### Tipe Data
+Smart Contract memiliki banyak penerapan di dunia nyata:
 
-Solidity memiliki beberapa tipe data yang sering digunakan:
+| Use Case                   | Deskripsi                                                     |
+| -------------------------- | ------------------------------------------------------------- |
+| **Escrow**                 | Dana dititipkan dan hanya dilepas saat kondisi terpenuhi      |
+| **Token / Cryptocurrency** | Aturan pencetakan dan transfer token ditentukan oleh contract |
+| **Voting**                 | Proses pemungutan suara yang transparan dan anti-manipulasi   |
+| **Supply Chain**           | Pelacakan perpindahan barang secara otomatis                  |
+| **Asuransi**               | Klaim otomatis berdasarkan data eksternal (oracle)            |
+| **NFT**                    | Kepemilikan aset digital yang dapat diverifikasi              |
 
-| Tipe        | Contoh                           | Keterangan                       |
-| ----------- | -------------------------------- | -------------------------------- |
-| `uint`    | `uint public amount = 50`      | Bilangan bulat positif           |
-| `bool`    | `bool public released = false` | Nilai benar/salah                |
-| `string`  | `string public name = "Alice"` | Teks                             |
-| `address` | `address private owner`        | Alamat wallet Ethereum (20 byte) |
+Pada modul ini, use case yang diimplementasikan adalah **Escrow**.
 
-#### Visibility
+### 1.7 Perbedaan Blockchain dengan dan tanpa Smart Contract
 
-Setiap variabel dan fungsi memiliki **visibility** yang menentukan siapa yang boleh mengaksesnya:
-
-| Visibility   | Variabel | Fungsi | Keterangan                                                                                      |
-| ------------ | -------- | ------ | ----------------------------------------------------------------------------------------------- |
-| `public`   | ✅       | ✅     | Dapat diakses dari luar dan dalam contract. Variabel `public` otomatis memiliki fungsi getter |
-| `private`  | ✅       | ✅     | Hanya dapat diakses dari dalam contract                                                         |
-| `external` | ❌       | ✅     | Hanya dapat dipanggil dari luar contract. Lebih hemat gas dibanding `public`                  |
-| `internal` | ✅       | ✅     | Dapat diakses dari dalam contract dan contract turunan                                          |
-
-#### Data Location
-
-Untuk tipe data dinamis seperti `string`, Solidity memerlukan informasi lokasi penyimpanan sementara:
-
-| Lokasi       | Keterangan                                                       | Bisa diubah? |
-| ------------ | ---------------------------------------------------------------- | ------------ |
-| `memory`   | Disimpan sementara di memori, dihapus setelah fungsi selesai     | Ya           |
-| `calldata` | Data yang dikirim bersama pemanggilan fungsi, bersifat read-only | Tidak        |
-
-```solidity
-// memory: data bisa dimodifikasi di dalam fungsi
-function ubah(string memory _teks) public { ... }
-
-// calldata: lebih hemat gas, cocok untuk fungsi external
-function simpan(string calldata _teks) external { ... }
-```
-
-#### require()
-
-`require()` adalah cara Solidity menerapkan kondisi. Jika kondisi tidak terpenuhi, transaksi dibatalkan (revert) dan gas yang tersisa dikembalikan:
-
-```solidity
-function tarikDana() external {
-    require(msg.sender == owner, "hanya owner yang boleh");
-    require(saldo > 0, "saldo kosong");
-    // eksekusi hanya sampai di sini jika kedua kondisi terpenuhi
-}
-```
-
-![komponen solidity](image/module-08/sol2.png)
-
-### 1.5 Apa itu Hardhat?
-
-**[Hardhat](https://hardhat.org/docs)** adalah development environment untuk Smart Contract Ethereum. Ia menyediakan tiga fungsi utama:
-
-1. **Compile**: mengubah kode Solidity (`.sol`) menjadi bytecode dan ABI yang dapat di-deploy ke EVM
-2. **Test**: menjalankan test case otomatis terhadap contract menggunakan blockchain in-memory
-3. **Deploy**: mengirim contract ke blockchain (lokal maupun testnet/mainnet)
-
-**ABI (Application Binary Interface)** adalah deskripsi JSON dari fungsi-fungsi yang dimiliki contract. ABI digunakan oleh **[ethers.js](https://docs.ethers.org)** untuk mengetahui cara memanggil fungsi contract dari luar blockchain.
-
-```
-smart-contracts.sol
-       │
-       ▼  npx hardhat compile
-artifacts/
-├── bytecode  → dikirim ke blockchain saat deploy
-└── ABI       → digunakan ethers.js untuk interact
-```
-
-### 1.6 Local Blockchain untuk Development
-
-Untuk keperluan development, kita tidak langsung deploy ke Ethereum mainnet karena membutuhkan biaya gas nyata. Sebagai gantinya, digunakan **local blockchain** - implementasi Ethereum yang berjalan di komputer lokal secara gratis.
-
-Beberapa pilihan yang umum digunakan:
-
-| Tool                                                                        | Keterangan                                                           | Port Default |
-| --------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------ |
-| **[Ganache](https://trufflesuite.com/ganache)**                          | Blockchain lokal dengan GUI visual, cocok untuk eksplorasi manual    | 7545         |
-| **[Anvil](https://book.getfoundry.sh/anvil/)** (Foundry)                 | Blockchain lokal berbasis CLI, sangat cepat                          | 8545         |
-| **[Hardhat Network](https://hardhat.org/hardhat-network/docs/overview)** | Blockchain in-memory bawaan Hardhat, otomatis digunakan saat testing | 8545         |
-
-Semua pilihan di atas menyediakan akun dengan saldo ETH gratis dan RPC endpoint yang kompatibel dengan ethers.js - pilih sesuai preferensi dan kebutuhan.
-
-![local blockchain tools](image/module-08/bc-tools.png)
-
-Perbedaan utama antara Hardhat Network dan tool eksternal (Ganache/Anvil):
-
-|                            | Hardhat Network            | Ganache / Anvil                  |
-| -------------------------- | -------------------------- | -------------------------------- |
-| Tipe                       | In-memory, reset tiap sesi | Persisten selama proses berjalan |
-| Cocok untuk                | Testing otomatis           | Deploy & interaksi manual        |
-| Perlu dijalankan terpisah? | Tidak                      | Ya                               |
-
-### 1.7 Alur Kerja Smart Contract di Ethereum
-
-Secara keseluruhan, alur kerja Smart Contract dari penulisan hingga pengujian adalah:
-
-```
-1. Tulis contract (.sol)
-         │
-         ▼
-2. Compile (Hardhat) → bytecode + ABI
-         │
-         ▼
-3. Deploy (ethers.js + local blockchain) → contract address
-         │
-         ▼
-4. Interact (ethers.js) → panggil fungsi contract
-         │
-         ▼
-5. Test (Hardhat Test) → verifikasi perilaku contract (opsional tapi baik jika dilakukan)
-```
-
----
+| Aspek               | Blockchain Biasa     | Blockchain + Smart Contract |
+| ------------------- | -------------------- | --------------------------- |
+| Data yang disimpan  | Transaksi saja       | Transaksi + kode + state    |
+| Eksekusi logika     | Manual oleh pengguna | Otomatis oleh contract      |
+| Kebutuhan perantara | Bisa ada             | Tidak diperlukan            |
+| Fleksibilitas       | Terbatas             | Tinggi                      |
+| Contoh              | Bitcoin              | Ethereum                    |
 
 ## 2. Implementasi Program
 
-### 2.1 Struktur Proyek
-
-```
-smart-contract/
-├── contracts/
-│   ├── contract/
-│   │   └── smart-contracts.sol   # kode Solidity
-│   ├── test/
-│   │   └── BlockchainClass.test.ts
-│   ├── artifacts/                # hasil compile (auto-generated)
-│   ├── deploy.ts                 # script deploy ke blockchain lokal
-│   ├── interact.ts               # script interaksi dengan contract
-│   ├── hardhat.config.ts         # konfigurasi Hardhat
-│   ├── .env                      # variabel environment
-│   └── package.json
-└── smart_contract.py             # simulasi Python (Module 07)
-```
-
-### 2.2 Menulis Smart Contract
-
-File Smart Contract ditulis dengan ekstensi `.sol`. Setiap file Solidity diawali dengan dua deklarasi wajib:
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-```
-
-- **SPDX License**: menyatakan lisensi kode secara eksplisit
-- **pragma solidity**: menentukan versi compiler Solidity yang digunakan. `^0.8.0` berarti versi 0.8.0 ke atas namun di bawah 0.9.0
-
-Selanjutnya, contract dideklarasikan menggunakan kata kunci `contract`:
-
-```solidity
-contract NamaContract {
-    // isi contract
-}
-```
-
-Satu file `.sol` dapat berisi lebih dari satu contract, namun umumnya satu file berisi satu contract utama.
-
-### 2.3 State Variables
-
-**State variables** adalah variabel yang nilainya tersimpan permanen di blockchain selama contract aktif. Setiap perubahan state memerlukan transaksi dan mengonsumsi gas.
-
-```solidity
-contract EscrowContract {
-    string public contractId;   // ID unik contract
-    address private owner;      // pemilik contract
-    bool public isDeployed;     // status aktif
-
-    // state escrow
-    string public receiver;     // penerima dana
-    uint public amount;         // jumlah dana
-    bool public released;       // status dana sudah dilepas
-}
-```
-
-Penjelasan setiap variabel:
-
-- `contractId`: padanan `self.contract_id` di Python
-- `owner`: padanan `self.owner` di Python, bertipe `address` bukan `string`
-- `isDeployed`: padanan `self.is_deployed` di Python
-- `receiver`, `amount`, `released`: padanan `self.state` di Python
-
-Perlu diperhatikan bahwa variabel `owner` bersifat `private` - alamat owner tidak perlu diekspos ke publik karena hanya digunakan untuk validasi internal di dalam contract. Informasi ini hanya bisa diakses melalui fungsi `getOwner()` yang didefinisikan secara eksplisit.
-
-### 2.4 Constructor
-
-**Constructor** adalah fungsi khusus yang dijalankan **sekali** saat contract pertama kali di-deploy ke blockchain. Constructor digunakan untuk menginisialisasi state awal contract.
-
-```solidity
-constructor(string memory _contractId, string memory _receiver, uint _amount) {
-    contractId = _contractId;
-    owner = msg.sender;   // deployer otomatis menjadi owner
-    receiver = _receiver;
-    amount = _amount;
-}
-```
-
-`msg.sender` adalah variabel global Solidity yang berisi alamat wallet dari pengirim transaksi saat ini. Ketika contract di-deploy, `msg.sender` adalah alamat wallet yang men-deploy - sehingga deployer otomatis menjadi owner.
-
-Perbandingan dengan Python:
+### 2.1 Import Library
 
 ```python
-# Python (Module 07)
-def __init__(self, contract_id, owner, receiver, amount):
-    self.contract_id = contract_id
-    self.owner = owner          # owner diisi manual
-    self.state = { ... }
+import hashlib
+import datetime
+import json
+import time
+import tracemalloc
 ```
 
-```solidity
-// Solidity (Module 08)
-constructor(string memory _contractId, string memory _receiver, uint _amount) {
-    contractId = _contractId;
-    owner = msg.sender;         // owner diisi otomatis dari transaksi
-    receiver = _receiver;
-    amount = _amount;
-}
+Penjelasan:
+
+- `hashlib` digunakan untuk membuat hash SHA-256
+- `datetime` digunakan untuk mencatat waktu pembuatan block
+- `json` digunakan untuk mengubah isi block dan contract menjadi string terstruktur
+- `time` digunakan untuk mengukur lama proses mining
+- `tracemalloc` digunakan untuk memantau penggunaan memori
+
+### 2.2 Membuat Class SmartContract (Base)
+
+```python
+class SmartContract:
+    def __init__(self, contract_id, owner, initial_state=None):
+        self.contract_id = contract_id
+        self.owner = owner
+        self.state = initial_state if initial_state else {}
+        self.is_deployed = False
+
+    def deploy(self):
+        self.is_deployed = True
+        print(f"contract '{self.contract_id}' deployed oleh {self.owner}")
+
+    def execute(self, action, params):
+        raise NotImplementedError('Subclass harus mengimplementasikan execute()')
+
+    def to_dict(self):
+        return {
+            'contract_id': self.contract_id,
+            'owner': self.owner,
+            'state': self.state,
+            'is_deployed': self.is_deployed
+        }
+
+    def print(self):
+        print(json.dumps(self.to_dict(), indent=2))
 ```
 
-### 2.5 Functions dan Access Control
+`SmartContract` adalah **base class** (parent class) yang mendefinisikan kerangka dasar sebuah contract.
 
-Contract memiliki beberapa fungsi yang dapat dipanggil dari luar:
+Penjelasan komponen:
 
-#### deployContract()
+- `contract_id`: identitas unik contract
+- `owner`: alamat pemilik contract, biasanya yang men-deploy
+- `state`: dictionary yang menyimpan data internal contract
+- `is_deployed`: status apakah contract sudah aktif di blockchain
 
-```solidity
-function deployContract() public {
-    require(!isDeployed, "contract sudah di-deploy");
-    isDeployed = true;
-}
+Method:
+
+- `deploy()`: mengaktifkan contract
+- `execute()`: method abstrak yang harus diimplementasikan oleh subclass
+- `to_dict()`: mengubah contract menjadi dictionary untuk disimpan ke JSON
+- `print()`: menampilkan isi contract
+
+### 2.3 Membuat Class EscrowContract
+
+```python
+class EscrowContract(SmartContract):
+    def __init__(self, contract_id, owner, receiver, amount):
+        self.contract_id = contract_id
+        self.owner = owner
+        self.state = {
+            'receiver': receiver,
+            'amount': amount,
+            'released': False
+        }
+        self.is_deployed = False
 ```
 
-Padanan `deploy()` di Python. Fungsi ini mengaktifkan contract dan memastikan ia hanya bisa dipanggil sekali melalui `require(!isDeployed, ...)`.
+`EscrowContract` adalah turunan dari `SmartContract` yang mengimplementasikan logika penitipan dana (escrow).
 
-#### getOwner()
+State awal escrow:
 
-```solidity
-function getOwner() public view returns (address) {
-    return owner;
-}
+- `receiver`: pihak yang akan menerima dana
+- `amount`: jumlah dana yang dititipkan
+- `released`: status apakah dana sudah dilepas
+
+### 2.4 Eksekusi Contract
+
+Fungsi ini berada pada Class EscrowContract.
+
+```python
+def execute(self, action, params):
+    if not self.is_deployed:
+        return {'status': 'failed', 'message': 'Contract belum di-deploy'}
+
+    if action == 'release':
+        caller = params.get('caller')
+        if caller != self.owner:
+            return {'status': 'failed', 'message': 'Hanya owner yang dapat melepas dana'}
+        if self.state['released']:
+            return {'status': 'failed', 'message': 'Dana sudah pernah dilepas'}
+        self.state['released'] = True
+        return {
+            'status': 'success',
+            'message': f"Dana sebesar {self.state['amount']} berhasil dikirim ke {self.state['receiver']}'
+        }
+
+    if action == 'check':
+        return {'status': 'info', 'state': self.state}
+
+    return {'status': 'failed', 'message': f"Aksi '{action}' tidak dikenali'}
 ```
 
-Kata kunci `view` menandakan fungsi ini hanya membaca state, tidak mengubah apapun - sehingga tidak memerlukan transaksi dan tidak mengonsumsi gas.
+Method `execute()` mengimplementasikan logika bisnis contract. Setiap action diperiksa kondisinya sebelum dieksekusi.
 
-#### setRelease()
+Penjelasan alur `release`:
 
-```solidity
-function setRelease() external {
-    require(isDeployed, "contract belum di-deploy");
-    require(msg.sender == owner, "hanya owner yang bisa release");
-    require(!released, "dana sudah pernah di-release");
-    released = true;
-}
+1. Periksa apakah contract sudah di-deploy
+2. Periksa apakah pemanggil adalah owner
+3. Periksa apakah dana belum pernah dilepas
+4. Ubah state `released` menjadi `True`
+5. Kembalikan hasil eksekusi
+
+![escrow flow](image/module-08/5_escrow_flow.png)
+
+### 2.5 Modifikasi Class Transaction
+
+```python
+class Transaction:
+    def __init__(self, sender, receiver, amount,
+                 tx_type='transfer', contract_id=None, action=None, params=None):
+        self.sender = sender
+        self.receiver = receiver
+        self.amount = amount
+        self.tx_type = tx_type
+        self.contract_id = contract_id
+        self.action = action
+        self.params = params or {}
+
+    def to_dict(self):
+        return {
+            'sender': self.sender,
+            'receiver': self.receiver,
+            'amount': self.amount,
+            'tx_type': self.tx_type,
+            'contract_id': self.contract_id,
+            'action': self.action,
+            'params': self.params
+        }
+
+    def print(self):
+        print(self.to_dict())
 ```
 
-Padanan `execute('release', ...)` di Python. Tiga `require()` memastikan:
+Class `Transaction` diperluas untuk mendukung dua jenis transaksi:
 
-1. Contract sudah diaktifkan sebelumnya
-2. Hanya owner yang boleh memanggil fungsi ini
-3. Dana hanya bisa dilepas satu kali
+| `tx_type`    | Deskripsi                                              |
+| ------------ | ------------------------------------------------------ |
+| `'transfer'` | Transaksi pengiriman koin biasa (seperti di Module 02) |
+| `'contract'` | Transaksi eksekusi Smart Contract                      |
 
-Alur eksekusi `setRelease()`:
+Atribut tambahan untuk transaksi contract:
 
-```
-pemanggil → setRelease()
-              │
-              ├─ require(isDeployed)?    → REVERT jika belum deploy
-              ├─ require(msg.sender == owner)?  → REVERT jika bukan owner
-              ├─ require(!released)?     → REVERT jika sudah pernah release
-              │
-              └─ released = true  ✔ state diperbarui di blockchain
-```
+- `contract_id`: ID contract yang dituju
+- `action`: aksi yang dipanggil
+- `params`: parameter untuk aksi tersebut
 
-#### getState()
+### 2.6 Class Block
 
-```solidity
-function getState() external view returns (string memory, uint, bool) {
-    return (receiver, amount, released);
-}
-```
+Class `Block` tidak mengalami perubahan dari Module 02. Block tetap menyimpan daftar transaksi, termasuk transaksi bertipe `'contract'`.
 
-Padanan `execute('check', ...)` di Python. Mengembalikan tiga nilai sekaligus: receiver, amount, dan status released.
+```python
+class Block:
+    def __init__(self, index, transactions, previous_hash):
+        self.index = index
+        self.transactions = transactions
+        self.previous_hash = previous_hash
+        self.nonce = 0
+        self.timestamp = str(datetime.datetime.now())
+        self.hash = self.calculate_hash()
 
-### 2.6 Konfigurasi Hardhat
+    def calculate_hash(self):
+        block = {
+            'index': self.index,
+            'transactions': [t.to_dict() for t in self.transactions],
+            'previous_hash': self.previous_hash,
+            'timestamp': self.timestamp,
+            'nonce': self.nonce,
+        }
+        block_string = json.dumps(block, sort_keys=True)
+        generated_hash = hashlib.sha256(block_string.encode()).hexdigest()
+        return generated_hash
 
-```typescript
-// hardhat.config.ts
-import { defineConfig } from "hardhat/config";
-import hardhatEthers from "@nomicfoundation/hardhat-ethers";
-import hardhatMocha from "@nomicfoundation/hardhat-mocha";
+    def mine_block(self, difficulty):
+        start = time.time()
+        tracemalloc.start()
 
-export default defineConfig({
-  plugins: [hardhatEthers, hardhatMocha],
-  solidity: {
-    version: "0.8.28",
-  },
-  paths: {
-    sources: "./contract",
-  },
-});
-```
+        while self.hash[:difficulty] != '0' * difficulty:
+            self.nonce += 1
+            self.hash = self.calculate_hash()
+        print('block mined:', self.hash)
 
-Penjelasan konfigurasi:
+        end = time.time()
+        print('waktu eksekusi:', end - start, 'detik')
 
-- `plugins`: mendaftarkan plugin ethers.js dan test runner Mocha ke Hardhat
-- `solidity.version`: versi compiler Solidity yang digunakan
-- `solidity.settings.evmVersion`: versi EVM target. Perlu disesuaikan dengan local blockchain yang digunakan - beberapa tool versi lama tidak mendukung opcode EVM terbaru (gunakan `"istanbul"` atau `"london"` jika terjadi error `invalid opcode`)
-- `paths.sources`: direktori tempat file `.sol` berada (default: `"./contracts"`)
-
-### 2.7 Kompilasi Contract
-
-```bash
-npx hardhat compile
+        current, peak = tracemalloc.get_traced_memory()
+        print('memory sekarang:', current / 10**6, 'MB')
+        print('memory maksimum:', peak / 10**6, 'MB')
+        tracemalloc.stop()
 ```
 
-Perintah ini membaca semua file `.sol` di direktori `sources`, mengkompilasinya, dan menghasilkan folder `artifacts/`:
+Karena `to_dict()` pada class `Transaction` sudah menyertakan field `tx_type`, `contract_id`, `action`, dan `params`, maka block secara otomatis menyimpan informasi eksekusi contract di dalamnya.
 
+### 2.7 Modifikasi Class Blockchain
+
+```python
+class Blockchain:
+    def __init__(self):
+        self.chain = [self.init_genesis_block()]
+        self.pending_transactions = []
+        self.difficulty = 3
+        self.contracts = {}
+
+    def init_genesis_block(self):
+        return Block(0, [], '0')
+
+    def get_latest_block(self):
+        return self.chain[-1]
+
+    def add_transaction(self, transaction):
+        self.pending_transactions.append(transaction)
+
+    def mine_pending_transactions(self):
+        index = len(self.chain)
+        previous_hash = self.get_latest_block().hash
+        block = Block(index, self.pending_transactions, previous_hash)
+        block.mine_block(self.difficulty)
+        self.chain.append(block)
+        self.pending_transactions = []
+
+    def is_chain_valid(self):
+        for i in range(1, len(self.chain)):
+            current = self.chain[i]
+            prev = self.chain[i - 1]
+            if current.hash != current.calculate_hash():
+                return False
+            if current.previous_hash != prev.hash:
+                return False
+        return True
 ```
-artifacts/
-└── contract/
-    └── smart-contracts.sol/
-        └── NamaContract.json
-```
 
-File JSON tersebut berisi dua hal penting:
+Perubahan pada class `Blockchain`:
 
-- **`bytecode`**: kode biner yang akan dikirim ke blockchain saat deploy
-- **`abi`**: deskripsi fungsi-fungsi contract dalam format JSON, digunakan ethers.js untuk berinteraksi
+- Ditambahkan atribut `contracts`: dictionary yang menyimpan semua contract yang sudah di-deploy, dengan `contract_id` sebagai key
+- Method `add_transactions` diubah nama menjadi `add_transaction` (singular) agar lebih konsisten
 
 ### 2.8 Deploy Contract ke Blockchain
 
-Sebelum deploy, buat file `.env` yang berisi konfigurasi koneksi ke local blockchain:
+Fungsi ini berada pada Class Blockchain.
 
-```env
-RPC_URL=HTTP://127.0.0.1:7545
-PRIVATE_KEY=0x_private_key_dari_akun_lokal
+```python
+def deploy_contract(self, contract):
+    contract.deploy()
+    self.contracts[contract.contract_id] = contract
 ```
 
-> RPC URL dan private key tersedia di tool yang digunakan. Di Ganache: klik ikon kunci (🔑) di samping akun. Di Anvil: tampil otomatis saat dijalankan di terminal.
+**Deploy** adalah proses mendaftarkan Smart Contract ke blockchain agar dapat dieksekusi.
 
-Script deploy (`deploy.ts`) melakukan tiga hal: koneksi ke local blockchain, membaca artifact, dan mengirim transaksi deploy:
+Method ini:
 
-```typescript
-import dotenv from "dotenv";
-import { ethers } from "ethers";
-import { readFileSync } from "fs";
+1. Memanggil `deploy()` pada contract untuk mengaktifkannya
+2. Menyimpan contract ke dictionary `self.contracts`
 
-dotenv.config();
+Setelah di-deploy, contract dapat dipanggil kapan saja melalui transaksi.
 
-async function main() {
-  // 1. koneksi ke local blockchain
-  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
-  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+### 2.9 Eksekusi Contract via Blockchain
 
-  // 2. baca artifact hasil compile
-  const artifact = JSON.parse(
-    readFileSync("./artifacts/contract/NamaFile.sol/NamaContract.json", "utf8"),
-  );
+Fungsi ini berada pada Class Blockchain.
 
-  // 3. deploy contract
-  const factory = new ethers.ContractFactory(
-    artifact.abi,
-    artifact.bytecode,
-    wallet,
-  );
-  const contract = await factory.deploy(/* parameter constructor */);
-  await contract.waitForDeployment();
+```python
+def execute_contract(self, contract_id, action, params):
+    if contract_id not in self.contracts:
+        print(f"contract '{contract_id}' tidak ditemukan")
+        return None
 
-  console.log("Contract deployed ke:", await contract.getAddress());
-}
+    contract = self.contracts[contract_id]
+    result = contract.execute(action, params)
 
-main().catch(console.error);
+    tx = Transaction(
+        sender=params.get('caller', 'unknown'),
+        receiver=contract_id,
+        amount=0,
+        tx_type='contract',
+        contract_id=contract_id,
+        action=action,
+        params=params
+    )
+    self.pending_transactions.append(tx)
+    return result
 ```
 
-Jalankan:
+Setiap eksekusi contract dicatat sebagai transaksi bertipe `'contract'` dan masuk ke `pending_transactions`. Artinya, eksekusi baru benar-benar tersimpan permanen di blockchain setelah blok dimining.
 
-```bash
-node deploy.ts
-```
+Method ini:
 
-Output:
-
-```
-Contract deployed ke: 0xAbCd...1234
-```
-
-Alamat contract ini unik dan permanen - digunakan untuk berinteraksi dengan contract di langkah berikutnya.
-
-### 2.9 Interaksi dengan Contract
-
-Setelah contract di-deploy, script interact (`interact.ts`) digunakan untuk memanggil fungsi-fungsi contract:
-
-```typescript
-import dotenv from "dotenv";
-import { ethers } from "ethers";
-import { readFileSync } from "fs";
-
-dotenv.config();
-
-const CONTRACT_ADDRESS = "0xAbCd...1234"; // dari hasil deploy
-
-async function main() {
-  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
-  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-  const artifact = JSON.parse(
-    readFileSync("./artifacts/contract/NamaFile.sol/NamaContract.json", "utf8"),
-  );
-
-  // NonceManager memastikan nonce transaksi bertambah otomatis
-  // saat memanggil beberapa fungsi secara berurutan
-  const managed = new ethers.NonceManager(wallet);
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, artifact.abi, managed);
-
-  // memanggil fungsi view (tidak perlu transaksi)
-  const state = await contract.getState();
-  console.log("State:", state);
-
-  // memanggil fungsi yang mengubah state (perlu transaksi)
-  const tx = await contract.deployContract();
-  await tx.wait(); // tunggu transaksi dikonfirmasi
-  console.log("Deploy contract selesai");
-}
-
-main().catch(console.error);
-```
-
-Perbedaan penting antara memanggil fungsi `view` dan fungsi biasa:
-
-|                    | Fungsi `view`                | Fungsi biasa                           |
-| ------------------ | ------------------------------ | -------------------------------------- |
-| Contoh             | `getState()`, `getOwner()` | `deployContract()`, `setRelease()` |
-| Perlu transaksi?   | Tidak                          | Ya                                     |
-| Konsumsi gas?      | Tidak                          | Ya                                     |
-| Perlu `.wait()`? | Tidak                          | Ya - tunggu konfirmasi block           |
+1. Memeriksa apakah contract terdaftar di blockchain
+2. Memanggil `execute()` pada contract
+3. Membuat transaksi pencatatan eksekusi
+4. Menambahkan transaksi ke pending
+5. Mengembalikan hasil eksekusi
 
 ### 2.10 Program Utama
 
-Contoh output saat menjalankan script interact secara lengkap:
+```python
+if __name__ == '__main__':
+    my_blockchain = Blockchain()
 
-```
-=== state awal ===
-receiver : Bob
-amount   : 100
-released : false
+    # deploy escrow contract
+    print('deploy smart contract')
+    escrow = EscrowContract('escrow-001', owner='Alice', receiver='Bob', amount=50)
+    my_blockchain.deploy_contract(escrow)
+    print()
 
-=== aktivasi contract ===
-contract berhasil di-deploy
+    # cek state awal contract
+    print('cek state awal contract')
+    result = my_blockchain.execute_contract('escrow-001', 'check', {'caller': 'Alice'})
+    print(result)
+    print()
 
-=== cek owner ===
-owner: 0xAbCd...1234
+    # tambahkan transaksi biasa
+    print('tambah transaksi biasa')
+    tx1 = Transaction('Alice', 'Bob', 50)
+    tx1.print()
+    my_blockchain.add_transaction(tx1)
+    print()
 
-=== release dana ===
-dana berhasil di-release
+    # mining block 1
+    print('mining block 1')
+    my_blockchain.mine_pending_transactions()
+    print()
 
-=== state akhir ===
-receiver : Bob
-amount   : 100
-released : true
-```
+    # eksekusi contract: release dana
+    print('eksekusi contract: release dana')
+    result = my_blockchain.execute_contract('escrow-001', 'release', {'caller': 'Alice'})
+    print(result)
+    print()
 
-Perhatikan bahwa `released` berubah dari `false` menjadi `true` setelah `setRelease()` dipanggil - perubahan state ini tersimpan permanen di blockchain dan dapat dilihat di local blockchain tool yang digunakan.
+    # coba release lagi (harus gagal)
+    print('eksekusi contract: release dana (kedua kali)')
+    result = my_blockchain.execute_contract('escrow-001', 'release', {'caller': 'Alice'})
+    print(result)
+    print()
 
----
+    # mining block 2
+    print('mining block 2')
+    my_blockchain.mine_pending_transactions()
+    print()
 
-## 3. Pengujian Contract
-
-### 3.1 Mengapa Contract Perlu Diuji?
-
-Pada Module 07, validasi dilakukan secara manual menggunakan `is_chain_valid()` setelah program selesai berjalan. Di dunia Smart Contract nyata, pendekatan ini tidak cukup karena:
-
-- Setelah contract di-deploy ke mainnet, **kode tidak bisa diubah**
-- Bug di contract bisa menyebabkan dana hilang permanen
-- Setiap perubahan state mengonsumsi gas (biaya nyata)
-
-Oleh karena itu, contract harus diuji secara menyeluruh **sebelum** di-deploy. Hardhat menyediakan blockchain in-memory khusus untuk testing - tidak perlu local blockchain berjalan, dan setiap test dimulai dari state yang bersih.
-
-### 3.2 Struktur Test
-
-File test diletakkan di direktori `test/` dengan ekstensi `.test.ts`:
-
-```
-test/
-└── NamaContract.test.ts
-```
-
-Setiap test file menggunakan struktur **Mocha**:
-
-- `describe(...)`: pengelompokan test berdasarkan contract atau fitur
-- `it(...)`: satu test case yang menguji satu perilaku spesifik
-
-```typescript
-import { expect } from "chai";
-import { network } from "hardhat";
-
-const { ethers } = await network.connect();
-
-describe("NamaContract", () => {
-  it("deskripsi test case", async () => {
-    // setup
-    // aksi
-    // assertion
-  });
-});
+    # validasi blockchain
+    print('blockchain valid?', my_blockchain.is_chain_valid())
 ```
 
-### 3.3 Menulis Test Case
+Penjelasan alur program:
 
-Setiap test case idealnya menguji **satu perilaku spesifik**. Ada dua jenis test yang perlu ditulis:
+1. Membuat objek blockchain
+2. Membuat dan men-deploy EscrowContract
+3. Mengecek state awal contract
+4. Menambahkan transaksi biasa ke pending
+5. Mining block pertama (menyimpan transaksi biasa + cek state)
+6. Mengeksekusi contract untuk melepas dana
+7. Mencoba melepas dana kedua kali (harus gagal karena kondisi tidak terpenuhi)
+8. Mining block kedua (menyimpan kedua eksekusi contract)
+9. Memvalidasi seluruh blockchain
 
-**1. Test positive** - memverifikasi bahwa alur normal berjalan dengan benar:
+Contoh output program:
 
-```typescript
-it("state awal setelah deploy sesuai parameter constructor", async () => {
-  const contract = await ethers.deployContract("NamaContract", ["param1", 100]);
-  await contract.waitForDeployment();
+```text
+deploy smart contract
+contract 'escrow-001' deployed oleh Alice
 
-  const nilai = await contract.getNilai();
-  expect(nilai).to.equal(100n);
-});
+cek state awal contract
+{'status': 'info', 'state': {'receiver': 'Bob', 'amount': 50, 'released': False}}
+
+tambah transaksi biasa
+{'sender': 'Alice', 'receiver': 'Bob', 'amount': 50, 'tx_type': 'transfer', ...}
+
+mining block 1
+block mined: 000a3f...
+waktu eksekusi: 0.312 detik
+
+eksekusi contract: release dana
+{'status': 'success', 'message': 'Dana sebesar 50 berhasil dikirim ke Bob'}
+
+eksekusi contract: release dana (kedua kali)
+{'status': 'failed', 'message': 'Dana sudah pernah dilepas'}
+
+mining block 2
+block mined: 000b7c...
+waktu eksekusi: 0.287 detik
+
+blockchain valid? True
 ```
-
-**2. Test negative** - memverifikasi bahwa `require()` berfungsi dan transaksi di-revert saat kondisi tidak terpenuhi:
-
-```typescript
-async function expectRevert(promise: Promise<unknown>, message: string) {
-  try {
-    await promise;
-    throw new Error("Seharusnya revert");
-  } catch (e: any) {
-    expect(e.message).to.include(message);
-  }
-}
-
-it("fungsi gagal jika bukan owner", async () => {
-  const [, other] = await ethers.getSigners();
-  const contract = await ethers.deployContract("NamaContract", []);
-  await contract.waitForDeployment();
-
-  await expectRevert(
-    contract.connect(other).fungsiKhususOwner(),
-    "hanya owner yang boleh",
-  );
-});
-```
-
-`ethers.getSigners()` mengembalikan daftar akun yang tersedia di Hardhat network - berguna untuk mensimulasikan pemanggilan dari akun berbeda.
-
-### 3.4 Menjalankan Test
-
-```bash
-npx hardhat test
-```
-
-Output saat semua test lulus:
-
-```
-Running Mocha tests
-
-  NamaContract
-    ✔ state awal setelah deploy sesuai parameter constructor
-    ✔ owner sesuai dengan deployer
-    ✔ fungsi aktivasi mengubah status menjadi true
-    ✔ fungsi aktivasi tidak bisa dipanggil dua kali
-    ✔ fungsi release berhasil pada alur normal
-    ✔ fungsi release gagal jika belum diaktifkan
-    ✔ fungsi release gagal jika bukan owner
-    ✔ fungsi release tidak bisa dipanggil dua kali
-
-  8 passing (163ms)
-```
-
-Setiap baris dengan `✔` menandakan satu test case lulus. Jika ada test yang gagal, Hardhat menampilkan pesan error beserta baris kode yang menyebabkan kegagalan.
-
----
 
 ## Latihan
 
-1. tambahkan fungsi `refund()` pada contract yang memungkinkan owner menarik kembali dana jika `released` masih `false`, lalu buat test case untuk memverifikasi fungsi tersebut
-2. tambahkan state variable `string public status` yang nilainya `"pending"` saat pertama di-deploy, berubah menjadi `"released"` saat `setRelease()` dipanggil, dan `"refunded"` saat `refund()` dipanggil - ubah `getState()` agar juga mengembalikan `status`
-3. buat contract baru `VotingContract` yang menyimpan daftar kandidat, memiliki fungsi `vote(string memory candidate)` di mana setiap alamat hanya boleh vote satu kali, dan fungsi `getResult(string memory candidate)` untuk melihat jumlah suara
-4. deploy `VotingContract` ke local blockchain dan uji menggunakan script interact - simulasikan beberapa akun berbeda yang melakukan vote
-5. tulis minimal 5 test case untuk `VotingContract`, termasuk test untuk memastikan satu alamat tidak bisa vote dua kali
+1. tambahkan validasi bahwa contract hanya bisa di-deploy satu kali (cegah deploy ulang dengan `contract_id` yang sama)
+2. buat class `VotingContract` yang menyimpan daftar kandidat dan menghitung suara
+3. tambahkan action `refund` pada `EscrowContract` yang memungkinkan owner menarik kembali dana jika belum di-release
+4. tampilkan seluruh isi blockchain beserta jenis transaksi (`transfer` atau `contract`) secara rapi
+5. ubah state contract secara langsung (tanpa melalui `execute()`), lalu cek apakah blockchain tetap valid — amati perbedaannya
+6. buat `TokenContract` sederhana yang memiliki method `mint` (cetak token) dan `transfer` (kirim token antar alamat)
