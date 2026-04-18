@@ -1,726 +1,555 @@
-# Module 09. Smart Contract dengan Solidity dan Hardhat
+# Module 09. Persiapan Environment untuk Smart Contract Development
 
 ## Deskripsi
 
-Modul ini adalah kelanjutan dari Module 08, di mana Smart Contract disimulasikan menggunakan Python. Pada modul ini, Smart Contract diimplementasikan secara nyata menggunakan **Solidity** - bahasa pemrograman khusus untuk Smart Contract di jaringan Ethereum - dan di-deploy ke blockchain lokal menggunakan **Hardhat** dan local blockchain node.
+Modul ini adalah **persiapan teknis** sebelum masuk ke Module 10 (Smart Contract dengan Hardhat). Di sini kamu akan menginstall semua tools yang dibutuhkan untuk development Smart Contract secara lokal.
 
-Pada modul ini, implementasi Smart Contract mencakup:
+> **Penting**: Selesaikan modul ini terlebih dahulu sebelum melanjutkan ke Module 10. Pastikan semua tools terinstall dengan benar.
 
-1. Menulis Smart Contract menggunakan bahasa Solidity
-2. Mengkompilasi dan men-deploy contract menggunakan Hardhat
-3. Berinteraksi dengan contract yang sudah di-deploy menggunakan ethers.js
-4. Menguji kebenaran contract secara otomatis menggunakan Hardhat Test
+**Estimasi waktu**: 30-60 menit (tergantung kecepatan internet)
 
-Berikut adalah [full code](smart-contract/contracts/) yang dibahas pada modul ini.
+## Tujuan Pembelajaran
 
-## Prasyarat
+Setelah mengikuti modul ini, kamu akan:
 
-Sebelum mempelajari modul ini, mahasiswa sebaiknya:
-
-1. [Menginstall Python dan Visual Studio Code](module-01.md)
-2. Memahami [konsep dasar blockchain](module-02.md)
-3. Memahami [konsep Smart Contract (simulasi Python)](module-09.md)
-4. Menginstall [Node.js](https://nodejs.org) versi 18 ke atas
-5. Menginstall salah satu local blockchain node: [Ganache](https://trufflesuite.com/ganache), [Anvil](https://book.getfoundry.sh/anvil/) (Foundry), atau menggunakan Hardhat Network bawaan
-
-Install dependensi yang dibutuhkan:
-
-```bash
-cd smart-contract/contracts
-pnpm install
-```
+1. Memahami mengapa perlu development environment lokal
+2. Berhasil menginstall Node.js
+3. Berhasil menginstall pnpm (package manager)
+4. Berhasil menginstall dan menjalankan Ganache (local blockchain)
+5. Menginstall extension Solidity di VS Code
+6. Memverifikasi semua instalasi berfungsi dengan benar
 
 ## List of Contents
 
 - [Deskripsi](#deskripsi)
-- [Prasyarat](#prasyarat)
-- [List of Contents](#list-of-contents)
-- [1. Teori Dasar](#1-teori-dasar)
-  - [1.1 Dari Simulasi ke Implementasi Nyata](#11-dari-simulasi-ke-implementasi-nyata)
-  - [1.2 Ethereum Virtual Machine (EVM)](#12-ethereum-virtual-machine-evm)
-  - [1.3 Apa itu Solidity?](#13-apa-itu-solidity)
-  - [1.4 Komponen Utama Solidity](#14-komponen-utama-solidity)
-  - [1.5 Apa itu Hardhat?](#15-apa-itu-hardhat)
-  - [1.6 Local Blockchain untuk Development](#16-local-blockchain-untuk-development)
-  - [1.7 Alur Kerja Smart Contract di Ethereum](#17-alur-kerja-smart-contract-di-ethereum)
-- [2. Implementasi Program](#2-implementasi-program)
-  - [2.1 Struktur Proyek](#21-struktur-proyek)
-  - [2.2 Menulis Smart Contract](#22-menulis-smart-contract)
-  - [2.3 State Variables](#23-state-variables)
-  - [2.4 Constructor](#24-constructor)
-  - [2.5 Functions dan Access Control](#25-functions-dan-access-control)
-  - [2.6 Konfigurasi Hardhat](#26-konfigurasi-hardhat)
-  - [2.7 Kompilasi Contract](#27-kompilasi-contract)
-  - [2.8 Deploy Contract ke Blockchain](#28-deploy-contract-ke-blockchain)
-  - [2.9 Interaksi dengan Contract](#29-interaksi-dengan-contract)
-  - [2.10 Program Utama](#210-program-utama)
-- [3. Pengujian Contract](#3-pengujian-contract)
-  - [3.1 Mengapa Contract Perlu Diuji?](#31-mengapa-contract-perlu-diuji)
-  - [3.2 Struktur Test](#32-struktur-test)
-  - [3.3 Menulis Test Case](#33-menulis-test-case)
-  - [3.4 Menjalankan Test](#34-menjalankan-test)
-- [Latihan](#latihan)
+- [Tujuan Pembelajaran](#tujuan-pembelajaran)
+- [1. Mengapa Perlu Development Environment Lokal?](#1-mengapa-perlu-development-environment-lokal)
+- [2. Instalasi Node.js](#2-instalasi-nodejs)
+  - [2.1 Windows](#21-windows)
+  - [2.2 macOS](#22-macos)
+  - [2.3 Linux (Ubuntu/Debian)](#23-linux-ubuntudebian)
+  - [2.4 Verifikasi Instalasi Node.js](#24-verifikasi-instalasi-nodejs)
+- [3. Instalasi pnpm (Package Manager)](#3-instalasi-pnpm-package-manager)
+- [4. Instalasi Ganache (Local Blockchain)](#4-instalasi-ganache-local-blockchain)
+  - [4.1 Download dan Install](#41-download-dan-install)
+  - [4.2 Mengenal Tampilan Ganache](#42-mengenal-tampilan-ganache)
+  - [4.3 Informasi Penting di Ganache](#43-informasi-penting-di-ganache)
+- [5. Setup VS Code untuk Solidity](#5-setup-vs-code-untuk-solidity)
+- [6. Clone dan Setup Project](#6-clone-dan-setup-project)
+- [7. Verifikasi Akhir](#7-verifikasi-akhir)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
-## 1. Teori Dasar
+## 1. Mengapa Perlu Development Environment Lokal?
 
-### 1.1 Dari Simulasi ke Implementasi Nyata
+Pada Module 08, kita menggunakan **Remix IDE** yang berjalan di browser. Ini bagus untuk belajar, tapi memiliki keterbatasan:
 
-Pada Module 08, Smart Contract disimulasikan menggunakan Python untuk memahami konsepnya secara mendasar. Simulasi tersebut berjalan di memori Python biasa - tidak ada blockchain sungguhan, tidak ada kriptografi nyata, dan tidak ada jaringan.
+| Aspek | Remix IDE (Browser) | Development Lokal (Hardhat) |
+|-------|---------------------|----------------------------|
+| Setup | Tidak perlu install | Perlu install tools |
+| Proyek besar | Sulit dikelola | Mudah diorganisir |
+| Version control | Tidak ada | Bisa pakai Git |
+| Testing | Manual | Otomatis dengan script |
+| Deployment | Satu-satu | Bisa diotomasi |
+| Kolaborasi | Sulit | Mudah dengan Git |
 
-Pada modul ini, konsep yang sama diimplementasikan secara nyata:
+**Kesimpulan**: Untuk proyek Smart Contract yang serius, kita butuh development environment lokal.
 
-| Aspek      | Module 08 (Python)          | Module 09 (Solidity)                             |
-| ---------- | --------------------------- | ------------------------------------------------ |
-| Bahasa     | Python                      | Solidity                                         |
-| Lingkungan | Memori Python               | Ethereum Virtual Machine (EVM)                   |
-| Blockchain | Dibuat sendiri              | Local blockchain (Ganache/Anvil/Hardhat Network) |
-| Deploy     | Panggil fungsi Python       | Transaksi ke blockchain                          |
-| Verifikasi | `is_chain_valid()` manual | Test otomatis (Hardhat)                          |
+**Tools yang akan kita install:**
 
-> Pada Module 08 bahkan sudah disebutkan: _"kita belum membangun smart contract di jaringan blockchain nyata seperti Ethereum."_ - Modul ini mengimplementasikan dari pernyataan tersebut.
+```
+┌─────────────────────────────────────────────────────────────┐
+│  NODE.JS                                                    │
+│  Platform untuk menjalankan JavaScript di luar browser      │
+│  └── pnpm (package manager untuk install library)           │
+│      └── Hardhat (framework Smart Contract)                 │
+│          └── ethers.js (library untuk interact blockchain)  │
+└─────────────────────────────────────────────────────────────┘
 
-Perbandingan komponen antara simulasi Python dan implementasi Solidity:
+┌─────────────────────────────────────────────────────────────┐
+│  GANACHE                                                    │
+│  Blockchain lokal (tiruan) untuk testing                    │
+│  - Gratis, tidak pakai ETH sungguhan                        │
+│  - 10 akun dengan saldo 100 ETH masing-masing               │
+└─────────────────────────────────────────────────────────────┘
 
-| Komponen                    | Python (Module 08) | Solidity (Module 09)                  |
-| --------------------------- | ------------------ | ------------------------------------- |
-| `self.contract_id`        | `string`         | `string public contractId`          |
-| `self.owner`              | `string`         | `address private owner`             |
-| `self.is_deployed`        | `bool`           | `bool public isDeployed`            |
-| `self.state['released']`  | `bool`           | `bool public released`              |
-| `def deploy()`            | method Python      | `function deployContract() public`  |
-| `execute('release')`      | method Python      | `function setRelease() external`    |
-| `execute('check')`        | method Python      | `function getState() external view` |
-| `if caller != self.owner` | validasi manual    | `require(msg.sender == owner, ...)` |
+┌─────────────────────────────────────────────────────────────┐
+│  VS CODE + Extension Solidity                               │
+│  Editor kode dengan fitur syntax highlighting               │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### 1.2 Ethereum Virtual Machine (EVM)
+---
 
-**EVM (Ethereum Virtual Machine)** adalah mesin komputasi terdesentralisasi yang mengeksekusi smart contract. Setiap node Ethereum di seluruh dunia menjalankan EVM yang identik, sehingga hasil eksekusi contract selalu sama di mana pun dijalankan.
+## 2. Instalasi Node.js
 
-Karakteristik EVM:
+**Apa itu Node.js?**
 
-- **Deterministik**: input yang sama selalu menghasilkan output yang sama
-- **Terisolasi**: contract tidak dapat mengakses sistem file, jaringan, atau data eksternal secara langsung
-- **Berbasis gas**: setiap operasi memiliki biaya komputasi (gas) untuk mencegah penyalahgunaan sumber daya
+Node.js adalah platform yang memungkinkan kita menjalankan JavaScript di luar browser. Hardhat dan tools blockchain lainnya dibangun di atas Node.js.
 
-![diagram EVM 1](image/module-09/evm.png)
+### 2.1 Windows
 
-Kode Solidity tidak langsung dieksekusi - ia terlebih dahulu dikompilasi menjadi **bytecode** yang dipahami EVM.
+**Langkah-langkah:**
 
-![diagram EVM](image/module-09/evm2.png)
+1. **Buka website Node.js**
+   - Buka browser dan kunjungi: https://nodejs.org
 
-### 1.3 Apa itu Solidity?
+2. **Download installer**
+   - Klik tombol **LTS** (Long Term Support) - yang berwarna hijau
+   - File akan terdownload (contoh: `node-v20.11.0-x64.msi`)
 
-**[Solidity](https://docs.soliditylang.org)** adalah bahasa pemrograman statically-typed yang dirancang khusus untuk menulis Smart Contract yang berjalan di EVM. Bahasa ini terinspirasi dari JavaScript, C++, dan Python.
+   ![Download Node.js](image/module-08b/nodejs-download.png)
 
-Ciri khas Solidity dibanding bahasa pemrograman umum:
+3. **Jalankan installer**
+   - Double-click file yang sudah didownload
+   - Klik **Next** di setiap langkah
+   - Biarkan semua pengaturan default
+   - Klik **Install**
+   - Tunggu proses instalasi selesai
+   - Klik **Finish**
 
-- Memiliki tipe data khusus blockchain seperti `address` dan `uint`
-- Setiap variabel yang tersimpan di contract otomatis tersimpan di blockchain
-- Memiliki konsep `msg.sender` - alamat wallet yang memanggil fungsi
-- Tidak ada penanganan exception seperti `try/except` - menggunakan `require()` untuk validasi
+4. **Buka Command Prompt**
+   - Tekan `Windows + R` di keyboard
+   - Ketik `cmd`
+   - Tekan Enter
 
-Contoh contract Solidity paling sederhana:
+5. **Cek instalasi**
+   - Di Command Prompt, ketik:
+   ```bash
+   node --version
+   ```
+   - Tekan Enter
 
+**Hasil yang diharapkan:**
+```
+v20.11.0
+```
+(Angka versi mungkin berbeda, yang penting muncul angka versi)
+
+### 2.2 macOS
+
+**Langkah-langkah:**
+
+1. **Buka website Node.js**
+   - Buka browser dan kunjungi: https://nodejs.org
+
+2. **Download installer**
+   - Klik tombol **LTS** (warna hijau)
+   - File `.pkg` akan terdownload
+
+3. **Jalankan installer**
+   - Buka file `.pkg` yang sudah didownload
+   - Ikuti petunjuk instalasi (klik Continue/Next)
+   - Masukkan password Mac jika diminta
+   - Klik Install
+   - Tunggu sampai selesai
+
+4. **Buka Terminal**
+   - Tekan `Cmd + Space`
+   - Ketik `Terminal`
+   - Tekan Enter
+
+5. **Cek instalasi**
+   ```bash
+   node --version
+   ```
+
+**Hasil yang diharapkan:**
+```
+v20.11.0
+```
+
+### 2.3 Linux (Ubuntu/Debian)
+
+**Langkah-langkah:**
+
+1. **Buka Terminal**
+   - Tekan `Ctrl + Alt + T`
+
+2. **Tambahkan repository NodeSource**
+   ```bash
+   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+   ```
+   - Masukkan password jika diminta
+   - Tunggu proses selesai
+
+3. **Install Node.js**
+   ```bash
+   sudo apt-get install -y nodejs
+   ```
+
+4. **Cek instalasi**
+   ```bash
+   node --version
+   ```
+
+**Hasil yang diharapkan:**
+```
+v20.11.0
+```
+
+### 2.4 Verifikasi Instalasi Node.js
+
+Setelah instalasi, pastikan juga **npm** (Node Package Manager) terinstall:
+
+```bash
+npm --version
+```
+
+**Hasil yang diharapkan:**
+```
+10.2.3
+```
+(Angka versi mungkin berbeda)
+
+> **Checkpoint 1**: Jika `node --version` dan `npm --version` keduanya menampilkan angka versi, lanjut ke langkah berikutnya!
+
+---
+
+## 3. Instalasi pnpm (Package Manager)
+
+**Apa itu pnpm?**
+
+pnpm adalah package manager alternatif yang lebih cepat dan hemat ruang disk dibanding npm. Kita akan menggunakan pnpm untuk menginstall library-library yang dibutuhkan project.
+
+**Langkah-langkah (semua OS sama):**
+
+1. **Buka Terminal/Command Prompt**
+
+2. **Jalankan perintah instalasi**
+   ```bash
+   npm install -g pnpm
+   ```
+
+   **Penjelasan:**
+   - `npm` = package manager bawaan Node.js
+   - `install` = perintah untuk menginstall
+   - `-g` = global (bisa dipakai di mana saja)
+   - `pnpm` = nama package yang diinstall
+
+3. **Tunggu proses instalasi**
+   - Akan muncul progress bar
+   - Tunggu sampai selesai
+
+4. **Verifikasi instalasi**
+   ```bash
+   pnpm --version
+   ```
+
+**Hasil yang diharapkan:**
+```
+8.15.4
+```
+
+**Troubleshooting:**
+
+| Error | Penyebab | Solusi |
+|-------|----------|--------|
+| `EACCES permission denied` | Tidak punya akses | **macOS/Linux**: tambahkan `sudo` di depan: `sudo npm install -g pnpm` |
+| `npm is not recognized` | Node.js belum terinstall | Kembali ke langkah 2 (Install Node.js) |
+| `command not found: pnpm` | PATH belum terupdate | Tutup dan buka ulang Terminal/Command Prompt |
+
+> **Checkpoint 2**: Jika `pnpm --version` menampilkan angka versi, lanjut ke langkah berikutnya!
+
+---
+
+## 4. Instalasi Ganache (Local Blockchain)
+
+**Apa itu Ganache?**
+
+Ganache adalah blockchain tiruan yang berjalan di komputer kita. Ini memungkinkan kita untuk:
+- Testing Smart Contract tanpa biaya
+- Mendapatkan ETH gratis (uang tiruan)
+- Melihat transaksi secara visual
+- Debug dengan mudah
+
+**Analogi**: Ganache seperti "simulator" pesawat untuk pilot. Kita bisa belajar dan bereksperimen tanpa risiko.
+
+### 4.1 Download dan Install
+
+1. **Buka website Ganache**
+   - Kunjungi: https://trufflesuite.com/ganache
+
+2. **Download sesuai OS**
+   - Klik tombol download untuk OS kamu:
+     - Windows: `.exe` atau `.appx`
+     - macOS: `.dmg`
+     - Linux: `.AppImage`
+
+3. **Install aplikasi**
+
+   **Windows:**
+   - Double-click file installer
+   - Ikuti petunjuk instalasi
+   - Selesai
+
+   **macOS:**
+   - Buka file `.dmg`
+   - Drag Ganache ke folder Applications
+   - Buka dari Launchpad atau Applications
+
+   **Linux:**
+   - Buat file executable: `chmod +x Ganache-*.AppImage`
+   - Jalankan: `./Ganache-*.AppImage`
+
+4. **Jalankan Ganache**
+   - Buka aplikasi Ganache
+   - Klik **Quickstart** untuk memulai blockchain lokal
+
+### 4.2 Mengenal Tampilan Ganache
+
+Setelah Ganache berjalan, kamu akan melihat tampilan seperti ini:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  GANACHE                                                    [─][□][×]│
+├─────────────────────────────────────────────────────────────────────┤
+│  ACCOUNTS  BLOCKS  TRANSACTIONS  CONTRACTS  EVENTS  LOGS           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  RPC SERVER: HTTP://127.0.0.1:7545    NETWORK ID: 5777              │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│  ACCOUNT                                          BALANCE           │
+│  ────────────────────────────────────────────────────────────────   │
+│  0x1234...5678  [🔑]                              100.00 ETH        │
+│  0xAbCd...9012  [🔑]                              100.00 ETH        │
+│  0x3456...7890  [🔑]                              100.00 ETH        │
+│  ... (total 10 akun)                                                │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.3 Informasi Penting di Ganache
+
+**1. RPC Server URL**
+```
+HTTP://127.0.0.1:7545
+```
+Ini adalah "alamat" blockchain lokal kita. Nanti kita akan menggunakan URL ini untuk koneksi dari script.
+
+**2. Daftar Akun**
+- Ada 10 akun yang sudah dibuat otomatis
+- Setiap akun punya saldo 100 ETH (uang tiruan)
+- Setiap akun punya alamat unik (contoh: `0x1234...5678`)
+
+**3. Private Key** (sangat penting!)
+- Klik ikon kunci (🔑) di samping akun untuk melihat private key
+- **JANGAN PERNAH** share private key ke siapapun!
+- Kita akan membutuhkan private key ini di Module 10
+
+**Cara mendapatkan Private Key:**
+1. Klik ikon kunci (🔑) di samping salah satu akun
+2. Akan muncul popup dengan private key
+3. Copy private key tersebut (akan dipakai di Module 10)
+
+```
+┌────────────────────────────────────────────────┐
+│  ACCOUNT KEYS                                  │
+│                                                │
+│  Address:                                      │
+│  0x1234567890abcdef1234567890abcdef12345678    │
+│                                                │
+│  Private Key:                                  │
+│  0xabcdef1234567890abcdef1234567890abcdef...   │
+│                                        [COPY]  │
+└────────────────────────────────────────────────┘
+```
+
+> **Checkpoint 3**: Jika Ganache berjalan dan menampilkan daftar akun, lanjut ke langkah berikutnya!
+
+---
+
+## 5. Setup VS Code untuk Solidity
+
+**Apa itu extension Solidity?**
+
+Extension ini menambahkan fitur-fitur yang memudahkan menulis kode Solidity:
+- Syntax highlighting (kode berwarna)
+- Auto-completion (saran kode otomatis)
+- Error detection (mendeteksi kesalahan)
+
+**Langkah-langkah:**
+
+1. **Buka VS Code**
+
+2. **Buka panel Extensions**
+   - Tekan `Ctrl + Shift + X` (Windows/Linux)
+   - Atau `Cmd + Shift + X` (macOS)
+   - Atau klik ikon kotak-kotak di sidebar kiri
+
+3. **Cari extension Solidity**
+   - Ketik `solidity` di kotak pencarian
+   - Cari extension **"Solidity"** oleh **Juan Blanco**
+   - Ini adalah extension Solidity paling populer
+
+4. **Install extension**
+   - Klik tombol **Install** berwarna biru
+   - Tunggu sampai selesai
+
+5. **Verifikasi**
+   - Buat file baru dengan ekstensi `.sol`
+   - Ketik beberapa kode Solidity
+   - Jika kode berwarna-warni, extension sudah aktif!
+
+**Test extension:**
+
+Buat file `test.sol` dan ketik:
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Simpan {
-    uint public angka;
-
-    function simpan(uint _angka) public {
-        angka = _angka;
-    }
+contract Test {
+    uint public angka = 42;
 }
 ```
 
-Contract di atas hanya menyimpan satu angka. Siapapun dapat memanggil `simpan()` dan membaca `angka`. Meskipun sederhana, ini sudah merupakan Smart Contract yang valid dan bisa di-deploy ke Ethereum.
+Jika kode terlihat berwarna-warni (bukan hitam putih semua), extension sudah bekerja!
 
-### 1.4 Komponen Utama Solidity
-
-#### Tipe Data
-
-Solidity memiliki beberapa tipe data yang sering digunakan:
-
-| Tipe        | Contoh                           | Keterangan                       |
-| ----------- | -------------------------------- | -------------------------------- |
-| `uint`    | `uint public amount = 50`      | Bilangan bulat positif           |
-| `bool`    | `bool public released = false` | Nilai benar/salah                |
-| `string`  | `string public name = "Alice"` | Teks                             |
-| `address` | `address private owner`        | Alamat wallet Ethereum (20 byte) |
-
-#### Visibility
-
-Setiap variabel dan fungsi memiliki **visibility** yang menentukan siapa yang boleh mengaksesnya:
-
-| Visibility   | Variabel | Fungsi | Keterangan                                                                                      |
-| ------------ | -------- | ------ | ----------------------------------------------------------------------------------------------- |
-| `public`   | ✅       | ✅     | Dapat diakses dari luar dan dalam contract. Variabel `public` otomatis memiliki fungsi getter |
-| `private`  | ✅       | ✅     | Hanya dapat diakses dari dalam contract                                                         |
-| `external` | ❌       | ✅     | Hanya dapat dipanggil dari luar contract. Lebih hemat gas dibanding `public`                  |
-| `internal` | ✅       | ✅     | Dapat diakses dari dalam contract dan contract turunan                                          |
-
-#### Data Location
-
-Untuk tipe data dinamis seperti `string`, Solidity memerlukan informasi lokasi penyimpanan sementara:
-
-| Lokasi       | Keterangan                                                       | Bisa diubah? |
-| ------------ | ---------------------------------------------------------------- | ------------ |
-| `memory`   | Disimpan sementara di memori, dihapus setelah fungsi selesai     | Ya           |
-| `calldata` | Data yang dikirim bersama pemanggilan fungsi, bersifat read-only | Tidak        |
-
-```solidity
-// memory: data bisa dimodifikasi di dalam fungsi
-function ubah(string memory _teks) public { ... }
-
-// calldata: lebih hemat gas, cocok untuk fungsi external
-function simpan(string calldata _teks) external { ... }
-```
-
-#### require()
-
-`require()` adalah cara Solidity menerapkan kondisi. Jika kondisi tidak terpenuhi, transaksi dibatalkan (revert) dan gas yang tersisa dikembalikan:
-
-```solidity
-function tarikDana() external {
-    require(msg.sender == owner, "hanya owner yang boleh");
-    require(saldo > 0, "saldo kosong");
-    // eksekusi hanya sampai di sini jika kedua kondisi terpenuhi
-}
-```
-
-![komponen solidity](image/module-09/sol2.png)
-
-### 1.5 Apa itu Hardhat?
-
-**[Hardhat](https://hardhat.org/docs)** adalah development environment untuk Smart Contract Ethereum. Ia menyediakan tiga fungsi utama:
-
-1. **Compile**: mengubah kode Solidity (`.sol`) menjadi bytecode dan ABI yang dapat di-deploy ke EVM
-2. **Test**: menjalankan test case otomatis terhadap contract menggunakan blockchain in-memory
-3. **Deploy**: mengirim contract ke blockchain (lokal maupun testnet/mainnet)
-
-**ABI (Application Binary Interface)** adalah deskripsi JSON dari fungsi-fungsi yang dimiliki contract. ABI digunakan oleh **[ethers.js](https://docs.ethers.org)** untuk mengetahui cara memanggil fungsi contract dari luar blockchain.
-
-```
-smart-contracts.sol
-       │
-       ▼  npx hardhat compile
-artifacts/
-├── bytecode  → dikirim ke blockchain saat deploy
-└── ABI       → digunakan ethers.js untuk interact
-```
-
-### 1.6 Local Blockchain untuk Development
-
-Untuk keperluan development, kita tidak langsung deploy ke Ethereum mainnet karena membutuhkan biaya gas nyata. Sebagai gantinya, digunakan **local blockchain** - implementasi Ethereum yang berjalan di komputer lokal secara gratis.
-
-Beberapa pilihan yang umum digunakan:
-
-| Tool                                                                        | Keterangan                                                           | Port Default |
-| --------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------ |
-| **[Ganache](https://trufflesuite.com/ganache)**                          | Blockchain lokal dengan GUI visual, cocok untuk eksplorasi manual    | 7545         |
-| **[Anvil](https://book.getfoundry.sh/anvil/)** (Foundry)                 | Blockchain lokal berbasis CLI, sangat cepat                          | 8545         |
-| **[Hardhat Network](https://hardhat.org/hardhat-network/docs/overview)** | Blockchain in-memory bawaan Hardhat, otomatis digunakan saat testing | 8545         |
-
-Semua pilihan di atas menyediakan akun dengan saldo ETH gratis dan RPC endpoint yang kompatibel dengan ethers.js - pilih sesuai preferensi dan kebutuhan.
-
-![local blockchain tools](image/module-09/bc-tools.png)
-
-Perbedaan utama antara Hardhat Network dan tool eksternal (Ganache/Anvil):
-
-|                            | Hardhat Network            | Ganache / Anvil                  |
-| -------------------------- | -------------------------- | -------------------------------- |
-| Tipe                       | In-memory, reset tiap sesi | Persisten selama proses berjalan |
-| Cocok untuk                | Testing otomatis           | Deploy & interaksi manual        |
-| Perlu dijalankan terpisah? | Tidak                      | Ya                               |
-
-### 1.7 Alur Kerja Smart Contract di Ethereum
-
-Secara keseluruhan, alur kerja Smart Contract dari penulisan hingga pengujian adalah:
-
-```
-1. Tulis contract (.sol)
-         │
-         ▼
-2. Compile (Hardhat) → bytecode + ABI
-         │
-         ▼
-3. Deploy (ethers.js + local blockchain) → contract address
-         │
-         ▼
-4. Interact (ethers.js) → panggil fungsi contract
-         │
-         ▼
-5. Test (Hardhat Test) → verifikasi perilaku contract (opsional tapi baik jika dilakukan)
-```
+> **Checkpoint 4**: Extension Solidity terinstall dan aktif.
 
 ---
 
-## 2. Implementasi Program
+## 6. Clone dan Setup Project
 
-### 2.1 Struktur Proyek
+**Langkah-langkah:**
 
+1. **Buka Terminal/Command Prompt**
+
+2. **Pindah ke folder project**
+   ```bash
+   cd smart-contract/contracts
+   ```
+
+   > Jika folder belum ada, tanyakan ke dosen/asisten untuk mendapatkan project files.
+
+3. **Install dependensi**
+   ```bash
+   pnpm install
+   ```
+
+   **Apa yang terjadi:**
+   - pnpm membaca file `package.json`
+   - Menginstall semua library yang tercantum
+   - Membuat folder `node_modules`
+
+4. **Tunggu proses instalasi**
+   - Ini mungkin memakan waktu 1-5 menit
+   - Tergantung kecepatan internet
+
+**Output yang diharapkan:**
 ```
-smart-contract/
-├── contracts/
-│   ├── contract/
-│   │   └── smart-contracts.sol   # kode Solidity
-│   ├── test/
-│   │   └── BlockchainClass.test.ts
-│   ├── artifacts/                # hasil compile (auto-generated)
-│   ├── deploy.ts                 # script deploy ke blockchain lokal
-│   ├── interact.ts               # script interaksi dengan contract
-│   ├── hardhat.config.ts         # konfigurasi Hardhat
-│   ├── .env                      # variabel environment
-│   └── package.json
-└── smart_contract.py             # simulasi Python (Module 08)
-```
-
-### 2.2 Menulis Smart Contract
-
-File Smart Contract ditulis dengan ekstensi `.sol`. Setiap file Solidity diawali dengan dua deklarasi wajib:
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-```
-
-- **SPDX License**: menyatakan lisensi kode secara eksplisit
-- **pragma solidity**: menentukan versi compiler Solidity yang digunakan. `^0.8.0` berarti versi 0.8.0 ke atas namun di bawah 0.9.0
-
-Selanjutnya, contract dideklarasikan menggunakan kata kunci `contract`:
-
-```solidity
-contract NamaContract {
-    // isi contract
-}
+Packages: +245
+++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 245, reused 0, downloaded 245, added 245, done
 ```
 
-Satu file `.sol` dapat berisi lebih dari satu contract, namun umumnya satu file berisi satu contract utama.
-
-### 2.3 State Variables
-
-**State variables** adalah variabel yang nilainya tersimpan permanen di blockchain selama contract aktif. Setiap perubahan state memerlukan transaksi dan mengonsumsi gas.
-
-```solidity
-contract EscrowContract {
-    string public contractId;   // ID unik contract
-    address private owner;      // pemilik contract
-    bool public isDeployed;     // status aktif
-
-    // state escrow
-    string public receiver;     // penerima dana
-    uint public amount;         // jumlah dana
-    bool public released;       // status dana sudah dilepas
-}
-```
-
-Penjelasan setiap variabel:
-
-- `contractId`: padanan `self.contract_id` di Python
-- `owner`: padanan `self.owner` di Python, bertipe `address` bukan `string`
-- `isDeployed`: padanan `self.is_deployed` di Python
-- `receiver`, `amount`, `released`: padanan `self.state` di Python
-
-Perlu diperhatikan bahwa variabel `owner` bersifat `private` - alamat owner tidak perlu diekspos ke publik karena hanya digunakan untuk validasi internal di dalam contract. Informasi ini hanya bisa diakses melalui fungsi `getOwner()` yang didefinisikan secara eksplisit.
-
-### 2.4 Constructor
-
-**Constructor** adalah fungsi khusus yang dijalankan **sekali** saat contract pertama kali di-deploy ke blockchain. Constructor digunakan untuk menginisialisasi state awal contract.
-
-```solidity
-constructor(string memory _contractId, string memory _receiver, uint _amount) {
-    contractId = _contractId;
-    owner = msg.sender;   // deployer otomatis menjadi owner
-    receiver = _receiver;
-    amount = _amount;
-}
-```
-
-`msg.sender` adalah variabel global Solidity yang berisi alamat wallet dari pengirim transaksi saat ini. Ketika contract di-deploy, `msg.sender` adalah alamat wallet yang men-deploy - sehingga deployer otomatis menjadi owner.
-
-Perbandingan dengan Python:
-
-```python
-# Python (Module 08)
-def __init__(self, contract_id, owner, receiver, amount):
-    self.contract_id = contract_id
-    self.owner = owner          # owner diisi manual
-    self.state = { ... }
-```
-
-```solidity
-// Solidity (Module 08)
-constructor(string memory _contractId, string memory _receiver, uint _amount) {
-    contractId = _contractId;
-    owner = msg.sender;         // owner diisi otomatis dari transaksi
-    receiver = _receiver;
-    amount = _amount;
-}
-```
-
-### 2.5 Functions dan Access Control
-
-Contract memiliki beberapa fungsi yang dapat dipanggil dari luar:
-
-#### deployContract()
-
-```solidity
-function deployContract() public {
-    require(!isDeployed, "contract sudah di-deploy");
-    isDeployed = true;
-}
-```
-
-Padanan `deploy()` di Python. Fungsi ini mengaktifkan contract dan memastikan ia hanya bisa dipanggil sekali melalui `require(!isDeployed, ...)`.
-
-#### getOwner()
-
-```solidity
-function getOwner() public view returns (address) {
-    return owner;
-}
-```
-
-Kata kunci `view` menandakan fungsi ini hanya membaca state, tidak mengubah apapun - sehingga tidak memerlukan transaksi dan tidak mengonsumsi gas.
-
-#### setRelease()
-
-```solidity
-function setRelease() external {
-    require(isDeployed, "contract belum di-deploy");
-    require(msg.sender == owner, "hanya owner yang bisa release");
-    require(!released, "dana sudah pernah di-release");
-    released = true;
-}
-```
-
-Padanan `execute('release', ...)` di Python. Tiga `require()` memastikan:
-
-1. Contract sudah diaktifkan sebelumnya
-2. Hanya owner yang boleh memanggil fungsi ini
-3. Dana hanya bisa dilepas satu kali
-
-Alur eksekusi `setRelease()`:
-
-```
-pemanggil → setRelease()
-              │
-              ├─ require(isDeployed)?    → REVERT jika belum deploy
-              ├─ require(msg.sender == owner)?  → REVERT jika bukan owner
-              ├─ require(!released)?     → REVERT jika sudah pernah release
-              │
-              └─ released = true  ✔ state diperbarui di blockchain
-```
-
-#### getState()
-
-```solidity
-function getState() external view returns (string memory, uint, bool) {
-    return (receiver, amount, released);
-}
-```
-
-Padanan `execute('check', ...)` di Python. Mengembalikan tiga nilai sekaligus: receiver, amount, dan status released.
-
-### 2.6 Konfigurasi Hardhat
-
-```typescript
-// hardhat.config.ts
-import { defineConfig } from "hardhat/config";
-import hardhatEthers from "@nomicfoundation/hardhat-ethers";
-import hardhatMocha from "@nomicfoundation/hardhat-mocha";
-
-export default defineConfig({
-  plugins: [hardhatEthers, hardhatMocha],
-  solidity: {
-    version: "0.8.28",
-  },
-  paths: {
-    sources: "./contract",
-  },
-});
-```
-
-Penjelasan konfigurasi:
-
-- `plugins`: mendaftarkan plugin ethers.js dan test runner Mocha ke Hardhat
-- `solidity.version`: versi compiler Solidity yang digunakan
-- `solidity.settings.evmVersion`: versi EVM target. Perlu disesuaikan dengan local blockchain yang digunakan - beberapa tool versi lama tidak mendukung opcode EVM terbaru (gunakan `"istanbul"` atau `"london"` jika terjadi error `invalid opcode`)
-- `paths.sources`: direktori tempat file `.sol` berada (default: `"./contracts"`)
-
-### 2.7 Kompilasi Contract
-
-```bash
-npx hardhat compile
-```
-
-Perintah ini membaca semua file `.sol` di direktori `sources`, mengkompilasinya, dan menghasilkan folder `artifacts/`:
-
-```
-artifacts/
-└── contract/
-    └── smart-contracts.sol/
-        └── NamaContract.json
-```
-
-File JSON tersebut berisi dua hal penting:
-
-- **`bytecode`**: kode biner yang akan dikirim ke blockchain saat deploy
-- **`abi`**: deskripsi fungsi-fungsi contract dalam format JSON, digunakan ethers.js untuk berinteraksi
-
-### 2.8 Deploy Contract ke Blockchain
-
-Sebelum deploy, buat file `.env` yang berisi konfigurasi koneksi ke local blockchain:
-
-```env
-RPC_URL=HTTP://127.0.0.1:7545
-PRIVATE_KEY=0x_private_key_dari_akun_lokal
-```
-
-> RPC URL dan private key tersedia di tool yang digunakan. Di Ganache: klik ikon kunci (🔑) di samping akun. Di Anvil: tampil otomatis saat dijalankan di terminal.
-
-Script deploy (`deploy.ts`) melakukan tiga hal: koneksi ke local blockchain, membaca artifact, dan mengirim transaksi deploy:
-
-```typescript
-import dotenv from "dotenv";
-import { ethers } from "ethers";
-import { readFileSync } from "fs";
-
-dotenv.config();
-
-async function main() {
-  // 1. koneksi ke local blockchain
-  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
-  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-
-  // 2. baca artifact hasil compile
-  const artifact = JSON.parse(
-    readFileSync("./artifacts/contract/NamaFile.sol/NamaContract.json", "utf8"),
-  );
-
-  // 3. deploy contract
-  const factory = new ethers.ContractFactory(
-    artifact.abi,
-    artifact.bytecode,
-    wallet,
-  );
-  const contract = await factory.deploy(/* parameter constructor */);
-  await contract.waitForDeployment();
-
-  console.log("Contract deployed ke:", await contract.getAddress());
-}
-
-main().catch(console.error);
-```
-
-Jalankan:
-
-```bash
-node deploy.ts
-```
-
-Output:
-
-```
-Contract deployed ke: 0xAbCd...1234
-```
-
-Alamat contract ini unik dan permanen - digunakan untuk berinteraksi dengan contract di langkah berikutnya.
-
-### 2.9 Interaksi dengan Contract
-
-Setelah contract di-deploy, script interact (`interact.ts`) digunakan untuk memanggil fungsi-fungsi contract:
-
-```typescript
-import dotenv from "dotenv";
-import { ethers } from "ethers";
-import { readFileSync } from "fs";
-
-dotenv.config();
-
-const CONTRACT_ADDRESS = "0xAbCd...1234"; // dari hasil deploy
-
-async function main() {
-  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
-  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-  const artifact = JSON.parse(
-    readFileSync("./artifacts/contract/NamaFile.sol/NamaContract.json", "utf8"),
-  );
-
-  // NonceManager memastikan nonce transaksi bertambah otomatis
-  // saat memanggil beberapa fungsi secara berurutan
-  const managed = new ethers.NonceManager(wallet);
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, artifact.abi, managed);
-
-  // memanggil fungsi view (tidak perlu transaksi)
-  const state = await contract.getState();
-  console.log("State:", state);
-
-  // memanggil fungsi yang mengubah state (perlu transaksi)
-  const tx = await contract.deployContract();
-  await tx.wait(); // tunggu transaksi dikonfirmasi
-  console.log("Deploy contract selesai");
-}
-
-main().catch(console.error);
-```
-
-Perbedaan penting antara memanggil fungsi `view` dan fungsi biasa:
-
-|                    | Fungsi `view`                | Fungsi biasa                           |
-| ------------------ | ------------------------------ | -------------------------------------- |
-| Contoh             | `getState()`, `getOwner()` | `deployContract()`, `setRelease()` |
-| Perlu transaksi?   | Tidak                          | Ya                                     |
-| Konsumsi gas?      | Tidak                          | Ya                                     |
-| Perlu `.wait()`? | Tidak                          | Ya - tunggu konfirmasi block           |
-
-### 2.10 Program Utama
-
-Contoh output saat menjalankan script interact secara lengkap:
-
-```
-=== state awal ===
-receiver : Bob
-amount   : 100
-released : false
-
-=== aktivasi contract ===
-contract berhasil di-deploy
-
-=== cek owner ===
-owner: 0xAbCd...1234
-
-=== release dana ===
-dana berhasil di-release
-
-=== state akhir ===
-receiver : Bob
-amount   : 100
-released : true
-```
-
-Perhatikan bahwa `released` berubah dari `false` menjadi `true` setelah `setRelease()` dipanggil - perubahan state ini tersimpan permanen di blockchain dan dapat dilihat di local blockchain tool yang digunakan.
+> **Checkpoint 5**: `pnpm install` berhasil tanpa error.
 
 ---
 
-## 3. Pengujian Contract
+## 7. Verifikasi Akhir
 
-### 3.1 Mengapa Contract Perlu Diuji?
+Sebelum melanjutkan ke Module 10, pastikan semua tools berfungsi dengan menjalankan checklist ini:
 
-Pada Module 08, validasi dilakukan secara manual menggunakan `is_chain_valid()` setelah program selesai berjalan. Di dunia Smart Contract nyata, pendekatan ini tidak cukup karena:
+### Checklist Instalasi
 
-- Setelah contract di-deploy ke mainnet, **kode tidak bisa diubah**
-- Bug di contract bisa menyebabkan dana hilang permanen
-- Setiap perubahan state mengonsumsi gas (biaya nyata)
+Buka Terminal/Command Prompt dan jalankan perintah-perintah berikut:
 
-Oleh karena itu, contract harus diuji secara menyeluruh **sebelum** di-deploy. Hardhat menyediakan blockchain in-memory khusus untuk testing - tidak perlu local blockchain berjalan, dan setiap test dimulai dari state yang bersih.
-
-### 3.2 Struktur Test
-
-File test diletakkan di direktori `test/` dengan ekstensi `.test.ts`:
-
-```
-test/
-└── NamaContract.test.ts
-```
-
-Setiap test file menggunakan struktur **Mocha**:
-
-- `describe(...)`: pengelompokan test berdasarkan contract atau fitur
-- `it(...)`: satu test case yang menguji satu perilaku spesifik
-
-```typescript
-import { expect } from "chai";
-import { network } from "hardhat";
-
-const { ethers } = await network.connect();
-
-describe("NamaContract", () => {
-  it("deskripsi test case", async () => {
-    // setup
-    // aksi
-    // assertion
-  });
-});
-```
-
-### 3.3 Menulis Test Case
-
-Setiap test case idealnya menguji **satu perilaku spesifik**. Ada dua jenis test yang perlu ditulis:
-
-**1. Test positive** - memverifikasi bahwa alur normal berjalan dengan benar:
-
-```typescript
-it("state awal setelah deploy sesuai parameter constructor", async () => {
-  const contract = await ethers.deployContract("NamaContract", ["param1", 100]);
-  await contract.waitForDeployment();
-
-  const nilai = await contract.getNilai();
-  expect(nilai).to.equal(100n);
-});
-```
-
-**2. Test negative** - memverifikasi bahwa `require()` berfungsi dan transaksi di-revert saat kondisi tidak terpenuhi:
-
-```typescript
-async function expectRevert(promise: Promise<unknown>, message: string) {
-  try {
-    await promise;
-    throw new Error("Seharusnya revert");
-  } catch (e: any) {
-    expect(e.message).to.include(message);
-  }
-}
-
-it("fungsi gagal jika bukan owner", async () => {
-  const [, other] = await ethers.getSigners();
-  const contract = await ethers.deployContract("NamaContract", []);
-  await contract.waitForDeployment();
-
-  await expectRevert(
-    contract.connect(other).fungsiKhususOwner(),
-    "hanya owner yang boleh",
-  );
-});
-```
-
-`ethers.getSigners()` mengembalikan daftar akun yang tersedia di Hardhat network - berguna untuk mensimulasikan pemanggilan dari akun berbeda.
-
-### 3.4 Menjalankan Test
-
+**1. Node.js**
 ```bash
-npx hardhat test
+node --version
 ```
+Expected: `v20.x.x` atau lebih baru
 
-Output saat semua test lulus:
-
+**2. npm**
+```bash
+npm --version
 ```
-Running Mocha tests
+Expected: `10.x.x` atau lebih baru
 
-  NamaContract
-    ✔ state awal setelah deploy sesuai parameter constructor
-    ✔ owner sesuai dengan deployer
-    ✔ fungsi aktivasi mengubah status menjadi true
-    ✔ fungsi aktivasi tidak bisa dipanggil dua kali
-    ✔ fungsi release berhasil pada alur normal
-    ✔ fungsi release gagal jika belum diaktifkan
-    ✔ fungsi release gagal jika bukan owner
-    ✔ fungsi release tidak bisa dipanggil dua kali
-
-  8 passing (163ms)
+**3. pnpm**
+```bash
+pnpm --version
 ```
+Expected: `8.x.x` atau lebih baru
 
-Setiap baris dengan `✔` menandakan satu test case lulus. Jika ada test yang gagal, Hardhat menampilkan pesan error beserta baris kode yang menyebabkan kegagalan.
+**4. Ganache**
+- Buka aplikasi Ganache
+- Klik Quickstart
+- Pastikan muncul daftar 10 akun
+
+**5. VS Code Extension**
+- Buat file `.sol`
+- Pastikan syntax highlighting aktif (kode berwarna)
+
+### Ringkasan Informasi Penting
+
+Catat informasi berikut untuk dipakai di Module 10:
+
+| Item | Nilai | Contoh |
+|------|-------|--------|
+| Node.js version | ... | v20.11.0 |
+| pnpm version | ... | 8.15.4 |
+| Ganache RPC URL | ... | HTTP://127.0.0.1:7545 |
+| Private Key (akun 1) | ... | 0xabcd... |
 
 ---
 
-## Latihan
+## Troubleshooting
 
-1. tambahkan fungsi `refund()` pada contract yang memungkinkan owner menarik kembali dana jika `released` masih `false`, lalu buat test case untuk memverifikasi fungsi tersebut
-2. tambahkan state variable `string public status` yang nilainya `"pending"` saat pertama di-deploy, berubah menjadi `"released"` saat `setRelease()` dipanggil, dan `"refunded"` saat `refund()` dipanggil - ubah `getState()` agar juga mengembalikan `status`
-3. buat contract baru `VotingContract` yang menyimpan daftar kandidat, memiliki fungsi `vote(string memory candidate)` di mana setiap alamat hanya boleh vote satu kali, dan fungsi `getResult(string memory candidate)` untuk melihat jumlah suara
-4. deploy `VotingContract` ke local blockchain dan uji menggunakan script interact - simulasikan beberapa akun berbeda yang melakukan vote
-5. tulis minimal 5 test case untuk `VotingContract`, termasuk test untuk memastikan satu alamat tidak bisa vote dua kali
+### Error Umum dan Solusinya
+
+**1. `node is not recognized` / `command not found: node`**
+
+| Penyebab | Solusi |
+|----------|--------|
+| Node.js belum terinstall | Install Node.js dari awal |
+| PATH belum terupdate | Restart Terminal/Command Prompt |
+| Instalasi gagal | Uninstall dan install ulang Node.js |
+
+**2. `EACCES permission denied`**
+
+| OS | Solusi |
+|-----|--------|
+| macOS/Linux | Tambahkan `sudo` di depan perintah |
+| Windows | Jalankan Command Prompt sebagai Administrator |
+
+**3. `npm ERR! network`**
+
+| Penyebab | Solusi |
+|----------|--------|
+| Tidak ada internet | Cek koneksi internet |
+| Firewall/proxy | Minta bantuan IT untuk konfigurasi |
+
+**4. Ganache tidak bisa dibuka**
+
+| Penyebab | Solusi |
+|----------|--------|
+| Port 7545 sudah dipakai | Tutup aplikasi lain yang mungkin pakai port tersebut |
+| File corrupt | Download ulang dan install ulang |
+
+**5. Extension Solidity tidak aktif**
+
+| Penyebab | Solusi |
+|----------|--------|
+| File bukan `.sol` | Pastikan nama file diakhiri `.sol` |
+| Extension belum direload | Restart VS Code |
+| Konflik dengan extension lain | Disable extension Solidity lain |
+
+---
+
+## Selesai!
+
+Jika semua checkpoint sudah selesai:
+
+- [x] Node.js terinstall
+- [x] pnpm terinstall
+- [x] Ganache terinstall dan berjalan
+- [x] VS Code extension Solidity aktif
+- [x] Project dependencies terinstall
+
+**Kamu siap melanjutkan ke [Module 10: Smart Contract dengan Solidity dan Hardhat](module-10.md)!**
+
+> **Tips**: Biarkan Ganache tetap berjalan di background saat mengerjakan Module 10.

@@ -1,969 +1,1361 @@
-# Module 10. Hands-on MetaMask
+# Module 10. Smart Contract dengan Solidity dan Hardhat
 
 ## Deskripsi
 
-Modul ini merupakan panduan praktis (hands-on) untuk menggunakan **MetaMask**, wallet cryptocurrency paling populer untuk berinteraksi dengan blockchain Ethereum dan jaringan EVM-compatible lainnya. MetaMask menjadi jembatan antara browser dengan dunia Web3.
+Modul ini adalah kelanjutan dari Module 08, di mana Smart Contract disimulasikan menggunakan Python. Pada modul ini, Smart Contract diimplementasikan secara nyata menggunakan **Solidity** - bahasa pemrograman khusus untuk Smart Contract di jaringan Ethereum - dan di-deploy ke blockchain lokal menggunakan **Hardhat** dan local blockchain node.
 
-Topik yang dibahas pada modul ini:
+> **Untuk Pemula**: Jangan khawatir jika belum pernah coding sebelumnya. Modul ini akan memandu langkah demi langkah dengan penjelasan yang detail. Ikuti setiap langkah secara berurutan dan jangan melompat-lompat.
 
-1. **Konsep Wallet** - Memahami peran wallet dalam ekosistem blockchain
-2. **Instalasi MetaMask** - Setup wallet di browser
-3. **Manajemen Akun** - Membuat dan mengelola multiple accounts
-4. **Seed Phrase & Security** - Memahami recovery phrase dan best practices keamanan
-5. **Networks** - Menghubungkan ke berbagai jaringan (Mainnet, Testnet, Custom)
-6. **Testnet Faucet** - Mendapatkan ETH gratis untuk testing
-7. **Transaksi** - Mengirim dan menerima cryptocurrency
-8. **Integrasi Remix IDE** - Deploy smart contract menggunakan MetaMask
-9. **dApp Connection** - Menghubungkan wallet ke aplikasi terdesentralisasi
+**Apa yang akan kamu pelajari:**
+
+1. Menulis Smart Contract menggunakan bahasa Solidity
+2. Mengkompilasi (mengubah kode menjadi program yang bisa dijalankan) dan men-deploy (memasang) contract menggunakan Hardhat
+3. Berinteraksi dengan contract yang sudah di-deploy menggunakan ethers.js
+4. Menguji kebenaran contract secara otomatis menggunakan Hardhat Test
+
+Berikut adalah [full code](smart-contract/contracts/) yang dibahas pada modul ini.
 
 ## Prasyarat
 
-Sebelum mempelajari modul ini, pastikan telah:
+> **PENTING**: Pastikan kamu sudah menyelesaikan **[Module 09: Persiapan Environment](module-09.md)** sebelum melanjutkan!
 
-1. Memahami konsep dasar blockchain ([Module 02](module-02.md))
-2. Memahami konsep wallet dan digital signature ([Module 05](module-05.md))
-3. Browser modern (Chrome, Firefox, atau Brave)
-4. Koneksi internet yang stabil
+Sebelum mempelajari modul ini, pastikan:
+
+1. [Menginstall Python dan Visual Studio Code](module-01.md)
+2. Memahami [konsep dasar blockchain](module-02.md)
+3. Memahami [konsep Smart Contract dengan Remix](module-08.md)
+4. **[Sudah menyelesaikan instalasi tools di Module 09](module-09.md)**
+
+### Checklist Kesiapan
+
+Sebelum mulai, pastikan semua ini sudah berfungsi:
+
+| Tool | Cara Cek | Expected |
+|------|----------|----------|
+| Node.js | `node --version` | v20.x.x atau lebih baru |
+| pnpm | `pnpm --version` | 8.x.x atau lebih baru |
+| Ganache | Buka aplikasi | Muncul daftar 10 akun |
+
+Jika ada yang belum terinstall, kembali ke **[Module 09](module-09.md)**.
+
+### Sebelum Memulai
+
+Pastikan:
+1. **Ganache sudah berjalan** (buka aplikasi, klik Quickstart)
+2. **Sudah punya Private Key** dari salah satu akun di Ganache
+3. **Sudah install dependensi project**:
+   ```bash
+   cd smart-contract/contracts
+   pnpm install
+   ```
 
 ## List of Contents
 
 - [Deskripsi](#deskripsi)
 - [Prasyarat](#prasyarat)
 - [List of Contents](#list-of-contents)
-- [1. Konsep Wallet](#1-konsep-wallet)
-  - [1.1 Apa itu Cryptocurrency Wallet?](#11-apa-itu-cryptocurrency-wallet)
-  - [1.2 Jenis-jenis Wallet](#12-jenis-jenis-wallet)
-  - [1.3 Mengapa MetaMask?](#13-mengapa-metamask)
-- [2. Instalasi MetaMask](#2-instalasi-metamask)
-  - [2.1 Download Extension](#21-download-extension)
-  - [2.2 Membuat Wallet Baru](#22-membuat-wallet-baru)
-  - [2.3 Import Wallet yang Sudah Ada](#23-import-wallet-yang-sudah-ada)
-- [3. Memahami Seed Phrase](#3-memahami-seed-phrase)
-  - [3.1 Apa itu Seed Phrase?](#31-apa-itu-seed-phrase)
-  - [3.2 Cara Kerja Seed Phrase](#32-cara-kerja-seed-phrase)
-  - [3.3 Best Practices Keamanan](#33-best-practices-keamanan)
-- [4. Anatomi MetaMask](#4-anatomi-metamask)
-  - [4.1 Antarmuka Utama](#41-antarmuka-utama)
-  - [4.2 Account Management](#42-account-management)
-  - [4.3 Menambah Akun Baru](#43-menambah-akun-baru)
-- [5. Networks di MetaMask](#5-networks-di-metamask)
-  - [5.1 Mainnet vs Testnet](#51-mainnet-vs-testnet)
-  - [5.2 Daftar Network Populer](#52-daftar-network-populer)
-  - [5.3 Mengganti Network](#53-mengganti-network)
-  - [5.4 Menambah Custom Network](#54-menambah-custom-network)
-- [6. Mendapatkan Testnet ETH](#6-mendapatkan-testnet-eth)
-  - [6.1 Apa itu Faucet?](#61-apa-itu-faucet)
-  - [6.2 Langkah Mendapatkan Sepolia ETH](#62-langkah-mendapatkan-sepolia-eth)
-  - [6.3 Faucet Alternatif](#63-faucet-alternatif)
-- [7. Melakukan Transaksi](#7-melakukan-transaksi)
-  - [7.1 Menerima Cryptocurrency](#71-menerima-cryptocurrency)
-  - [7.2 Mengirim Cryptocurrency](#72-mengirim-cryptocurrency)
-  - [7.3 Memahami Gas Fee](#73-memahami-gas-fee)
-  - [7.4 Melihat Riwayat Transaksi](#74-melihat-riwayat-transaksi)
-- [8. Integrasi dengan Remix IDE](#8-integrasi-dengan-remix-ide)
-  - [8.1 Menghubungkan MetaMask ke Remix](#81-menghubungkan-metamask-ke-remix)
-  - [8.2 Deploy Contract ke Testnet](#82-deploy-contract-ke-testnet)
-  - [8.3 Berinteraksi dengan Contract](#83-berinteraksi-dengan-contract)
-- [9. Menghubungkan ke dApp](#9-menghubungkan-ke-dapp)
-  - [9.1 Cara Kerja dApp Connection](#91-cara-kerja-dapp-connection)
-  - [9.2 Permission dan Security](#92-permission-dan-security)
-  - [9.3 Memutuskan Koneksi dApp](#93-memutuskan-koneksi-dapp)
-- [10. Tips Keamanan MetaMask](#10-tips-keamanan-metamask)
+- [1. Teori Dasar](#1-teori-dasar)
+  - [1.1 Dari Simulasi ke Implementasi Nyata](#11-dari-simulasi-ke-implementasi-nyata)
+  - [1.2 Ethereum Virtual Machine (EVM)](#12-ethereum-virtual-machine-evm)
+  - [1.3 Apa itu Solidity?](#13-apa-itu-solidity)
+  - [1.4 Komponen Utama Solidity](#14-komponen-utama-solidity)
+  - [1.5 Apa itu Hardhat?](#15-apa-itu-hardhat)
+  - [1.6 Alur Kerja Smart Contract](#16-alur-kerja-smart-contract)
+- [2. Implementasi Program (Hands-On)](#2-implementasi-program-hands-on)
+  - [2.1 Struktur Proyek](#21-struktur-proyek)
+  - [2.2 Menulis Smart Contract](#22-menulis-smart-contract)
+  - [2.3 State Variables](#23-state-variables)
+  - [2.4 Constructor](#24-constructor)
+  - [2.5 Functions dan Access Control](#25-functions-dan-access-control)
+  - [2.6 Konfigurasi Hardhat](#26-konfigurasi-hardhat)
+  - [2.7 Kompilasi Contract](#27-kompilasi-contract)
+  - [2.8 Deploy Contract ke Blockchain](#28-deploy-contract-ke-blockchain)
+  - [2.9 Interaksi dengan Contract](#29-interaksi-dengan-contract)
+  - [2.10 Program Utama](#210-program-utama)
+- [3. Pengujian Contract](#3-pengujian-contract)
+  - [3.1 Mengapa Contract Perlu Diuji?](#31-mengapa-contract-perlu-diuji)
+  - [3.2 Struktur Test](#32-struktur-test)
+  - [3.3 Menulis Test Case](#33-menulis-test-case)
+  - [3.4 Menjalankan Test](#34-menjalankan-test)
 - [Latihan](#latihan)
 
 ---
 
-## 1. Konsep Wallet
+## 1. Teori Dasar
 
-### 1.1 Apa itu Cryptocurrency Wallet?
+### 1.1 Dari Simulasi ke Implementasi Nyata
 
-**Cryptocurrency wallet** adalah perangkat lunak atau perangkat keras yang menyimpan **private key** dan memungkinkan pengguna untuk berinteraksi dengan blockchain.
+**Analogi Sederhana:**
+- Module 08 (Python) = Bermain monopoli dengan uang mainan di rumah
+- Module 10 (Solidity) = Bermain monopoli dengan aturan resmi di kompetisi
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    CRYPTOCURRENCY WALLET                         │
-│                                                                  │
-│  ┌─────────────────┐     ┌─────────────────┐                     │
-│  │   Private Key   │────►│   Public Key    │────► Address        │
-│  │  (rahasia)      │     │  (bisa dibagi)  │     (identitas)     │
-│  └─────────────────┘     └─────────────────┘                     │
-│                                                                  │
-│  Wallet TIDAK menyimpan cryptocurrency!                          │
-│  Wallet menyimpan KUNCI untuk mengakses aset di blockchain.      │
-└─────────────────────────────────────────────────────────────────┘
-```
+Pada Module 08, kita "berpura-pura" membuat Smart Contract menggunakan Python. Itu bagus untuk belajar konsep, tapi belum nyata. Sekarang kita akan membuat Smart Contract yang benar-benar bisa berjalan di blockchain Ethereum.
 
-**Analogi:**
+**Perbedaan utama:**
 
-- **Private Key** = Kunci rumah (harus dijaga, jangan dibagikan)
-- **Public Key** = Alamat rumah (bisa dibagikan untuk menerima paket)
-- **Wallet** = Dompet yang menyimpan kunci
+| Aspek      | Module 08 (Python)          | Module 10 (Solidity)                             |
+| ---------- | --------------------------- | ------------------------------------------------ |
+| Bahasa     | Python                      | Solidity                                         |
+| Lingkungan | Memori komputer biasa       | Ethereum Virtual Machine (EVM)                   |
+| Blockchain | Dibuat sendiri (simulasi)   | Local blockchain (Ganache/Anvil/Hardhat Network) |
+| Deploy     | Panggil fungsi Python       | Transaksi ke blockchain                          |
+| Verifikasi | `is_chain_valid()` manual | Test otomatis (Hardhat)                          |
 
-> **Penting:** Cryptocurrency tidak disimpan di wallet. Aset tetap ada di blockchain. Wallet hanya menyimpan kunci untuk mengaksesnya.
+> Pada Module 08 bahkan sudah disebutkan: _"kita belum membangun smart contract di jaringan blockchain nyata seperti Ethereum."_ - Modul ini mengimplementasikan dari pernyataan tersebut.
 
-### 1.2 Jenis-jenis Wallet
+**Tabel referensi** - Jika kamu sudah mengerjakan Module 08, berikut perbandingan kode Python dengan Solidity:
 
-| Jenis                      | Contoh                       | Kelebihan               | Kekurangan                       |
-| -------------------------- | ---------------------------- | ----------------------- | -------------------------------- |
-| **Hot Wallet**       | MetaMask, Trust Wallet       | Mudah digunakan, gratis | Terhubung internet (risiko hack) |
-| **Cold Wallet**      | Ledger, Trezor               | Sangat aman, offline    | Harga mahal, kurang praktis      |
-| **Paper Wallet**     | Cetak QR code                | Offline, gratis         | Mudah hilang/rusak               |
-| **Custodial Wallet** | Exchange (Binance, Coinbase) | Tidak perlu manage key  | Bukan pemilik sebenarnya         |
+| Komponen                    | Python (Module 08) | Solidity (Module 10)                  |
+| --------------------------- | ------------------ | ------------------------------------- |
+| `self.contract_id`        | `string`         | `string public contractId`          |
+| `self.owner`              | `string`         | `address private owner`             |
+| `self.is_deployed`        | `bool`           | `bool public isDeployed`            |
+| `self.state['released']`  | `bool`           | `bool public released`              |
+| `def deploy()`            | method Python      | `function deployContract() public`  |
+| `execute('release')`      | method Python      | `function setRelease() external`    |
+| `execute('check')`        | method Python      | `function getState() external view` |
+| `if caller != self.owner` | validasi manual    | `require(msg.sender == owner, ...)` |
 
-```
-Tingkat Keamanan:
+> **Tidak perlu hafal tabel di atas!** Ini hanya untuk referensi. Yang penting adalah memahami konsepnya.
 
-Cold Wallet ████████████████████ Tertinggi
-Paper Wallet ███████████████░░░░░ Tinggi (jika disimpan dengan baik)
-Hot Wallet █████████░░░░░░░░░░░ Sedang
-Custodial ███░░░░░░░░░░░░░░░░░ Rendah (trust pihak ketiga)
-```
+### 1.2 Ethereum Virtual Machine (EVM)
 
-### 1.3 Mengapa MetaMask?
+**Analogi Sederhana:**
 
-**MetaMask** adalah hot wallet berbasis browser extension yang paling populer di ekosistem Ethereum.
+Bayangkan EVM seperti **mesin arcade** di pusat permainan:
+- Semua mesin arcade di seluruh dunia menjalankan game yang sama persis
+- Kamu masukkan koin (gas) untuk bermain
+- Hasil permainan selalu sama jika kamu melakukan gerakan yang sama
+- Mesin tidak bisa mengakses internet atau hal lain di luar game
 
-**Kelebihan MetaMask:**
+**EVM (Ethereum Virtual Machine)** adalah "komputer virtual" yang menjalankan Smart Contract di jaringan Ethereum. Setiap komputer (node) di jaringan Ethereum menjalankan EVM yang identik.
 
-| Fitur                             | Penjelasan                                                      |
-| --------------------------------- | --------------------------------------------------------------- |
-| **Browser Integration**     | Terintegrasi langsung dengan browser (Chrome, Firefox, Brave)   |
-| **Multi-Network**           | Mendukung Ethereum, Polygon, BSC, Arbitrum, dan network lainnya |
-| **dApp Compatible**         | Bisa connect ke ribuan aplikasi Web3                            |
-| **Free & Open Source**      | Gratis dan kode sumbernya terbuka                               |
-| **User Friendly**           | Interface yang mudah digunakan                                  |
-| **Hardware Wallet Support** | Bisa dihubungkan dengan Ledger/Trezor                           |
+**Karakteristik EVM (dalam bahasa sederhana):**
 
-**Statistik MetaMask (2024):**
+| Karakteristik | Penjelasan | Analogi |
+|---------------|------------|---------|
+| **Deterministik** | Input sama = output sama, selalu | Seperti kalkulator: 2+2 selalu = 4 |
+| **Terisolasi** | Tidak bisa akses file atau internet | Seperti komputer tanpa WiFi |
+| **Berbasis gas** | Setiap operasi butuh "biaya bensin" | Seperti mobil yang butuh bensin untuk jalan |
 
-- 30+ juta pengguna aktif bulanan
-- Mendukung 10+ jaringan blockchain
-- Tersedia di Chrome, Firefox, Brave, Edge, dan mobile
+![diagram EVM 1](image/module-10/evm.png)
 
----
-
-## 2. Instalasi MetaMask
-
-### 2.1 Download Extension
-
-1. Buka website resmi: https://metamask.io
-2. Klik **Download**
-3. Pilih browser yang digunakan
+**Proses dari kode ke eksekusi:**
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    DOWNLOAD METAMASK                             │
-│                                                                  │
-│    ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│    │  Chrome  │  │ Firefox  │  │  Brave   │  │   Edge   │       │
-│    │    ✓     │  │    ✓     │  │    ✓     │  │    ✓     │       │
-│    └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
-│                                                                  │
-│    ⚠️  HANYA download dari metamask.io atau store resmi!        │
-│    ⚠️  Hati-hati dengan website palsu (phishing)!               │
-└─────────────────────────────────────────────────────────────────┘
+Kode Solidity (.sol)     -->    Bytecode (kode mesin)    -->    Dijalankan di EVM
+(yang kita tulis)              (hasil compile)                  (di blockchain)
 ```
 
-4. Klik **Add to Chrome** (atau browser lainnya)
-5. Konfirmasi dengan klik **Add Extension**
-6. MetaMask icon (rubah) akan muncul di toolbar browser
+Kode Solidity tidak langsung dieksekusi - ia terlebih dahulu **dikompilasi** (diubah) menjadi **bytecode** yang dipahami EVM. Proses ini mirip seperti menerjemahkan bahasa Indonesia ke bahasa mesin.
 
-### 2.2 Membuat Wallet Baru
+![diagram EVM](image/module-10/evm2.png)
 
-Setelah extension terinstall:
+### 1.3 Apa itu Solidity?
 
-**Langkah 1: Memulai Setup**
+**[Solidity](https://docs.soliditylang.org)** adalah bahasa pemrograman khusus untuk menulis Smart Contract. Jika Python digunakan untuk berbagai macam program, Solidity khusus untuk membuat "perjanjian digital" di blockchain.
 
-```
-┌─────────────────────────────────────────┐
-│         Welcome to MetaMask!             │
-│                                          │
-│   ┌─────────────────────────────────┐   │
-│   │      Create a new wallet        │   │ ← Pilih ini
-│   └─────────────────────────────────┘   │
-│                                          │
-│   ┌─────────────────────────────────┐   │
-│   │   Import an existing wallet     │   │
-│   └─────────────────────────────────┘   │
-└─────────────────────────────────────────┘
-```
+> **Untuk Pemula**: Jangan khawatir jika belum pernah coding. Solidity sebenarnya cukup mirip dengan bahasa manusia. Kita akan pelajari pelan-pelan.
 
-**Langkah 2: Membuat Password**
+**Ciri khas Solidity:**
 
-- Buat password yang kuat (minimal 8 karakter)
-- Password ini untuk unlock MetaMask di browser
-- **Catatan:** Password ini BERBEDA dengan seed phrase
+| Ciri | Penjelasan | Contoh |
+|------|------------|--------|
+| Tipe data khusus | Ada tipe `address` untuk alamat wallet | `address owner` |
+| Data permanen | Variabel tersimpan di blockchain selamanya | `uint public saldo` |
+| Pengirim transaksi | Bisa tahu siapa yang memanggil fungsi | `msg.sender` |
+| Validasi ketat | Pakai `require()` untuk cek kondisi | `require(umur >= 18)` |
 
-**Langkah 3: Backup Seed Phrase**
+**Contoh contract Solidity paling sederhana:**
 
-- MetaMask akan menampilkan 12 kata (Secret Recovery Phrase)
-- **CATAT DAN SIMPAN DI TEMPAT AMAN!**
-- Jangan screenshot atau simpan di cloud
-
-**Langkah 4: Konfirmasi Seed Phrase**
-
-- MetaMask akan meminta konfirmasi dengan menyusun kata-kata
-- Pastikan urutan benar
-
-**Langkah 5: Selesai**
-
-- Wallet siap digunakan
-- Address Ethereum pertama sudah tersedia
-
-### 2.3 Import Wallet yang Sudah Ada
-
-Jika sudah memiliki seed phrase dari wallet lain:
-
-1. Pilih **Import an existing wallet**
-2. Masukkan 12/24 kata seed phrase
-3. Buat password baru untuk MetaMask
-4. Selesai - wallet akan ter-restore dengan semua akun
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    IMPORT WALLET                                 │
-│                                                                  │
-│  Secret Recovery Phrase:                                         │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ abandon ability able about above absent absorb abstract ... ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                  │
-│  ⚠️  Pastikan tidak ada orang lain yang melihat!               │
-│  ⚠️  MetaMask tidak pernah meminta seed phrase via email!       │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 3. Memahami Seed Phrase
-
-### 3.1 Apa itu Seed Phrase?
-
-**Seed phrase** (atau Secret Recovery Phrase / Mnemonic) adalah 12 atau 24 kata yang merepresentasikan master key wallet Anda.
-
-```
-Contoh Seed Phrase (12 kata):
-
-┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
-│ abandon │ │ ability │ │  able   │ │  about  │
-└─────────┘ └─────────┘ └─────────┘ └─────────┘
-    1            2           3           4
-
-┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
-│  above  │ │ absent  │ │ absorb  │ │abstract │
-└─────────┘ └─────────┘ └─────────┘ └─────────┘
-    5            6           7           8
-
-┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
-│ absurd  │ │  abuse  │ │ access  │ │accident │
-└─────────┘ └─────────┘ └─────────┘ └─────────┘
-    9           10          11          12
-```
-
-### 3.2 Cara Kerja Seed Phrase
-
-Seed phrase menggunakan standar **BIP39** untuk mengkonversi kata-kata menjadi master key.
-
-```
-Seed Phrase (12 kata)
-        │
-        ▼
-   [BIP39 Process]
-        │
-        ▼
-   Master Seed (512 bit)
-        │
-        ▼
-   [BIP32 Derivation]
-        │
-   ┌────┴────┬────────┬────────┐
-   ▼         ▼        ▼        ▼
-Account 1  Account 2  ...  Account N
-(m/44'/60'/0'/0/0)  (m/44'/60'/0'/0/1)
-```
-
-Dari satu seed phrase, bisa di-derive **unlimited accounts**.
-
-### 3.3 Best Practices Keamanan
-
-**DO (Lakukan):**
-
-| Praktik               | Alasan                            |
-| --------------------- | --------------------------------- |
-| Tulis di kertas       | Tidak bisa di-hack secara digital |
-| Simpan di brankas     | Aman dari pencurian fisik         |
-| Buat beberapa salinan | Backup jika satu hilang           |
-| Gunakan metal backup  | Tahan air dan api                 |
-
-**DON'T (Jangan):**
-
-| Praktik               | Risiko                              |
-| --------------------- | ----------------------------------- |
-| Screenshot            | Bisa di-sync ke cloud, mudah dicuri |
-| Simpan di notes/email | Bisa di-hack jika akun dibobol      |
-| Share ke siapapun     | Kehilangan akses permanen           |
-| Input di website lain | Phishing attack                     |
-
-```
-⚠️  PERINGATAN PENTING:
-═══════════════════════════════════════════════════════════════
-║  Siapa yang memiliki seed phrase = Pemilik wallet           ║
-║  MetaMask/Ethereum TIDAK BISA reset atau recover seed       ║
-║  Jika hilang = Aset hilang SELAMANYA                        ║
-═══════════════════════════════════════════════════════════════
-```
-
----
-
-## 4. Anatomi MetaMask
-
-### 4.1 Antarmuka Utama
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ┌─────────────────┐                    ┌─────────────────┐     │
-│  │ Ethereum Mainnet│ ◄── Network       │     ≡ Menu      │     │
-│  └─────────────────┘     Selector      └─────────────────┘     │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│        ┌──────────────────────────────────────┐                 │
-│        │         🦊 Account 1                  │                 │
-│        │    0x742d...3Fe9 [Copy] [QR]         │ ◄── Address     │
-│        └──────────────────────────────────────┘                 │
-│                                                                  │
-│            ┌──────────────────────────┐                         │
-│            │       0.5 ETH            │                         │
-│            │      $1,250.00           │ ◄── Balance             │
-│            └──────────────────────────┘                         │
-│                                                                  │
-│    ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│    │   Buy    │  │   Send   │  │   Swap   │  │  Bridge  │       │
-│    └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
-│                                                                  │
-├─────────────────────────────────────────────────────────────────┤
-│  [Tokens]  [NFTs]  [Activity]                                    │
-│                                                                  │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │  ETH                                          0.5 ETH       ││
-│  │  USDT                                      100.00 USDT      ││
-│  │  + Import tokens                                            ││
-│  └─────────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Komponen Utama:**
-
-| Komponen                   | Fungsi                                            |
-| -------------------------- | ------------------------------------------------- |
-| **Network Selector** | Pilih jaringan blockchain (Mainnet, Testnet, dll) |
-| **Account**          | Nama akun dan address wallet                      |
-| **Balance**          | Saldo cryptocurrency                              |
-| **Buy**              | Beli crypto dengan kartu/bank                     |
-| **Send**             | Kirim crypto ke address lain                      |
-| **Swap**             | Tukar antar token                                 |
-| **Bridge**           | Transfer ke chain lain                            |
-| **Tokens**           | Daftar token yang dimiliki                        |
-| **NFTs**             | Koleksi NFT                                       |
-| **Activity**         | Riwayat transaksi                                 |
-
-### 4.2 Account Management
-
-MetaMask mendukung multiple accounts dalam satu wallet.
-
-```
-┌─────────────────────────────────────────┐
-│            My Accounts                   │
-├─────────────────────────────────────────┤
-│  ✓ Account 1                             │
-│    0x742d35Cc6634C0532925a3b844Bc454e... │
-│    0.5 ETH                               │
-├─────────────────────────────────────────┤
-│    Account 2 (Savings)                   │
-│    0x8Ba1f109551bD432803012645Ac136dda... │
-│    2.0 ETH                               │
-├─────────────────────────────────────────┤
-│    Account 3 (Trading)                   │
-│    0x1234...                              │
-│    0.1 ETH                               │
-├─────────────────────────────────────────┤
-│  + Add account or hardware wallet        │
-└─────────────────────────────────────────┘
-```
-
-### 4.3 Menambah Akun Baru
-
-1. Klik icon account (lingkaran) di pojok kanan atas
-2. Klik **+ Add account or hardware wallet**
-3. Pilih **Add a new account**
-4. Beri nama akun
-5. Klik **Create**
-
-Setiap akun baru akan memiliki address berbeda tetapi masih dari seed phrase yang sama.
-
----
-
-## 5. Networks di MetaMask
-
-### 5.1 Mainnet vs Testnet
-
-| Aspek                       | Mainnet                     | Testnet              |
-| --------------------------- | --------------------------- | -------------------- |
-| **Nilai**             | Real value (uang asli)      | Tidak bernilai       |
-| **Tujuan**            | Production, transaksi nyata | Development, testing |
-| **Cara mendapat ETH** | Beli dengan uang            | Gratis dari faucet   |
-| **Contoh**            | Ethereum Mainnet            | Sepolia, Goerli      |
-
-```
-Mainnet                          Testnet
-┌─────────────────┐              ┌─────────────────┐
-│ ETH = $2,500    │              │ ETH = $0        │
-│ Real money      │              │ Test only       │
-│ Production      │              │ Development     │
-└─────────────────┘              └─────────────────┘
-```
-
-### 5.2 Daftar Network Populer
-
-| Network           | Chain ID | Keterangan             |
-| ----------------- | -------- | ---------------------- |
-| Ethereum Mainnet  | 1        | Network utama Ethereum |
-| Sepolia Testnet   | 11155111 | Testnet resmi terbaru  |
-| Polygon           | 137      | Layer 2, fee murah     |
-| Arbitrum One      | 42161    | Layer 2, fee murah     |
-| Optimism          | 10       | Layer 2, fee murah     |
-| BSC               | 56       | Binance Smart Chain    |
-| Avalanche C-Chain | 43114    | Avalanche network      |
-
-### 5.3 Mengganti Network
-
-1. Klik dropdown network di pojok kiri atas
-2. Pilih network yang diinginkan
-3. Jika network belum ada, tambahkan secara manual
-
-```
-┌─────────────────────────────────────────┐
-│            Select a network              │
-├─────────────────────────────────────────┤
-│  ✓ Ethereum Mainnet                      │
-│    Sepolia test network                  │
-│    Linea Mainnet                         │
-├─────────────────────────────────────────┤
-│  + Add network                           │
-│  Show test networks ○                    │
-└─────────────────────────────────────────┘
-```
-
-**Untuk menampilkan Testnet:**
-
-1. Klik **Show test networks** toggle
-2. Testnet seperti Sepolia akan muncul
-
-### 5.4 Menambah Custom Network
-
-Untuk menambah network yang tidak ada di daftar default:
-
-1. Klik **+ Add network**
-2. Isi data network:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Add a network manually                        │
-├─────────────────────────────────────────────────────────────────┤
-│  Network name:                                                   │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ Polygon Mainnet                                             ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                  │
-│  New RPC URL:                                                    │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ https://polygon-rpc.com                                     ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                  │
-│  Chain ID:                                                       │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ 137                                                         ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                  │
-│  Currency symbol:                                                │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ MATIC                                                       ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                  │
-│  Block explorer URL (Optional):                                  │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ https://polygonscan.com                                     ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                  │
-│                      [Save]                                      │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Data Network Populer:**
-
-| Network   | RPC URL                               | Chain ID | Symbol |
-| --------- | ------------------------------------- | -------- | ------ |
-| Polygon   | https://polygon-rpc.com               | 137      | MATIC  |
-| BSC       | https://bsc-dataseed.binance.org      | 56       | BNB    |
-| Arbitrum  | https://arb1.arbitrum.io/rpc          | 42161    | ETH    |
-| Avalanche | https://api.avax.network/ext/bc/C/rpc | 43114    | AVAX   |
-
----
-
-## 6. Mendapatkan Testnet ETH
-
-### 6.1 Apa itu Faucet?
-
-**Faucet** adalah layanan yang memberikan cryptocurrency testnet secara gratis untuk keperluan development dan testing.
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         FAUCET                                   │
-│                                                                  │
-│   Developer ──────► Input Address ──────► Receive Test ETH      │
-│                                                                  │
-│   Batasan:                                                       │
-│   - Hanya testnet (tidak bernilai)                              │
-│   - Limit request per hari/minggu                               │
-│   - Beberapa memerlukan verifikasi                              │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### 6.2 Langkah Mendapatkan Sepolia ETH
-
-**Step 1: Pastikan MetaMask di Sepolia Network**
-
-- Klik network selector
-- Pilih **Sepolia test network**
-- Jika tidak ada, aktifkan "Show test networks"
-
-**Step 2: Copy Address MetaMask**
-
-- Klik address untuk copy ke clipboard
-- Address dimulai dengan `0x...`
-
-**Step 3: Kunjungi Faucet**
-
-Beberapa faucet Sepolia yang tersedia:
-
-| Faucet              | URL                                                               | Persyaratan          |
-| ------------------- | ----------------------------------------------------------------- | -------------------- |
-| Google Cloud Faucet | https://cloud.google.com/application/web3/faucet/ethereum/sepolia | Login Google         |
-| Alchemy Faucet      | https://sepoliafaucet.com                                         | Login Alchemy (free) |
-| Infura Faucet       | https://www.infura.io/faucet/sepolia                              | Login Infura (free)  |
-| QuickNode           | https://faucet.quicknode.com/ethereum/sepolia                     | Login QuickNode      |
-
-**Step 4: Request ETH**
-
-1. Paste address MetaMask
-2. Klik **Request** atau **Send**
-3. Tunggu beberapa detik
-
-**Step 5: Verifikasi di MetaMask**
-
-- Balance akan bertambah (biasanya 0.5 - 2 ETH)
-- Cek tab **Activity** untuk melihat transaksi masuk
-
-### 6.3 Faucet Alternatif
-
-Jika faucet utama tidak berfungsi:
-
-1. **PoW Faucet** - https://sepolia-faucet.pk910.de
-
-   - Mining di browser untuk mendapat ETH
-   - Tidak perlu login
-2. **Chainlink Faucet** - https://faucets.chain.link/sepolia
-
-   - Memberikan ETH dan LINK token
-   - Perlu login dengan wallet
-3. **Community Faucet** - Cari di Discord developer communities
-
----
-
-## 7. Melakukan Transaksi
-
-### 7.1 Menerima Cryptocurrency
-
-Untuk menerima crypto, cukup bagikan address:
-
-1. Klik address di MetaMask untuk copy
-2. Atau klik icon QR code untuk menampilkan QR
-3. Bagikan address/QR ke pengirim
-
-```
-┌─────────────────────────────────────────┐
-│              Receive ETH                 │
-├─────────────────────────────────────────┤
-│         ┌───────────────────┐           │
-│         │    ██████████    │           │
-│         │    ██      ██    │           │
-│         │    ██  QR  ██    │           │
-│         │    ██      ██    │           │
-│         │    ██████████    │           │
-│         └───────────────────┘           │
-│                                          │
-│   0x742d35Cc6634C0532925a3b844Bc454e4438f44e │
-│                [Copy]                     │
-└─────────────────────────────────────────┘
-```
-
-### 7.2 Mengirim Cryptocurrency
-
-**Langkah-langkah:**
-
-1. Klik tombol **Send**
-2. Masukkan address tujuan atau pilih dari kontak
-3. Masukkan jumlah yang akan dikirim
-4. Review gas fee
-5. Klik **Confirm**
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Send ETH                                 │
-├─────────────────────────────────────────────────────────────────┤
-│  To:                                                             │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ 0x8Ba1f109551bD432803012645Ac136dda...                      ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                  │
-│  Amount:                                                         │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ 0.1 ETH                                          [Max]      ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                  │
-│  Estimated fee: 0.0021 ETH (~$5.25)                             │
-│                                                                  │
-│  Total: 0.1021 ETH                                              │
-│                                                                  │
-│              [Cancel]              [Next]                        │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### 7.3 Memahami Gas Fee
-
-**Gas** adalah biaya untuk memproses transaksi di blockchain Ethereum.
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        GAS FEE                                   │
-│                                                                  │
-│  Transaction Fee = Gas Limit × Gas Price                        │
-│                                                                  │
-│  Gas Limit: Jumlah maksimum gas yang digunakan                  │
-│  Gas Price: Harga per unit gas (dalam Gwei)                     │
-│                                                                  │
-│  Contoh:                                                         │
-│  Gas Limit: 21,000 (transfer ETH standard)                      │
-│  Gas Price: 30 Gwei                                             │
-│  Fee = 21,000 × 30 Gwei = 630,000 Gwei = 0.00063 ETH           │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Pengaturan Gas di MetaMask:**
-
-| Mode                 | Penjelasan                           |
-| -------------------- | ------------------------------------ |
-| **Low**        | Murah tapi lambat (menit sampai jam) |
-| **Market**     | Harga rata-rata (biasanya < 1 menit) |
-| **Aggressive** | Mahal tapi cepat (detik)             |
-| **Advanced**   | Atur gas sendiri                     |
-
-### 7.4 Melihat Riwayat Transaksi
-
-1. Klik tab **Activity** di MetaMask
-2. Klik transaksi untuk detail
-3. Klik **View on block explorer** untuk detail lengkap di Etherscan
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Activity                                  │
-├─────────────────────────────────────────────────────────────────┤
-│  ● Send                                     -0.1 ETH            │
-│    To: 0x8Ba1...                            Apr 15              │
-│    Status: Confirmed ✓                                          │
-├─────────────────────────────────────────────────────────────────┤
-│  ● Receive                                  +0.5 ETH            │
-│    From: 0x742d...                          Apr 14              │
-│    Status: Confirmed ✓                                          │
-├─────────────────────────────────────────────────────────────────┤
-│  ● Contract Interaction                     -0.05 ETH           │
-│    To: Uniswap                              Apr 13              │
-│    Status: Confirmed ✓                                          │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 8. Integrasi dengan Remix IDE
-
-### 8.1 Menghubungkan MetaMask ke Remix
-
-**Step 1: Buka Remix IDE**
-
-- Akses https://remix.ethereum.org
-
-**Step 2: Pilih Environment**
-
-1. Klik icon **Deploy & Run Transactions**
-2. Di dropdown **Environment**, pilih **Injected Provider - MetaMask**
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  DEPLOY & RUN TRANSACTIONS                                       │
-├─────────────────────────────────────────────────────────────────┤
-│  Environment:                                                    │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ Injected Provider - MetaMask                              ▼ ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                  │
-│  Account:                                                        │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ 0x742d...3Fe9 (0.5 ether)                                   ││
-│  └─────────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Step 3: Approve Connection**
-
-- MetaMask popup akan muncul
-- Pilih akun yang ingin dihubungkan
-- Klik **Connect**
-
-**Step 4: Verifikasi**
-
-- Account di Remix akan menampilkan address MetaMask
-- Balance akan sesuai dengan saldo di MetaMask
-
-### 8.2 Deploy Contract ke Testnet
-
-**Prasyarat:**
-
-- MetaMask terhubung ke Sepolia
-- Memiliki Sepolia ETH (dari faucet)
-
-**Langkah Deploy:**
-
-1. **Tulis/compile contract** (contoh dari Module 07)
-
-```solidity
+```sol
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.0;
 
-contract HelloWorld {
-    string public message;
-    address public owner;
+contract Simpan {
+    uint public angka;
 
-    constructor(string memory _message) {
-        message = _message;
-        owner = msg.sender;
-    }
-
-    function setMessage(string memory _newMessage) public {
-        require(msg.sender == owner, "Only owner can change message");
-        message = _newMessage;
+    function simpan(uint _angka) public {
+        angka = _angka;
     }
 }
 ```
 
-2. **Compile contract**
+**Penjelasan baris per baris:**
 
-   - Klik Solidity Compiler
-   - Klik Compile
-3. **Deploy contract**
+```sol
+// SPDX-License-Identifier: MIT
+```
+Baris 1: Komentar yang menyatakan lisensi kode (MIT = bebas dipakai siapa saja)
 
-   - Klik Deploy & Run Transactions
-   - Pastikan Environment: **Injected Provider - MetaMask**
-   - Isi parameter constructor (contoh: "Hello Blockchain!")
-   - Klik **Deploy**
-4. **Approve di MetaMask**
+```sol
+pragma solidity ^0.8.0;
+```
+Baris 2: Menyatakan versi Solidity yang digunakan. `^0.8.0` artinya versi 0.8.0 ke atas
 
-   - MetaMask popup akan muncul
-   - Review gas fee
-   - Klik **Confirm**
-5. **Tunggu konfirmasi**
+```sol
+contract Simpan {
+```
+Baris 3: Membuat contract baru bernama "Simpan". Kurung kurawal `{` menandai awal isi contract
 
-   - Transaksi akan pending beberapa detik
-   - Setelah confirmed, contract muncul di Deployed Contracts
+```sol
+    uint public angka;
+```
+Baris 4: Membuat variabel bernama `angka`. `uint` = bilangan bulat positif. `public` = bisa dilihat semua orang
 
-### 8.3 Berinteraksi dengan Contract
+```sol
+    function simpan(uint _angka) public {
+        angka = _angka;
+    }
+```
+Baris 5-7: Membuat fungsi bernama `simpan` yang menerima input `_angka` dan menyimpannya ke variabel `angka`
 
-Setelah deploy, contract address akan terlihat di Remix.
+```sol
+}
+```
+Baris 8: Kurung kurawal penutup, menandai akhir contract
 
-**Membaca Data (Read):**
+**Meskipun sederhana, ini sudah merupakan Smart Contract yang valid!** Siapapun dapat memanggil `simpan()` dan membaca `angka`.
 
-- Klik function read-only (tombol biru)
-- Hasil langsung muncul tanpa transaksi
+### 1.4 Komponen Utama Solidity
 
-**Menulis Data (Write):**
+> **Tips Belajar**: Tidak perlu hafal semua ini sekarang. Bagian ini bisa dijadikan referensi saat kamu mengerjakan hands-on nanti.
 
-- Klik function yang mengubah state (tombol orange)
-- MetaMask popup akan muncul untuk approval
-- Konfirmasi dan tunggu transaksi
+#### Tipe Data (Jenis Variabel)
+
+**Analogi**: Seperti jenis-jenis kotak penyimpanan. Ada kotak untuk angka, kotak untuk teks, dll.
+
+| Tipe        | Contoh                           | Penjelasan Sederhana                       |
+| ----------- | -------------------------------- | ------------------------------------------ |
+| `uint`    | `uint public amount = 50`      | Angka bulat positif (0, 1, 2, 3, ...)      |
+| `bool`    | `bool public released = false` | Nilai benar (`true`) atau salah (`false`)  |
+| `string`  | `string public name = "Alice"` | Teks/kata-kata                             |
+| `address` | `address private owner`        | Alamat wallet Ethereum (seperti nomor rekening) |
+
+**Contoh penggunaan:**
+```sol
+uint public umur = 25;           // Angka: 25 tahun
+bool public sudahMenikah = false; // Ya/Tidak: belum menikah
+string public nama = "Budi";     // Teks: nama Budi
+address public pemilik;          // Alamat wallet pemilik
+```
+
+#### Visibility (Siapa yang Boleh Akses)
+
+**Analogi**: Seperti pengaturan privasi di media sosial.
+
+| Visibility   | Analogi                        | Penjelasan                                                                                      |
+| ------------ | ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `public`   | Profil publik                  | Semua orang bisa lihat dan akses                                                              |
+| `private`  | Chat pribadi                   | Hanya bisa diakses dari dalam contract itu sendiri                                              |
+| `external` | Hanya untuk orang luar         | Fungsi yang hanya bisa dipanggil dari luar contract                                            |
+| `internal` | Grup keluarga                  | Bisa diakses dari contract ini dan contract "anak"nya                                          |
+
+**Yang paling sering dipakai untuk pemula:**
+- `public` - untuk variabel/fungsi yang perlu diakses dari luar
+- `private` - untuk variabel rahasia (seperti owner)
+
+#### Data Location (Lokasi Penyimpanan Sementara)
+
+**Analogi**: Seperti perbedaan RAM dan hard disk di komputer.
+
+| Lokasi       | Analogi                           | Keterangan                                           |
+| ------------ | --------------------------------- | ---------------------------------------------------- |
+| `memory`   | Catatan di papan tulis            | Sementara, dihapus setelah fungsi selesai            |
+| `calldata` | Surat yang dikirim (read-only)    | Data input, tidak bisa diubah                        |
+
+```sol
+// memory: data bisa dimodifikasi di dalam fungsi
+function ubah(string memory _teks) public { ... }
+
+// calldata: lebih hemat biaya, cocok untuk input yang tidak diubah
+function simpan(string calldata _teks) external { ... }
+```
+
+> **Tips**: Untuk pemula, gunakan `memory` dulu. Nanti seiring pengalaman, bisa optimasi dengan `calldata`.
+
+#### require() - Penjaga Keamanan
+
+**Analogi**: Seperti satpam yang mengecek KTP sebelum masuk gedung.
+
+`require()` mengecek kondisi. Jika kondisi **tidak terpenuhi**, transaksi **dibatalkan** dan muncul pesan error.
+
+```sol
+function tarikDana() external {
+    require(msg.sender == owner, "hanya owner yang boleh");
+    require(saldo > 0, "saldo kosong");
+    // kode di sini hanya dijalankan jika SEMUA require terpenuhi
+}
+```
+
+**Cara membaca kode di atas:**
+1. Cek: apakah yang memanggil fungsi adalah owner? Jika bukan, batalkan dengan pesan "hanya owner yang boleh"
+2. Cek: apakah saldo lebih dari 0? Jika tidak, batalkan dengan pesan "saldo kosong"
+3. Jika kedua kondisi OK, lanjut eksekusi
+
+![komponen solidity](image/module-10/sol2.png)
+
+### 1.5 Apa itu Hardhat?
+
+**Analogi**: Hardhat adalah seperti **dapur lengkap** untuk memasak Smart Contract. Di dalamnya ada kompor (compile), alat tes rasa (test), dan wadah untuk menyajikan (deploy).
+
+**[Hardhat](https://hardhat.org/docs)** adalah alat pengembangan untuk Smart Contract Ethereum. Ia menyediakan tiga fungsi utama:
+
+| Fungsi | Penjelasan | Analogi |
+|--------|------------|---------|
+| **Compile** | Mengubah kode Solidity menjadi kode mesin | Menerjemahkan resep ke bahasa mesin |
+| **Test** | Menguji apakah contract bekerja dengan benar | Mencicipi masakan sebelum disajikan |
+| **Deploy** | Memasang contract ke blockchain | Menyajikan masakan ke pelanggan |
+
+**Apa itu ABI?**
+
+ABI (Application Binary Interface) adalah "daftar menu" dari contract kita. Ia berisi informasi tentang fungsi apa saja yang ada di contract dan bagaimana cara memanggilnya.
+
+```
+smart-contracts.sol          (kode yang kita tulis)
+       │
+       ▼  npx hardhat compile
+artifacts/
+├── bytecode  → kode mesin yang dikirim ke blockchain
+└── ABI       → "daftar menu" fungsi-fungsi contract
+```
+
+**[ethers.js](https://docs.ethers.org)** adalah library JavaScript yang membantu kita berinteraksi dengan blockchain. Ia menggunakan ABI untuk tahu cara "berbicara" dengan contract kita.
+
+### 1.6 Alur Kerja Smart Contract
+
+> **Catatan**: Penjelasan tentang Local Blockchain (Ganache) sudah dibahas di **[Module 09](module-09.md)**. Pastikan Ganache sudah berjalan sebelum melanjutkan.
+
+**Gambaran besar** - ini adalah langkah-langkah yang akan kita lakukan di hands-on:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  ▼ HELLOWORLD AT 0x1234...5678 (Sepolia)                        │
-├─────────────────────────────────────────────────────────────────┤
-│  message        [button - blue]   → "Hello Blockchain!"         │
-│  owner          [button - blue]   → 0x742d...3Fe9               │
-├─────────────────────────────────────────────────────────────────┤
-│  setMessage  [input] [button - orange]                          │
-│              └─────────────────────┘                            │
-│              "New Message"                                       │
+│  1. TULIS CONTRACT                                              │
+│     Buat file .sol dengan kode Solidity                         │
+│     📁 contract/smart-contracts.sol                             │
 └─────────────────────────────────────────────────────────────────┘
-```
-
-**Verifikasi di Block Explorer:**
-
-- Copy contract address
-- Buka https://sepolia.etherscan.io
-- Paste address di search
-- Lihat semua transaksi dan contract details
-
----
-
-## 9. Menghubungkan ke dApp
-
-### 9.1 Cara Kerja dApp Connection
-
-**dApp (Decentralized Application)** adalah aplikasi yang berinteraksi dengan blockchain.
-
-```
-┌─────────────┐         ┌─────────────┐         ┌─────────────┐
-│    User     │◄───────►│  MetaMask   │◄───────►│    dApp     │
-│  (Browser)  │         │  (Wallet)   │         │  (Website)  │
-└─────────────┘         └──────┬──────┘         └─────────────┘
-                               │
-                               ▼
-                        ┌─────────────┐
-                        │  Blockchain │
-                        │  (Ethereum) │
-                        └─────────────┘
-```
-
-**Flow koneksi:**
-
-1. User mengunjungi dApp
-2. dApp request koneksi ke MetaMask
-3. MetaMask popup minta approval
-4. User approve → dApp bisa baca address
-5. Saat transaksi, MetaMask minta approval lagi
-
-### 9.2 Permission dan Security
-
-**Ketika connect ke dApp, yang BISA dilakukan dApp:**
-
-- Melihat address wallet
-- Melihat balance
-- Request approval untuk transaksi
-- Request signature
-
-**Yang TIDAK BISA dilakukan dApp tanpa approval:**
-
-- Mengirim transaksi
-- Mengakses private key
-- Mengubah settings wallet
-
-```
+                              │
+                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│               MetaMask Connection Request                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  Uniswap wants to connect to your wallet                        │
-│                                                                  │
-│  This will allow the site to:                                   │
-│  ✓ View your wallet address                                     │
-│  ✓ View your account balance                                    │
-│  ✓ Request approval for transactions                            │
-│                                                                  │
-│  This will NOT allow the site to:                               │
-│  ✗ Access your private keys                                     │
-│  ✗ Send transactions without your approval                      │
-│                                                                  │
-│           [Cancel]              [Connect]                        │
+│  2. COMPILE (npx hardhat compile)                               │
+│     Ubah kode Solidity → bytecode + ABI                         │
+│     📁 artifacts/... (hasil otomatis)                           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  3. DEPLOY (node deploy.ts)                                     │
+│     Kirim contract ke blockchain → dapat alamat contract        │
+│     Contoh: 0xAbCd...1234                                       │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  4. INTERACT (node interact.ts)                                 │
+│     Panggil fungsi-fungsi di contract                           │
+│     Contoh: deployContract(), setRelease(), getState()          │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  5. TEST (npx hardhat test)                                     │
+│     Verifikasi contract bekerja dengan benar                    │
+│     ✓ Test lulus = contract aman untuk di-deploy                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 9.3 Memutuskan Koneksi dApp
+> **Tips**: Simpan diagram ini sebagai referensi. Setiap kali bingung "sedang di langkah mana", lihat kembali diagram ini.
 
-Untuk keamanan, disconnect dari dApp yang tidak digunakan:
+---
 
-1. Klik **3 titik (menu)** di MetaMask
-2. Pilih **Connected sites**
-3. Klik **Disconnect** pada dApp yang ingin diputus
+## 2. Implementasi Program (Hands-On)
+
+> **Mulai dari sini!** Ikuti setiap langkah secara berurutan. Jangan melompat-lompat.
+
+### 2.1 Struktur Proyek
+
+Pertama, pahami struktur folder project kita:
 
 ```
-┌─────────────────────────────────────────┐
-│          Connected sites                 │
-├─────────────────────────────────────────┤
-│  uniswap.org              [Disconnect]  │
-│  opensea.io               [Disconnect]  │
-│  remix.ethereum.org       [Disconnect]  │
-└─────────────────────────────────────────┘
+smart-contract/
+├── contracts/                    # Folder utama untuk Solidity
+│   ├── contract/
+│   │   └── smart-contracts.sol   # 📝 Kode Solidity (yang akan kita tulis)
+│   ├── test/
+│   │   └── BlockchainClass.test.ts  # File test
+│   ├── artifacts/                # 📦 Hasil compile (dibuat otomatis)
+│   ├── deploy.ts                 # 🚀 Script untuk deploy contract
+│   ├── interact.ts               # 🔗 Script untuk berinteraksi dengan contract
+│   ├── hardhat.config.ts         # ⚙️ Konfigurasi Hardhat
+│   ├── .env                      # 🔑 Variabel rahasia (private key, dll)
+│   └── package.json              # 📋 Daftar library yang dibutuhkan
+└── smart_contract.py             # Python dari Module 08
+```
+
+**Penjelasan file-file penting:**
+
+| File | Fungsi | Kapan dipakai |
+|------|--------|---------------|
+| `smart-contracts.sol` | Kode Smart Contract | Langkah pertama: menulis contract |
+| `deploy.ts` | Script untuk memasang contract | Setelah compile |
+| `interact.ts` | Script untuk memanggil fungsi contract | Setelah deploy |
+| `.env` | Menyimpan data rahasia (private key) | Dibutuhkan untuk deploy |
+
+### 2.2 Menulis Smart Contract
+
+> **Langkah 1**: Buat file Smart Contract
+
+**Cara membuat file:**
+1. Buka VS Code
+2. Buka folder `smart-contract/contracts`
+3. Buat folder baru bernama `contract` (jika belum ada)
+4. Di dalam folder `contract`, buat file baru bernama `smart-contracts.sol`
+
+**Struktur dasar file Solidity:**
+
+Setiap file `.sol` harus dimulai dengan 2 baris wajib:
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+```
+
+**Penjelasan:**
+
+| Baris | Kode | Fungsi |
+|-------|------|--------|
+| 1 | `// SPDX-License-Identifier: MIT` | Menyatakan lisensi (MIT = bebas dipakai) |
+| 2 | `pragma solidity ^0.8.0;` | Versi Solidity yang digunakan |
+
+> **Catatan**: `^0.8.0` artinya gunakan versi 0.8.0 atau lebih baru, tapi masih di bawah 0.9.0
+
+**Selanjutnya, deklarasikan contract:**
+
+```sol
+contract NamaContract {
+    // isi contract di sini
+}
+```
+
+**Analogi**: Membuat contract seperti membuat class di Python atau Java - kita definisikan "cetakan" yang nanti bisa digunakan.
+
+> **Tips**: Satu file `.sol` biasanya berisi satu contract utama. Nama contract sebaiknya menggunakan PascalCase (huruf besar di awal setiap kata).
+
+### 2.3 State Variables (Variabel yang Tersimpan di Blockchain)
+
+> **Langkah 2**: Tambahkan variabel ke dalam contract
+
+**Apa itu State Variables?**
+
+State variables adalah variabel yang nilainya **tersimpan permanen** di blockchain. Berbeda dengan variabel biasa di program komputer yang hilang saat program dimatikan, state variables tetap ada selama contract masih aktif.
+
+**Analogi**: State variables seperti data di database - sekali disimpan, akan tetap ada sampai diubah atau dihapus.
+
+**Kode yang akan kita tulis:**
+
+```sol
+contract EscrowContract {
+    // Variabel-variabel ini tersimpan permanen di blockchain
+    string public contractId;   // ID unik contract
+    address private owner;      // pemilik contract (rahasia)
+    bool public isDeployed;     // apakah contract sudah aktif?
+
+    // Data escrow (perjanjian)
+    string public receiver;     // nama penerima dana
+    uint public amount;         // jumlah dana
+    bool public released;       // apakah dana sudah dilepas?
+}
+```
+
+**Penjelasan baris per baris:**
+
+| Kode | Penjelasan |
+|------|------------|
+| `string public contractId` | Variabel teks, bisa dilihat publik |
+| `address private owner` | Alamat wallet pemilik, **rahasia** (private) |
+| `bool public isDeployed` | True/false, apakah sudah di-deploy |
+| `string public receiver` | Nama penerima, bisa dilihat publik |
+| `uint public amount` | Jumlah dana (angka), bisa dilihat publik |
+| `bool public released` | True/false, apakah dana sudah dilepas |
+
+**Mengapa `owner` dibuat `private`?**
+
+Karena alamat owner adalah informasi sensitif - kita tidak mau sembarang orang tahu siapa owner-nya. Tapi nanti kita akan buat fungsi khusus `getOwner()` jika memang perlu diakses.
+
+> **Perbandingan dengan Python Module 08:**
+> - `string public contractId` = `self.contract_id` di Python
+> - `address private owner` = `self.owner` di Python
+> - `bool public isDeployed` = `self.is_deployed` di Python
+
+### 2.4 Constructor (Fungsi Inisialisasi)
+
+> **Langkah 3**: Tambahkan constructor ke dalam contract
+
+**Apa itu Constructor?**
+
+Constructor adalah fungsi khusus yang **hanya dijalankan sekali** - yaitu saat contract pertama kali di-deploy (dipasang) ke blockchain. Fungsinya untuk mengisi nilai awal variabel-variabel.
+
+**Analogi**: Constructor seperti formulir pendaftaran yang diisi sekali saat membuat akun baru.
+
+**Kode yang akan kita tulis:**
+
+```sol
+constructor(string memory _contractId, string memory _receiver, uint _amount) {
+    contractId = _contractId;
+    owner = msg.sender;   // deployer otomatis menjadi owner
+    receiver = _receiver;
+    amount = _amount;
+}
+```
+
+**Penjelasan langkah demi langkah:**
+
+```sol
+constructor(string memory _contractId, string memory _receiver, uint _amount) {
+```
+Baris ini mendefinisikan constructor dengan 3 parameter input:
+- `_contractId` - ID unik untuk contract
+- `_receiver` - nama penerima
+- `_amount` - jumlah dana
+
+> **Kenapa ada underscore (_)?** Ini adalah konvensi (kebiasaan) di Solidity untuk membedakan parameter input dengan state variable. `_contractId` adalah input, `contractId` adalah state variable.
+
+```sol
+    contractId = _contractId;
+```
+Mengisi state variable `contractId` dengan nilai dari parameter `_contractId`.
+
+```sol
+    owner = msg.sender;
+```
+**Ini bagian penting!** `msg.sender` adalah variabel spesial di Solidity yang berisi **alamat wallet orang yang memanggil fungsi**. Saat contract di-deploy, `msg.sender` adalah alamat orang yang men-deploy - sehingga dia otomatis jadi owner!
+
+```sol
+    receiver = _receiver;
+    amount = _amount;
+}
+```
+Mengisi state variables dengan nilai dari parameter.
+
+**Perbandingan dengan Python:**
+
+| Python (Module 08) | Solidity (Module 10) |
+|--------------------|----------------------|
+| `def __init__(self, ...):` | `constructor(...) {` |
+| `self.owner = owner` (diisi manual) | `owner = msg.sender` (otomatis!) |
+
+### 2.5 Functions dan Access Control (Fungsi-fungsi Contract)
+
+> **Langkah 4**: Tambahkan fungsi-fungsi ke dalam contract
+
+Contract kita akan memiliki 4 fungsi. Mari kita bahas satu per satu:
+
+---
+
+#### Fungsi 1: deployContract()
+
+**Tujuan**: Mengaktifkan contract (seperti menekan tombol "ON")
+
+```sol
+function deployContract() public {
+    require(!isDeployed, "contract sudah di-deploy");
+    isDeployed = true;
+}
+```
+
+**Penjelasan baris per baris:**
+
+| Baris | Kode | Penjelasan |
+|-------|------|------------|
+| 1 | `function deployContract() public {` | Membuat fungsi bernama `deployContract`, bisa dipanggil siapa saja (`public`) |
+| 2 | `require(!isDeployed, "contract sudah di-deploy");` | **Cek keamanan**: jika `isDeployed` sudah `true`, batalkan dan tampilkan pesan error |
+| 3 | `isDeployed = true;` | Ubah `isDeployed` menjadi `true` |
+| 4 | `}` | Akhir fungsi |
+
+> **Catatan**: Tanda `!` artinya "NOT" (kebalikan). `!isDeployed` berarti "isDeployed belum true".
+
+---
+
+#### Fungsi 2: getOwner()
+
+**Tujuan**: Melihat siapa owner contract
+
+```sol
+function getOwner() public view returns (address) {
+    return owner;
+}
+```
+
+**Penjelasan:**
+
+| Kata Kunci | Artinya |
+|------------|---------|
+| `public` | Bisa dipanggil siapa saja |
+| `view` | Fungsi ini **hanya membaca**, tidak mengubah data |
+| `returns (address)` | Fungsi ini mengembalikan nilai bertipe `address` |
+
+> **Penting**: Fungsi `view` **tidak membutuhkan biaya gas** karena tidak mengubah blockchain - hanya membaca.
+
+---
+
+#### Fungsi 3: setRelease()
+
+**Tujuan**: Melepaskan dana ke penerima (hanya bisa dilakukan owner)
+
+```sol
+function setRelease() external {
+    require(isDeployed, "contract belum di-deploy");
+    require(msg.sender == owner, "hanya owner yang bisa release");
+    require(!released, "dana sudah pernah di-release");
+    released = true;
+}
+```
+
+**Penjelasan 3 pengaman (require):**
+
+| Urutan | Require | Penjelasan |
+|--------|---------|------------|
+| 1 | `require(isDeployed, ...)` | Contract harus sudah aktif |
+| 2 | `require(msg.sender == owner, ...)` | Yang memanggil harus owner |
+| 3 | `require(!released, ...)` | Dana belum pernah dilepas sebelumnya |
+
+**Diagram alur:**
+
+```
+Seseorang memanggil setRelease()
+              │
+              ▼
+┌─────────────────────────────────┐
+│ Cek 1: isDeployed == true?      │──NO──→ GAGAL: "contract belum di-deploy"
+└─────────────────────────────────┘
+              │ YES
+              ▼
+┌─────────────────────────────────┐
+│ Cek 2: msg.sender == owner?     │──NO──→ GAGAL: "hanya owner yang bisa release"
+└─────────────────────────────────┘
+              │ YES
+              ▼
+┌─────────────────────────────────┐
+│ Cek 3: released == false?       │──NO──→ GAGAL: "dana sudah pernah di-release"
+└─────────────────────────────────┘
+              │ YES
+              ▼
+┌─────────────────────────────────┐
+│ SUKSES: released = true         │
+│ Data tersimpan di blockchain    │
+└─────────────────────────────────┘
 ```
 
 ---
 
-## 10. Tips Keamanan MetaMask
+#### Fungsi 4: getState()
 
-**Checklist Keamanan:**
+**Tujuan**: Melihat status contract (receiver, amount, released)
 
-| No | Tips                                 | Penjelasan                                |
-| -- | ------------------------------------ | ----------------------------------------- |
-| 1  | **Backup seed phrase offline** | Tulis di kertas, simpan di tempat aman    |
-| 2  | **Jangan share seed phrase**   | MetaMask tidak pernah meminta seed phrase |
-| 3  | **Verifikasi URL**             | Pastikan URL benar sebelum connect        |
-| 4  | **Revoke permissions**         | Disconnect dari dApp yang tidak digunakan |
-| 5  | **Hardware wallet**            | Gunakan Ledger/Trezor untuk aset besar    |
-| 6  | **Multiple accounts**          | Pisahkan akun untuk trading dan holding   |
-| 7  | **Test transactions**          | Kirim jumlah kecil dulu untuk test        |
-| 8  | **Review sebelum sign**        | Baca dengan teliti sebelum approve        |
+```sol
+function getState() external view returns (string memory, uint, bool) {
+    return (receiver, amount, released);
+}
+```
 
-**Red Flags (Tanda Bahaya):**
+**Penjelasan:**
+
+Fungsi ini mengembalikan **3 nilai sekaligus**:
+1. `receiver` (string) - nama penerima
+2. `amount` (uint) - jumlah dana
+3. `released` (bool) - apakah sudah dilepas
+
+> **`external`** artinya fungsi hanya bisa dipanggil dari **luar** contract. Ini lebih hemat gas dibanding `public`.
+
+### 2.6 Konfigurasi Hardhat
+
+> **Langkah 5**: Periksa file konfigurasi
+
+File `hardhat.config.ts` berisi pengaturan untuk Hardhat. File ini biasanya **sudah ada** di project - kamu hanya perlu memahami isinya.
+
+**Lokasi file**: `smart-contract/contracts/hardhat.config.ts`
+
+```typescript
+// hardhat.config.ts
+import { defineConfig } from "hardhat/config";
+import hardhatEthers from "@nomicfoundation/hardhat-ethers";
+import hardhatMocha from "@nomicfoundation/hardhat-mocha";
+
+export default defineConfig({
+  plugins: [hardhatEthers, hardhatMocha],
+  solidity: {
+    version: "0.8.28",
+  },
+  paths: {
+    sources: "./contract",
+  },
+});
+```
+
+**Penjelasan setiap bagian:**
+
+| Bagian | Fungsi | Penjelasan Sederhana |
+|--------|--------|----------------------|
+| `plugins` | Menambahkan fitur tambahan | ethers.js untuk interact, Mocha untuk test |
+| `solidity.version` | Versi compiler | Harus sama dengan `pragma solidity` di file .sol |
+| `paths.sources` | Lokasi file .sol | Di mana Hardhat mencari file Solidity |
+
+**Troubleshooting umum:**
+
+| Error | Penyebab | Solusi |
+|-------|----------|--------|
+| `invalid opcode` | Versi EVM tidak cocok | Tambahkan `evmVersion: "london"` di settings |
+| `Source file not found` | Path salah | Periksa `paths.sources` cocok dengan lokasi file .sol |
+
+### 2.7 Kompilasi Contract
+
+> **Langkah 6**: Compile kode Solidity
+
+**Apa yang terjadi saat compile?**
+
+Kode Solidity yang kita tulis (bahasa manusia) diubah menjadi **bytecode** (bahasa mesin) yang bisa dipahami blockchain.
+
+**Cara compile:**
+
+1. Buka Terminal/Command Prompt
+2. Pindah ke folder contracts:
+   ```bash
+   cd smart-contract/contracts
+   ```
+3. Jalankan perintah compile:
+   ```bash
+   npx hardhat compile
+   ```
+
+**Output yang diharapkan (jika berhasil):**
 
 ```
-⚠️  WASPADA jika:
-═══════════════════════════════════════════════════════════════
-║  ❌ Diminta seed phrase via website/email/DM                 ║
-║  ❌ "Free airdrop" yang meminta connect + sign               ║
-║  ❌ URL yang mirip tapi tidak sama (metamask.io.fake.com)    ║
-║  ❌ Diminta approve unlimited token spending                 ║
-║  ❌ Pop-up tidak dari MetaMask extension                     ║
-═══════════════════════════════════════════════════════════════
+Compiled 1 Solidity file successfully (evm target: paris).
 ```
+
+**Jika ada error, periksa:**
+- Apakah ada typo di kode Solidity?
+- Apakah semua tanda kurung `{` `}` sudah berpasangan?
+- Apakah setiap baris diakhiri dengan titik koma `;`?
+
+**Hasil compile:**
+
+Setelah berhasil, akan muncul folder baru `artifacts/`:
+
+```
+artifacts/
+└── contract/
+    └── smart-contracts.sol/
+        └── EscrowContract.json   ← File penting!
+```
+
+**Isi file JSON:**
+
+| Bagian | Fungsi |
+|--------|--------|
+| `bytecode` | Kode mesin yang akan dikirim ke blockchain |
+| `abi` | "Daftar menu" fungsi contract |
+
+> **Tips**: Folder `artifacts/` dibuat otomatis. Jangan edit file di dalamnya secara manual.
+
+### 2.8 Deploy Contract ke Blockchain
+
+> **Langkah 7**: Siapkan koneksi dan deploy contract
+
+**A. Persiapan - Membuat file .env**
+
+File `.env` menyimpan data rahasia yang tidak boleh di-share ke orang lain.
+
+1. Buat file baru bernama `.env` di folder `smart-contract/contracts/`
+2. Isi dengan:
+
+```env
+RPC_URL=HTTP://127.0.0.1:7545
+PRIVATE_KEY=0x_private_key_dari_akun_lokal
+```
+
+**Cara mendapatkan nilai-nilai tersebut:**
+
+**Jika menggunakan Ganache:**
+1. Buka aplikasi Ganache
+2. **RPC URL**: Lihat di bagian atas, biasanya `HTTP://127.0.0.1:7545`
+3. **PRIVATE KEY**:
+   - Klik ikon kunci di samping salah satu akun
+   - Copy private key yang muncul
+   - Paste ke file `.env` (awali dengan `0x` jika belum ada)
+
+**Jika menggunakan Anvil:**
+1. Jalankan `anvil` di terminal
+2. RPC URL dan private key akan muncul otomatis di output
+
+> **PENTING**: Jangan pernah share file `.env` atau commit ke GitHub! Private key adalah seperti password ATM.
+
+---
+
+**B. Memahami Script Deploy**
+
+File `deploy.ts` sudah disiapkan. Mari pahami apa yang dilakukan:
+
+```typescript
+import dotenv from "dotenv";
+import { ethers } from "ethers";
+import { readFileSync } from "fs";
+
+dotenv.config();  // Membaca file .env
+
+async function main() {
+  // LANGKAH 1: Koneksi ke local blockchain
+  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+
+  console.log("Terhubung dengan wallet:", wallet.address);
+
+  // LANGKAH 2: Baca hasil compile
+  const artifact = JSON.parse(
+    readFileSync("./artifacts/contract/smart-contracts.sol/EscrowContract.json", "utf8"),
+  );
+
+  // LANGKAH 3: Deploy contract dengan parameter constructor
+  const factory = new ethers.ContractFactory(
+    artifact.abi,
+    artifact.bytecode,
+    wallet,
+  );
+
+  // Parameter: contractId, receiver, amount
+  const contract = await factory.deploy("ESCROW-001", "Bob", 100);
+  await contract.waitForDeployment();
+
+  console.log("Contract deployed ke:", await contract.getAddress());
+}
+
+main().catch(console.error);
+```
+
+**Penjelasan setiap langkah:**
+
+| Langkah | Kode | Fungsi |
+|---------|------|--------|
+| 1 | `new ethers.JsonRpcProvider(...)` | Koneksi ke blockchain |
+| 1 | `new ethers.Wallet(...)` | Membuat "dompet" untuk transaksi |
+| 2 | `readFileSync(...)` | Membaca hasil compile |
+| 3 | `new ethers.ContractFactory(...)` | Menyiapkan "pabrik" contract |
+| 3 | `factory.deploy(...)` | Men-deploy dengan parameter |
+
+---
+
+**C. Menjalankan Deploy**
+
+1. Pastikan Ganache/Anvil sudah berjalan
+2. Buka terminal di folder `smart-contract/contracts/`
+3. Jalankan:
+   ```bash
+   npx tsx deploy.ts
+   ```
+
+**Output yang diharapkan:**
+
+```
+Terhubung dengan wallet: 0x1234...5678
+Contract deployed ke: 0xAbCd...1234
+```
+
+> **PENTING**: Catat alamat contract (`0xAbCd...1234`) - kamu butuh ini untuk langkah selanjutnya!
+
+**Troubleshooting:**
+
+| Error | Penyebab | Solusi |
+|-------|----------|--------|
+| `connection refused` | Ganache/Anvil tidak jalan | Buka dan jalankan Ganache |
+| `invalid private key` | Format private key salah | Pastikan dimulai dengan `0x` |
+| `insufficient funds` | Saldo akun 0 | Gunakan akun lain di Ganache |
+
+### 2.9 Interaksi dengan Contract
+
+> **Langkah 8**: Berinteraksi dengan contract yang sudah di-deploy
+
+Setelah contract di-deploy, kita bisa memanggil fungsi-fungsinya menggunakan script `interact.ts`.
+
+**A. Update Alamat Contract**
+
+1. Buka file `interact.ts`
+2. Ganti `CONTRACT_ADDRESS` dengan alamat dari hasil deploy:
+
+```typescript
+const CONTRACT_ADDRESS = "0xAbCd...1234"; // GANTI dengan alamat dari hasil deploy
+```
+
+---
+
+**B. Memahami Script Interact**
+
+```typescript
+import dotenv from "dotenv";
+import { ethers } from "ethers";
+import { readFileSync } from "fs";
+
+dotenv.config();
+
+const CONTRACT_ADDRESS = "0xAbCd...1234"; // dari hasil deploy
+
+async function main() {
+  // Koneksi ke blockchain (sama seperti di deploy.ts)
+  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
+  const artifact = JSON.parse(
+    readFileSync("./artifacts/contract/smart-contracts.sol/EscrowContract.json", "utf8"),
+  );
+
+  // Membuat koneksi ke contract yang sudah di-deploy
+  const managed = new ethers.NonceManager(wallet);
+  const contract = new ethers.Contract(CONTRACT_ADDRESS, artifact.abi, managed);
+
+  // ===== MEMANGGIL FUNGSI VIEW (gratis, hanya membaca) =====
+  console.log("=== State Awal ===");
+  const state = await contract.getState();
+  console.log("Receiver:", state[0]);
+  console.log("Amount:", state[1].toString());
+  console.log("Released:", state[2]);
+
+  // ===== MEMANGGIL FUNGSI YANG MENGUBAH DATA (butuh transaksi) =====
+  console.log("\n=== Aktivasi Contract ===");
+  const tx1 = await contract.deployContract();
+  await tx1.wait(); // Tunggu transaksi selesai!
+  console.log("Contract berhasil diaktifkan");
+
+  // ===== CEK OWNER =====
+  console.log("\n=== Cek Owner ===");
+  const owner = await contract.getOwner();
+  console.log("Owner:", owner);
+
+  // ===== RELEASE DANA =====
+  console.log("\n=== Release Dana ===");
+  const tx2 = await contract.setRelease();
+  await tx2.wait();
+  console.log("Dana berhasil di-release");
+
+  // ===== STATE AKHIR =====
+  console.log("\n=== State Akhir ===");
+  const finalState = await contract.getState();
+  console.log("Receiver:", finalState[0]);
+  console.log("Amount:", finalState[1].toString());
+  console.log("Released:", finalState[2]);
+}
+
+main().catch(console.error);
+```
+
+---
+
+**C. Perbedaan Fungsi View vs Fungsi Biasa**
+
+| Aspek | Fungsi `view` | Fungsi biasa |
+|-------|---------------|--------------|
+| Contoh | `getState()`, `getOwner()` | `deployContract()`, `setRelease()` |
+| Mengubah data? | Tidak | Ya |
+| Butuh transaksi? | Tidak | Ya |
+| Biaya gas? | Gratis | Bayar gas |
+| Perlu `.wait()`? | Tidak | **Ya, wajib!** |
+
+> **Penting**: Untuk fungsi yang mengubah data, selalu tambahkan `await tx.wait()` untuk menunggu transaksi dikonfirmasi di blockchain.
+
+---
+
+**D. Menjalankan Interaksi**
+
+```bash
+npx tsx interact.ts
+```
+
+**Output yang diharapkan:**
+
+```
+=== State Awal ===
+Receiver: Bob
+Amount: 100
+Released: false
+
+=== Aktivasi Contract ===
+Contract berhasil diaktifkan
+
+=== Cek Owner ===
+Owner: 0x1234...5678
+
+=== Release Dana ===
+Dana berhasil di-release
+
+=== State Akhir ===
+Receiver: Bob
+Amount: 100
+Released: true
+```
+
+Perhatikan bahwa `Released` berubah dari `false` menjadi `true` setelah `setRelease()` dipanggil!
+
+### 2.10 Ringkasan: Apa yang Sudah Kita Lakukan
+
+**Selamat!** Kamu sudah berhasil:
+
+1. Menulis Smart Contract dengan Solidity
+2. Meng-compile kode menjadi bytecode
+3. Men-deploy contract ke local blockchain
+4. Berinteraksi dengan contract (memanggil fungsi)
+
+**Perubahan yang terjadi:**
+
+| State | Sebelum | Sesudah |
+|-------|---------|---------|
+| `isDeployed` | `false` | `true` |
+| `released` | `false` | `true` |
+
+Perubahan ini **tersimpan permanen** di blockchain! Jika kamu membuka Ganache, kamu bisa melihat transaksi-transaksi yang terjadi.
+
+**Cek di Ganache:**
+
+1. Buka tab "TRANSACTIONS" di Ganache
+2. Kamu akan melihat beberapa transaksi:
+   - Contract Creation (saat deploy)
+   - Transaction ke `deployContract()`
+   - Transaction ke `setRelease()`
+
+> **Eksperimen**: Coba jalankan `npx tsx interact.ts` lagi. Apa yang terjadi? (Hint: akan error karena `deployContract()` sudah pernah dipanggil!)
+
+---
+
+## 3. Pengujian Contract
+
+> **Bagian ini opsional untuk pemula**, tapi sangat penting dipahami untuk praktik profesional.
+
+### 3.1 Mengapa Contract Perlu Diuji?
+
+**Analogi**: Testing seperti **latihan ujian** sebelum ujian sesungguhnya. Lebih baik menemukan kesalahan saat latihan daripada saat ujian!
+
+**Alasan penting:**
+
+| Masalah | Penjelasan |
+|---------|------------|
+| Kode tidak bisa diubah | Setelah di-deploy ke mainnet, contract **permanen** |
+| Bug = kehilangan uang | Kesalahan bisa menyebabkan dana hilang **selamanya** |
+| Setiap aksi butuh biaya | Di mainnet, setiap transaksi membutuhkan ETH sungguhan |
+
+> **Contoh kasus nyata**: Pada tahun 2016, bug di smart contract DAO menyebabkan kerugian 60 juta USD!
+
+**Solusi**: Test contract di lingkungan "aman" (Hardhat Network) sebelum deploy ke mainnet.
+
+### 3.2 Struktur Test
+
+**Lokasi file test:**
+
+```
+test/
+└── EscrowContract.test.ts
+```
+
+**Struktur dasar file test:**
+
+```typescript
+import { expect } from "chai";       // Library untuk perbandingan
+import { network } from "hardhat";   // Koneksi ke Hardhat
+
+const { ethers } = await network.connect();
+
+describe("NamaContract", () => {
+  // Grup test untuk satu contract
+
+  it("deskripsi test case 1", async () => {
+    // Test case 1
+  });
+
+  it("deskripsi test case 2", async () => {
+    // Test case 2
+  });
+});
+```
+
+**Penjelasan struktur:**
+
+| Bagian | Fungsi | Analogi |
+|--------|--------|---------|
+| `describe(...)` | Mengelompokkan test | Seperti bab di buku |
+| `it(...)` | Satu test case | Seperti soal ujian |
+| `expect(...)` | Memeriksa hasil | Seperti kunci jawaban |
+
+### 3.3 Menulis Test Case
+
+**Prinsip dasar**: Setiap test case menguji **satu hal saja**.
+
+Ada 2 jenis test:
+
+---
+
+**1. Test Positive (Happy Path)** - Menguji alur normal yang seharusnya berhasil
+
+```typescript
+it("state awal setelah deploy sesuai parameter constructor", async () => {
+  // STEP 1: Deploy contract dengan parameter
+  const contract = await ethers.deployContract("EscrowContract", [
+    "ESCROW-001",  // contractId
+    "Bob",         // receiver
+    100            // amount
+  ]);
+  await contract.waitForDeployment();
+
+  // STEP 2: Panggil fungsi untuk dapat data
+  const state = await contract.getState();
+
+  // STEP 3: Bandingkan dengan yang diharapkan
+  expect(state[0]).to.equal("Bob");       // receiver harus "Bob"
+  expect(state[1]).to.equal(100n);        // amount harus 100
+  expect(state[2]).to.equal(false);       // released harus false
+});
+```
+
+**Penjelasan `expect`:**
+- `expect(A).to.equal(B)` = "Harapkan A sama dengan B"
+- Jika tidak sama, test **gagal**
+
+> **Catatan**: `100n` (dengan huruf `n`) adalah BigInt, tipe angka khusus di JavaScript untuk angka besar.
+
+---
+
+**2. Test Negative (Error Path)** - Menguji bahwa error muncul saat kondisi tidak terpenuhi
+
+```typescript
+// Fungsi helper untuk mengecek error
+async function expectRevert(promise: Promise<unknown>, message: string) {
+  try {
+    await promise;
+    throw new Error("Seharusnya error, tapi tidak");
+  } catch (e: any) {
+    expect(e.message).to.include(message);
+  }
+}
+
+it("setRelease gagal jika bukan owner", async () => {
+  // STEP 1: Dapatkan 2 akun berbeda
+  const [owner, orang_lain] = await ethers.getSigners();
+
+  // STEP 2: Deploy contract (owner = akun pertama)
+  const contract = await ethers.deployContract("EscrowContract", [
+    "ESCROW-001", "Bob", 100
+  ]);
+  await contract.waitForDeployment();
+
+  // Aktifkan contract dulu
+  await contract.deployContract();
+
+  // STEP 3: Coba panggil setRelease dari akun lain (bukan owner)
+  await expectRevert(
+    contract.connect(orang_lain).setRelease(),  // Panggil dari orang_lain
+    "hanya owner yang bisa release"              // Pesan error yang diharapkan
+  );
+});
+```
+
+**Penjelasan:**
+- `ethers.getSigners()` = Dapatkan daftar akun test
+- `contract.connect(akun_lain)` = Panggil contract dari akun lain
+- Test ini **berhasil** jika muncul error dengan pesan yang sesuai
+
+### 3.4 Menjalankan Test
+
+> **Langkah 9**: Jalankan semua test
+
+**Cara menjalankan:**
+
+```bash
+npx hardhat test
+```
+
+**Output saat semua test LULUS:**
+
+```
+Running Mocha tests
+
+  EscrowContract
+    ✔ state awal setelah deploy sesuai parameter constructor
+    ✔ owner sesuai dengan deployer
+    ✔ fungsi aktivasi mengubah status menjadi true
+    ✔ fungsi aktivasi tidak bisa dipanggil dua kali
+    ✔ fungsi release berhasil pada alur normal
+    ✔ fungsi release gagal jika belum diaktifkan
+    ✔ fungsi release gagal jika bukan owner
+    ✔ fungsi release tidak bisa dipanggil dua kali
+
+  8 passing (163ms)
+```
+
+**Cara membaca output:**
+- `✔` = Test lulus (hijau)
+- `✘` = Test gagal (merah)
+- `8 passing` = 8 dari 8 test berhasil
+
+**Jika ada test GAGAL:**
+
+```
+  EscrowContract
+    ✔ state awal setelah deploy sesuai parameter constructor
+    ✘ owner sesuai dengan deployer
+      AssertionError: expected '0x123...' to equal '0x456...'
+        at Context.<anonymous> (test/EscrowContract.test.ts:25:18)
+```
+
+**Cara debug:**
+1. Baca pesan error (`AssertionError: expected ... to equal ...`)
+2. Lihat file dan baris yang error (`test/EscrowContract.test.ts:25`)
+3. Periksa kode di baris tersebut
+
+> **Tips**: Jalankan test setiap kali kamu mengubah kode contract. Lebih baik menemukan bug lebih awal!
 
 ---
 
 ## Latihan
 
-1. **Setup Wallet**
+> **Petunjuk**: Kerjakan latihan secara berurutan. Latihan 1-2 adalah modifikasi contract yang sudah ada. Latihan 3-5 adalah membuat contract baru.
 
-   - Install MetaMask di browser
-   - Buat wallet baru
-   - Backup seed phrase dengan aman
-   - Tambahkan 2 akun baru
-2. **Network & Faucet**
+---
 
-   - Tambahkan Sepolia testnet ke MetaMask
-   - Dapatkan Sepolia ETH dari faucet
-   - Kirim 0.01 ETH ke akun kedua Anda
-3. **Deploy Smart Contract**
+### Latihan 1: Tambah Fungsi Refund (Tingkat: Mudah)
 
-   - Connect MetaMask ke Remix IDE
-   - Deploy contract HelloWorld ke Sepolia
-   - Panggil function `setMessage` dan verifikasi perubahan
-4. **Eksplorasi Transaksi**
+**Tugas**: Tambahkan fungsi `refund()` yang memungkinkan owner menarik kembali dana jika `released` masih `false`.
 
-   - Lihat transaksi di Etherscan Sepolia
-   - Identifikasi: transaction hash, gas used, block number
-   - Bandingkan gas fee antara Low, Market, dan Aggressive
-5. **Keamanan**
+**Hint kode:**
 
-   - List 3 dApp yang Anda connect
-   - Disconnect semua dApp yang tidak digunakan
-   - Export private key akun testing (dan pahami risikonya)
-6. **Challenge: Multi-sig Simulation**
+```sol
+function refund() external {
+    // 1. Cek apakah pemanggil adalah owner
+    // 2. Cek apakah released masih false
+    // 3. Lakukan sesuatu (misalnya set released = true dan emit event)
+}
+```
 
-   - Buat 3 akun berbeda di MetaMask
-   - Deploy contract voting dari Module 07
-   - Lakukan voting dari 3 akun berbeda
-   - Verifikasi hasil di Etherscan
+**Langkah pengerjaan:**
+1. Buka file `smart-contracts.sol`
+2. Tambahkan fungsi `refund()` di bawah fungsi `setRelease()`
+3. Compile ulang: `npx hardhat compile`
+4. Buat test case untuk fungsi ini
+
+---
+
+### Latihan 2: Tambah Status Text (Tingkat: Mudah)
+
+**Tugas**: Tambahkan variabel `string public status` yang nilainya berubah sesuai kondisi:
+- `"pending"` - saat pertama di-deploy
+- `"released"` - setelah `setRelease()` dipanggil
+- `"refunded"` - setelah `refund()` dipanggil
+
+**Langkah pengerjaan:**
+1. Tambahkan state variable: `string public status;`
+2. Di constructor, set: `status = "pending";`
+3. Di `setRelease()`, tambahkan: `status = "released";`
+4. Di `refund()`, tambahkan: `status = "refunded";`
+5. Ubah `getState()` agar juga mengembalikan `status`
+
+---
+
+### Latihan 3: Buat VotingContract (Tingkat: Menengah)
+
+**Tugas**: Buat contract baru untuk sistem voting sederhana.
+
+**Spesifikasi:**
+- Menyimpan daftar kandidat dan jumlah suaranya
+- Fungsi `vote(string memory candidate)` - setiap alamat hanya boleh vote 1x
+- Fungsi `getResult(string memory candidate)` - melihat jumlah suara
+
+**Hint struktur:**
+
+```sol
+contract VotingContract {
+    // Mapping untuk menyimpan jumlah suara per kandidat
+    mapping(string => uint) public votes;
+
+    // Mapping untuk mencatat siapa saja yang sudah vote
+    mapping(address => bool) public hasVoted;
+
+    function vote(string memory candidate) public {
+        // 1. Cek apakah pemanggil sudah pernah vote
+        // 2. Jika belum, tambah suara ke kandidat
+        // 3. Tandai bahwa pemanggil sudah vote
+    }
+
+    function getResult(string memory candidate) public view returns (uint) {
+        // Kembalikan jumlah suara kandidat
+    }
+}
+```
+
+> **Konsep baru: `mapping`** - Seperti dictionary di Python. `mapping(string => uint)` artinya "dari string ke angka".
+
+---
+
+### Latihan 4: Deploy dan Test VotingContract (Tingkat: Menengah)
+
+**Tugas**: Deploy `VotingContract` ke local blockchain dan test menggunakan script interact.
+
+**Langkah:**
+1. Buat file `deploy-voting.ts` (copy dari `deploy.ts`, sesuaikan nama contract)
+2. Buat file `interact-voting.ts` untuk simulasi voting
+3. Simulasikan beberapa akun berbeda yang melakukan vote
+
+**Hint untuk menggunakan akun berbeda:**
+
+```typescript
+// Di Ganache, kamu bisa copy private key dari beberapa akun berbeda
+const wallet1 = new ethers.Wallet(PRIVATE_KEY_1, provider);
+const wallet2 = new ethers.Wallet(PRIVATE_KEY_2, provider);
+
+// Atau gunakan provider.getSigner() jika pakai Hardhat Network
+```
+
+---
+
+### Latihan 5: Test Case untuk VotingContract (Tingkat: Menengah)
+
+**Tugas**: Tulis minimal 5 test case untuk `VotingContract`.
+
+**Test case yang disarankan:**
+1. Vote berhasil menambah jumlah suara
+2. Satu alamat tidak bisa vote dua kali (harus error)
+3. Dua alamat berbeda bisa vote kandidat yang sama
+4. `getResult()` mengembalikan 0 untuk kandidat yang belum pernah di-vote
+5. Vote dari 3 akun berbeda ke kandidat yang sama menghasilkan total 3 suara
+
+**Template test:**
+
+```typescript
+describe("VotingContract", () => {
+  it("vote berhasil menambah jumlah suara", async () => {
+    // Deploy contract
+    // Vote untuk "Alice"
+    // Cek getResult("Alice") == 1
+  });
+
+  it("satu alamat tidak bisa vote dua kali", async () => {
+    // Deploy contract
+    // Vote pertama (harus berhasil)
+    // Vote kedua (harus error)
+  });
+
+  // ... tambahkan test case lainnya
+});
+```
+
+---
+
+## Checklist Penyelesaian
+
+Tandai setiap item yang sudah selesai:
+
+- [ ] Berhasil install Node.js dan pnpm
+- [ ] Berhasil menjalankan Ganache
+- [ ] Berhasil compile contract (`npx hardhat compile`)
+- [ ] Berhasil deploy contract (`npx tsx deploy.ts`)
+- [ ] Berhasil interact dengan contract (`npx tsx interact.ts`)
+- [ ] Berhasil menjalankan test (`npx hardhat test`)
+- [ ] Menyelesaikan Latihan 1
+- [ ] Menyelesaikan Latihan 2
+- [ ] Menyelesaikan Latihan 3
+- [ ] Menyelesaikan Latihan 4
+- [ ] Menyelesaikan Latihan 5
+
+> **Butuh bantuan?** Jika stuck, coba baca ulang bagian teori yang relevan atau tanyakan ke asisten/dosen.
