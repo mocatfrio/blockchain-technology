@@ -1,1361 +1,741 @@
-# Module 10. Smart Contract dengan Solidity dan Hardhat
+# Module 10. Smart Contract Testing
 
 ## Deskripsi
 
-Modul ini adalah kelanjutan dari Module 08, di mana Smart Contract disimulasikan menggunakan Python. Pada modul ini, Smart Contract diimplementasikan secara nyata menggunakan **Solidity** - bahasa pemrograman khusus untuk Smart Contract di jaringan Ethereum - dan di-deploy ke blockchain lokal menggunakan **Hardhat** dan local blockchain node.
+Modul ini membahas cara menulis **unit test** untuk smart contract menggunakan Hardhat. Testing adalah komponen krusial dalam development smart contract karena bug yang sudah dideploy ke blockchain sulit untuk diperbaiki.
 
-> **Untuk Pemula**: Jangan khawatir jika belum pernah coding sebelumnya. Modul ini akan memandu langkah demi langkah dengan penjelasan yang detail. Ikuti setiap langkah secara berurutan dan jangan melompat-lompat.
+## Tujuan Pembelajaran
 
-**Apa yang akan kamu pelajari:**
+Setelah menyelesaikan modul ini, mahasiswa mampu:
 
-1. Menulis Smart Contract menggunakan bahasa Solidity
-2. Mengkompilasi (mengubah kode menjadi program yang bisa dijalankan) dan men-deploy (memasang) contract menggunakan Hardhat
-3. Berinteraksi dengan contract yang sudah di-deploy menggunakan ethers.js
-4. Menguji kebenaran contract secara otomatis menggunakan Hardhat Test
-
-Berikut adalah [full code](smart-contract/contracts/) yang dibahas pada modul ini.
+1. Memahami pentingnya testing dalam smart contract development
+2. Menulis test menggunakan Mocha dan Chai
+3. Menguji skenario berhasil (positive test)
+4. Menguji skenario gagal (negative test)
+5. Menguji access control
+6. Menguji event emission
+7. Menggunakan test coverage untuk mengukur kualitas test
 
 ## Prasyarat
 
-> **PENTING**: Pastikan kamu sudah menyelesaikan **[Module 09: Persiapan Environment](module-09.md)** sebelum melanjutkan!
-
-Sebelum mempelajari modul ini, pastikan:
-
-1. [Menginstall Python dan Visual Studio Code](module-01.md)
-2. Memahami [konsep dasar blockchain](module-02.md)
-3. Memahami [konsep Smart Contract dengan Remix](module-08.md)
-4. **[Sudah menyelesaikan instalasi tools di Module 09](module-09.md)**
-
-### Checklist Kesiapan
-
-Sebelum mulai, pastikan semua ini sudah berfungsi:
-
-| Tool | Cara Cek | Expected |
-|------|----------|----------|
-| Node.js | `node --version` | v20.x.x atau lebih baru |
-| pnpm | `pnpm --version` | 8.x.x atau lebih baru |
-| Ganache | Buka aplikasi | Muncul daftar 10 akun |
-
-Jika ada yang belum terinstall, kembali ke **[Module 09](module-09.md)**.
-
-### Sebelum Memulai
-
-Pastikan:
-1. **Ganache sudah berjalan** (buka aplikasi, klik Quickstart)
-2. **Sudah punya Private Key** dari salah satu akun di Ganache
-3. **Sudah install dependensi project**:
-   ```bash
-   cd smart-contract/contracts
-   pnpm install
-   ```
+- Sudah menyelesaikan Module 09 (Hardhat Setup & Compile)
+- Project Hardhat sudah ter-setup dengan contract `CourseReward.sol`
+- Memahami dasar JavaScript (function, async/await)
 
 ## List of Contents
 
 - [Deskripsi](#deskripsi)
+- [Tujuan Pembelajaran](#tujuan-pembelajaran)
 - [Prasyarat](#prasyarat)
-- [List of Contents](#list-of-contents)
-- [1. Teori Dasar](#1-teori-dasar)
-  - [1.1 Dari Simulasi ke Implementasi Nyata](#11-dari-simulasi-ke-implementasi-nyata)
-  - [1.2 Ethereum Virtual Machine (EVM)](#12-ethereum-virtual-machine-evm)
-  - [1.3 Apa itu Solidity?](#13-apa-itu-solidity)
-  - [1.4 Komponen Utama Solidity](#14-komponen-utama-solidity)
-  - [1.5 Apa itu Hardhat?](#15-apa-itu-hardhat)
-  - [1.6 Alur Kerja Smart Contract](#16-alur-kerja-smart-contract)
-- [2. Implementasi Program (Hands-On)](#2-implementasi-program-hands-on)
-  - [2.1 Struktur Proyek](#21-struktur-proyek)
-  - [2.2 Menulis Smart Contract](#22-menulis-smart-contract)
-  - [2.3 State Variables](#23-state-variables)
-  - [2.4 Constructor](#24-constructor)
-  - [2.5 Functions dan Access Control](#25-functions-dan-access-control)
-  - [2.6 Konfigurasi Hardhat](#26-konfigurasi-hardhat)
-  - [2.7 Kompilasi Contract](#27-kompilasi-contract)
-  - [2.8 Deploy Contract ke Blockchain](#28-deploy-contract-ke-blockchain)
-  - [2.9 Interaksi dengan Contract](#29-interaksi-dengan-contract)
-  - [2.10 Program Utama](#210-program-utama)
-- [3. Pengujian Contract](#3-pengujian-contract)
-  - [3.1 Mengapa Contract Perlu Diuji?](#31-mengapa-contract-perlu-diuji)
-  - [3.2 Struktur Test](#32-struktur-test)
-  - [3.3 Menulis Test Case](#33-menulis-test-case)
-  - [3.4 Menjalankan Test](#34-menjalankan-test)
-- [Latihan](#latihan)
+- [1. Pentingnya Testing](#1-pentingnya-testing)
+- [2. Testing Framework di Hardhat](#2-testing-framework-di-hardhat)
+- [3. Struktur Test File](#3-struktur-test-file)
+- [4. Setup Test Environment](#4-setup-test-environment)
+- [5. Menulis Test Cases](#5-menulis-test-cases)
+- [6. Test Skenario Gagal](#6-test-skenario-gagal)
+- [7. Test Access Control](#7-test-access-control)
+- [8. Test Event](#8-test-event)
+- [9. Menjalankan Test](#9-menjalankan-test)
+- [10. Test Coverage](#10-test-coverage)
+- [Ringkasan](#ringkasan)
+- [Tugas](#tugas)
 
 ---
 
-## 1. Teori Dasar
+## 1. Pentingnya Testing
 
-### 1.1 Dari Simulasi ke Implementasi Nyata
-
-**Analogi Sederhana:**
-- Module 08 (Python) = Bermain monopoli dengan uang mainan di rumah
-- Module 10 (Solidity) = Bermain monopoli dengan aturan resmi di kompetisi
-
-Pada Module 08, kita "berpura-pura" membuat Smart Contract menggunakan Python. Itu bagus untuk belajar konsep, tapi belum nyata. Sekarang kita akan membuat Smart Contract yang benar-benar bisa berjalan di blockchain Ethereum.
-
-**Perbedaan utama:**
-
-| Aspek      | Module 08 (Python)          | Module 10 (Solidity)                             |
-| ---------- | --------------------------- | ------------------------------------------------ |
-| Bahasa     | Python                      | Solidity                                         |
-| Lingkungan | Memori komputer biasa       | Ethereum Virtual Machine (EVM)                   |
-| Blockchain | Dibuat sendiri (simulasi)   | Local blockchain (Ganache/Anvil/Hardhat Network) |
-| Deploy     | Panggil fungsi Python       | Transaksi ke blockchain                          |
-| Verifikasi | `is_chain_valid()` manual | Test otomatis (Hardhat)                          |
-
-> Pada Module 08 bahkan sudah disebutkan: _"kita belum membangun smart contract di jaringan blockchain nyata seperti Ethereum."_ - Modul ini mengimplementasikan dari pernyataan tersebut.
-
-**Tabel referensi** - Jika kamu sudah mengerjakan Module 08, berikut perbandingan kode Python dengan Solidity:
-
-| Komponen                    | Python (Module 08) | Solidity (Module 10)                  |
-| --------------------------- | ------------------ | ------------------------------------- |
-| `self.contract_id`        | `string`         | `string public contractId`          |
-| `self.owner`              | `string`         | `address private owner`             |
-| `self.is_deployed`        | `bool`           | `bool public isDeployed`            |
-| `self.state['released']`  | `bool`           | `bool public released`              |
-| `def deploy()`            | method Python      | `function deployContract() public`  |
-| `execute('release')`      | method Python      | `function setRelease() external`    |
-| `execute('check')`        | method Python      | `function getState() external view` |
-| `if caller != self.owner` | validasi manual    | `require(msg.sender == owner, ...)` |
-
-> **Tidak perlu hafal tabel di atas!** Ini hanya untuk referensi. Yang penting adalah memahami konsepnya.
-
-### 1.2 Ethereum Virtual Machine (EVM)
-
-**Analogi Sederhana:**
-
-Bayangkan EVM seperti **mesin arcade** di pusat permainan:
-- Semua mesin arcade di seluruh dunia menjalankan game yang sama persis
-- Kamu masukkan koin (gas) untuk bermain
-- Hasil permainan selalu sama jika kamu melakukan gerakan yang sama
-- Mesin tidak bisa mengakses internet atau hal lain di luar game
-
-**EVM (Ethereum Virtual Machine)** adalah "komputer virtual" yang menjalankan Smart Contract di jaringan Ethereum. Setiap komputer (node) di jaringan Ethereum menjalankan EVM yang identik.
-
-**Karakteristik EVM (dalam bahasa sederhana):**
-
-| Karakteristik | Penjelasan | Analogi |
-|---------------|------------|---------|
-| **Deterministik** | Input sama = output sama, selalu | Seperti kalkulator: 2+2 selalu = 4 |
-| **Terisolasi** | Tidak bisa akses file atau internet | Seperti komputer tanpa WiFi |
-| **Berbasis gas** | Setiap operasi butuh "biaya bensin" | Seperti mobil yang butuh bensin untuk jalan |
-
-![diagram EVM 1](image/module-10/evm.png)
-
-**Proses dari kode ke eksekusi:**
-
-```
-Kode Solidity (.sol)     -->    Bytecode (kode mesin)    -->    Dijalankan di EVM
-(yang kita tulis)              (hasil compile)                  (di blockchain)
-```
-
-Kode Solidity tidak langsung dieksekusi - ia terlebih dahulu **dikompilasi** (diubah) menjadi **bytecode** yang dipahami EVM. Proses ini mirip seperti menerjemahkan bahasa Indonesia ke bahasa mesin.
-
-![diagram EVM](image/module-10/evm2.png)
-
-### 1.3 Apa itu Solidity?
-
-**[Solidity](https://docs.soliditylang.org)** adalah bahasa pemrograman khusus untuk menulis Smart Contract. Jika Python digunakan untuk berbagai macam program, Solidity khusus untuk membuat "perjanjian digital" di blockchain.
-
-> **Untuk Pemula**: Jangan khawatir jika belum pernah coding. Solidity sebenarnya cukup mirip dengan bahasa manusia. Kita akan pelajari pelan-pelan.
-
-**Ciri khas Solidity:**
-
-| Ciri | Penjelasan | Contoh |
-|------|------------|--------|
-| Tipe data khusus | Ada tipe `address` untuk alamat wallet | `address owner` |
-| Data permanen | Variabel tersimpan di blockchain selamanya | `uint public saldo` |
-| Pengirim transaksi | Bisa tahu siapa yang memanggil fungsi | `msg.sender` |
-| Validasi ketat | Pakai `require()` untuk cek kondisi | `require(umur >= 18)` |
-
-**Contoh contract Solidity paling sederhana:**
-
-```sol
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
-contract Simpan {
-    uint public angka;
-
-    function simpan(uint _angka) public {
-        angka = _angka;
-    }
-}
-```
-
-**Penjelasan baris per baris:**
-
-```sol
-// SPDX-License-Identifier: MIT
-```
-Baris 1: Komentar yang menyatakan lisensi kode (MIT = bebas dipakai siapa saja)
-
-```sol
-pragma solidity ^0.8.0;
-```
-Baris 2: Menyatakan versi Solidity yang digunakan. `^0.8.0` artinya versi 0.8.0 ke atas
-
-```sol
-contract Simpan {
-```
-Baris 3: Membuat contract baru bernama "Simpan". Kurung kurawal `{` menandai awal isi contract
-
-```sol
-    uint public angka;
-```
-Baris 4: Membuat variabel bernama `angka`. `uint` = bilangan bulat positif. `public` = bisa dilihat semua orang
-
-```sol
-    function simpan(uint _angka) public {
-        angka = _angka;
-    }
-```
-Baris 5-7: Membuat fungsi bernama `simpan` yang menerima input `_angka` dan menyimpannya ke variabel `angka`
-
-```sol
-}
-```
-Baris 8: Kurung kurawal penutup, menandai akhir contract
-
-**Meskipun sederhana, ini sudah merupakan Smart Contract yang valid!** Siapapun dapat memanggil `simpan()` dan membaca `angka`.
-
-### 1.4 Komponen Utama Solidity
-
-> **Tips Belajar**: Tidak perlu hafal semua ini sekarang. Bagian ini bisa dijadikan referensi saat kamu mengerjakan hands-on nanti.
-
-#### Tipe Data (Jenis Variabel)
-
-**Analogi**: Seperti jenis-jenis kotak penyimpanan. Ada kotak untuk angka, kotak untuk teks, dll.
-
-| Tipe        | Contoh                           | Penjelasan Sederhana                       |
-| ----------- | -------------------------------- | ------------------------------------------ |
-| `uint`    | `uint public amount = 50`      | Angka bulat positif (0, 1, 2, 3, ...)      |
-| `bool`    | `bool public released = false` | Nilai benar (`true`) atau salah (`false`)  |
-| `string`  | `string public name = "Alice"` | Teks/kata-kata                             |
-| `address` | `address private owner`        | Alamat wallet Ethereum (seperti nomor rekening) |
-
-**Contoh penggunaan:**
-```sol
-uint public umur = 25;           // Angka: 25 tahun
-bool public sudahMenikah = false; // Ya/Tidak: belum menikah
-string public nama = "Budi";     // Teks: nama Budi
-address public pemilik;          // Alamat wallet pemilik
-```
-
-#### Visibility (Siapa yang Boleh Akses)
-
-**Analogi**: Seperti pengaturan privasi di media sosial.
-
-| Visibility   | Analogi                        | Penjelasan                                                                                      |
-| ------------ | ------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `public`   | Profil publik                  | Semua orang bisa lihat dan akses                                                              |
-| `private`  | Chat pribadi                   | Hanya bisa diakses dari dalam contract itu sendiri                                              |
-| `external` | Hanya untuk orang luar         | Fungsi yang hanya bisa dipanggil dari luar contract                                            |
-| `internal` | Grup keluarga                  | Bisa diakses dari contract ini dan contract "anak"nya                                          |
-
-**Yang paling sering dipakai untuk pemula:**
-- `public` - untuk variabel/fungsi yang perlu diakses dari luar
-- `private` - untuk variabel rahasia (seperti owner)
-
-#### Data Location (Lokasi Penyimpanan Sementara)
-
-**Analogi**: Seperti perbedaan RAM dan hard disk di komputer.
-
-| Lokasi       | Analogi                           | Keterangan                                           |
-| ------------ | --------------------------------- | ---------------------------------------------------- |
-| `memory`   | Catatan di papan tulis            | Sementara, dihapus setelah fungsi selesai            |
-| `calldata` | Surat yang dikirim (read-only)    | Data input, tidak bisa diubah                        |
-
-```sol
-// memory: data bisa dimodifikasi di dalam fungsi
-function ubah(string memory _teks) public { ... }
-
-// calldata: lebih hemat biaya, cocok untuk input yang tidak diubah
-function simpan(string calldata _teks) external { ... }
-```
-
-> **Tips**: Untuk pemula, gunakan `memory` dulu. Nanti seiring pengalaman, bisa optimasi dengan `calldata`.
-
-#### require() - Penjaga Keamanan
-
-**Analogi**: Seperti satpam yang mengecek KTP sebelum masuk gedung.
-
-`require()` mengecek kondisi. Jika kondisi **tidak terpenuhi**, transaksi **dibatalkan** dan muncul pesan error.
-
-```sol
-function tarikDana() external {
-    require(msg.sender == owner, "hanya owner yang boleh");
-    require(saldo > 0, "saldo kosong");
-    // kode di sini hanya dijalankan jika SEMUA require terpenuhi
-}
-```
-
-**Cara membaca kode di atas:**
-1. Cek: apakah yang memanggil fungsi adalah owner? Jika bukan, batalkan dengan pesan "hanya owner yang boleh"
-2. Cek: apakah saldo lebih dari 0? Jika tidak, batalkan dengan pesan "saldo kosong"
-3. Jika kedua kondisi OK, lanjut eksekusi
-
-![komponen solidity](image/module-10/sol2.png)
-
-### 1.5 Apa itu Hardhat?
-
-**Analogi**: Hardhat adalah seperti **dapur lengkap** untuk memasak Smart Contract. Di dalamnya ada kompor (compile), alat tes rasa (test), dan wadah untuk menyajikan (deploy).
-
-**[Hardhat](https://hardhat.org/docs)** adalah alat pengembangan untuk Smart Contract Ethereum. Ia menyediakan tiga fungsi utama:
-
-| Fungsi | Penjelasan | Analogi |
-|--------|------------|---------|
-| **Compile** | Mengubah kode Solidity menjadi kode mesin | Menerjemahkan resep ke bahasa mesin |
-| **Test** | Menguji apakah contract bekerja dengan benar | Mencicipi masakan sebelum disajikan |
-| **Deploy** | Memasang contract ke blockchain | Menyajikan masakan ke pelanggan |
-
-**Apa itu ABI?**
-
-ABI (Application Binary Interface) adalah "daftar menu" dari contract kita. Ia berisi informasi tentang fungsi apa saja yang ada di contract dan bagaimana cara memanggilnya.
-
-```
-smart-contracts.sol          (kode yang kita tulis)
-       │
-       ▼  npx hardhat compile
-artifacts/
-├── bytecode  → kode mesin yang dikirim ke blockchain
-└── ABI       → "daftar menu" fungsi-fungsi contract
-```
-
-**[ethers.js](https://docs.ethers.org)** adalah library JavaScript yang membantu kita berinteraksi dengan blockchain. Ia menggunakan ABI untuk tahu cara "berbicara" dengan contract kita.
-
-### 1.6 Alur Kerja Smart Contract
-
-> **Catatan**: Penjelasan tentang Local Blockchain (Ganache) sudah dibahas di **[Module 09](module-09.md)**. Pastikan Ganache sudah berjalan sebelum melanjutkan.
-
-**Gambaran besar** - ini adalah langkah-langkah yang akan kita lakukan di hands-on:
+### 1.1 Mengapa Smart Contract Harus Ditest?
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  1. TULIS CONTRACT                                              │
-│     Buat file .sol dengan kode Solidity                         │
-│     📁 contract/smart-contracts.sol                             │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  2. COMPILE (npx hardhat compile)                               │
-│     Ubah kode Solidity → bytecode + ABI                         │
-│     📁 artifacts/... (hasil otomatis)                           │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  3. DEPLOY (node deploy.ts)                                     │
-│     Kirim contract ke blockchain → dapat alamat contract        │
-│     Contoh: 0xAbCd...1234                                       │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  4. INTERACT (node interact.ts)                                 │
-│     Panggil fungsi-fungsi di contract                           │
-│     Contoh: deployContract(), setRelease(), getState()          │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  5. TEST (npx hardhat test)                                     │
-│     Verifikasi contract bekerja dengan benar                    │
-│     ✓ Test lulus = contract aman untuk di-deploy                │
+│               MENGAPA TESTING PENTING?                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ❌ Tanpa Testing:                                              │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐          │
+│  │   Write     │───►│   Deploy    │───►│    BUG!     │          │
+│  │   Code      │    │  to Chain   │    │  Sulit Fix  │          │
+│  └─────────────┘    └─────────────┘    └─────────────┘          │
+│                                                                 │
+│  ✅ Dengan Testing:                                             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐          │
+│  │   Write     │───►│    Test     │───►│   Deploy    │          │
+│  │   Code      │    │  Locally    │    │  Confident  │          │
+│  └─────────────┘    └─────────────┘    └─────────────┘          │
+│                            │                                    │
+│                            ▼                                    │
+│                     ┌─────────────┐                             │
+│                     │  Find Bug   │                             │
+│                     │  Fix Early  │                             │
+│                     └─────────────┘                             │
+│                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-> **Tips**: Simpan diagram ini sebagai referensi. Setiap kali bingung "sedang di langkah mana", lihat kembali diagram ini.
+### 1.2 Karakteristik Smart Contract
 
----
+| Karakteristik       | Implikasi                            |
+| ------------------- | ------------------------------------ |
+| **Immutable** | Tidak bisa diubah setelah deploy     |
+| **Public**    | Semua orang bisa lihat dan panggil   |
+| **Financial** | Sering mengelola aset bernilai       |
+| **Permanent** | Bug tercatat selamanya di blockchain |
 
-## 2. Implementasi Program (Hands-On)
+### 1.3 Manual Testing vs Automated Testing
 
-> **Mulai dari sini!** Ikuti setiap langkah secara berurutan. Jangan melompat-lompat.
+| Aspek                   | Manual (Remix)              | Automated (Hardhat)      |
+| ----------------------- | --------------------------- | ------------------------ |
+| **Proses**        | Klik function satu per satu | Jalankan script          |
+| **Repeatability** | Sulit diulang persis sama   | Selalu konsisten         |
+| **Coverage**      | Mudah lupa skenario         | Semua skenario tercatat  |
+| **Documentation** | Tidak ada                   | Test sebagai dokumentasi |
+| **CI/CD**         | Tidak bisa                  | Bisa otomatis            |
 
-### 2.1 Struktur Proyek
+## 2. Testing Framework di Hardhat
 
-Pertama, pahami struktur folder project kita:
+### 2.1 Komponen Testing
 
-```
-smart-contract/
-├── contracts/                    # Folder utama untuk Solidity
-│   ├── contract/
-│   │   └── smart-contracts.sol   # 📝 Kode Solidity (yang akan kita tulis)
-│   ├── test/
-│   │   └── BlockchainClass.test.ts  # File test
-│   ├── artifacts/                # 📦 Hasil compile (dibuat otomatis)
-│   ├── deploy.ts                 # 🚀 Script untuk deploy contract
-│   ├── interact.ts               # 🔗 Script untuk berinteraksi dengan contract
-│   ├── hardhat.config.ts         # ⚙️ Konfigurasi Hardhat
-│   ├── .env                      # 🔑 Variabel rahasia (private key, dll)
-│   └── package.json              # 📋 Daftar library yang dibutuhkan
-└── smart_contract.py             # Python dari Module 08
-```
+Hardhat menggunakan kombinasi tools untuk testing:
 
-**Penjelasan file-file penting:**
+| Tool                            | Fungsi                                     |
+| ------------------------------- | ------------------------------------------ |
+| **Mocha**                 | Test framework (describe, it, beforeEach)  |
+| **Chai**                  | Assertion library (expect, to.equal)       |
+| **Hardhat Chai Matchers** | Assertion khusus untuk smart contract      |
+| **Ethers.js**             | Library untuk berinteraksi dengan contract |
 
-| File | Fungsi | Kapan dipakai |
-|------|--------|---------------|
-| `smart-contracts.sol` | Kode Smart Contract | Langkah pertama: menulis contract |
-| `deploy.ts` | Script untuk memasang contract | Setelah compile |
-| `interact.ts` | Script untuk memanggil fungsi contract | Setelah deploy |
-| `.env` | Menyimpan data rahasia (private key) | Dibutuhkan untuk deploy |
+### 2.2 Instalasi
 
-### 2.2 Menulis Smart Contract
-
-> **Langkah 1**: Buat file Smart Contract
-
-**Cara membuat file:**
-1. Buka VS Code
-2. Buka folder `smart-contract/contracts`
-3. Buat folder baru bernama `contract` (jika belum ada)
-4. Di dalam folder `contract`, buat file baru bernama `smart-contracts.sol`
-
-**Struktur dasar file Solidity:**
-
-Setiap file `.sol` harus dimulai dengan 2 baris wajib:
-
-```sol
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-```
-
-**Penjelasan:**
-
-| Baris | Kode | Fungsi |
-|-------|------|--------|
-| 1 | `// SPDX-License-Identifier: MIT` | Menyatakan lisensi (MIT = bebas dipakai) |
-| 2 | `pragma solidity ^0.8.0;` | Versi Solidity yang digunakan |
-
-> **Catatan**: `^0.8.0` artinya gunakan versi 0.8.0 atau lebih baru, tapi masih di bawah 0.9.0
-
-**Selanjutnya, deklarasikan contract:**
-
-```sol
-contract NamaContract {
-    // isi contract di sini
-}
-```
-
-**Analogi**: Membuat contract seperti membuat class di Python atau Java - kita definisikan "cetakan" yang nanti bisa digunakan.
-
-> **Tips**: Satu file `.sol` biasanya berisi satu contract utama. Nama contract sebaiknya menggunakan PascalCase (huruf besar di awal setiap kata).
-
-### 2.3 State Variables (Variabel yang Tersimpan di Blockchain)
-
-> **Langkah 2**: Tambahkan variabel ke dalam contract
-
-**Apa itu State Variables?**
-
-State variables adalah variabel yang nilainya **tersimpan permanen** di blockchain. Berbeda dengan variabel biasa di program komputer yang hilang saat program dimatikan, state variables tetap ada selama contract masih aktif.
-
-**Analogi**: State variables seperti data di database - sekali disimpan, akan tetap ada sampai diubah atau dihapus.
-
-**Kode yang akan kita tulis:**
-
-```sol
-contract EscrowContract {
-    // Variabel-variabel ini tersimpan permanen di blockchain
-    string public contractId;   // ID unik contract
-    address private owner;      // pemilik contract (rahasia)
-    bool public isDeployed;     // apakah contract sudah aktif?
-
-    // Data escrow (perjanjian)
-    string public receiver;     // nama penerima dana
-    uint public amount;         // jumlah dana
-    bool public released;       // apakah dana sudah dilepas?
-}
-```
-
-**Penjelasan baris per baris:**
-
-| Kode | Penjelasan |
-|------|------------|
-| `string public contractId` | Variabel teks, bisa dilihat publik |
-| `address private owner` | Alamat wallet pemilik, **rahasia** (private) |
-| `bool public isDeployed` | True/false, apakah sudah di-deploy |
-| `string public receiver` | Nama penerima, bisa dilihat publik |
-| `uint public amount` | Jumlah dana (angka), bisa dilihat publik |
-| `bool public released` | True/false, apakah dana sudah dilepas |
-
-**Mengapa `owner` dibuat `private`?**
-
-Karena alamat owner adalah informasi sensitif - kita tidak mau sembarang orang tahu siapa owner-nya. Tapi nanti kita akan buat fungsi khusus `getOwner()` jika memang perlu diakses.
-
-> **Perbandingan dengan Python Module 08:**
-> - `string public contractId` = `self.contract_id` di Python
-> - `address private owner` = `self.owner` di Python
-> - `bool public isDeployed` = `self.is_deployed` di Python
-
-### 2.4 Constructor (Fungsi Inisialisasi)
-
-> **Langkah 3**: Tambahkan constructor ke dalam contract
-
-**Apa itu Constructor?**
-
-Constructor adalah fungsi khusus yang **hanya dijalankan sekali** - yaitu saat contract pertama kali di-deploy (dipasang) ke blockchain. Fungsinya untuk mengisi nilai awal variabel-variabel.
-
-**Analogi**: Constructor seperti formulir pendaftaran yang diisi sekali saat membuat akun baru.
-
-**Kode yang akan kita tulis:**
-
-```sol
-constructor(string memory _contractId, string memory _receiver, uint _amount) {
-    contractId = _contractId;
-    owner = msg.sender;   // deployer otomatis menjadi owner
-    receiver = _receiver;
-    amount = _amount;
-}
-```
-
-**Penjelasan langkah demi langkah:**
-
-```sol
-constructor(string memory _contractId, string memory _receiver, uint _amount) {
-```
-Baris ini mendefinisikan constructor dengan 3 parameter input:
-- `_contractId` - ID unik untuk contract
-- `_receiver` - nama penerima
-- `_amount` - jumlah dana
-
-> **Kenapa ada underscore (_)?** Ini adalah konvensi (kebiasaan) di Solidity untuk membedakan parameter input dengan state variable. `_contractId` adalah input, `contractId` adalah state variable.
-
-```sol
-    contractId = _contractId;
-```
-Mengisi state variable `contractId` dengan nilai dari parameter `_contractId`.
-
-```sol
-    owner = msg.sender;
-```
-**Ini bagian penting!** `msg.sender` adalah variabel spesial di Solidity yang berisi **alamat wallet orang yang memanggil fungsi**. Saat contract di-deploy, `msg.sender` adalah alamat orang yang men-deploy - sehingga dia otomatis jadi owner!
-
-```sol
-    receiver = _receiver;
-    amount = _amount;
-}
-```
-Mengisi state variables dengan nilai dari parameter.
-
-**Perbandingan dengan Python:**
-
-| Python (Module 08) | Solidity (Module 10) |
-|--------------------|----------------------|
-| `def __init__(self, ...):` | `constructor(...) {` |
-| `self.owner = owner` (diisi manual) | `owner = msg.sender` (otomatis!) |
-
-### 2.5 Functions dan Access Control (Fungsi-fungsi Contract)
-
-> **Langkah 4**: Tambahkan fungsi-fungsi ke dalam contract
-
-Contract kita akan memiliki 4 fungsi. Mari kita bahas satu per satu:
-
----
-
-#### Fungsi 1: deployContract()
-
-**Tujuan**: Mengaktifkan contract (seperti menekan tombol "ON")
-
-```sol
-function deployContract() public {
-    require(!isDeployed, "contract sudah di-deploy");
-    isDeployed = true;
-}
-```
-
-**Penjelasan baris per baris:**
-
-| Baris | Kode | Penjelasan |
-|-------|------|------------|
-| 1 | `function deployContract() public {` | Membuat fungsi bernama `deployContract`, bisa dipanggil siapa saja (`public`) |
-| 2 | `require(!isDeployed, "contract sudah di-deploy");` | **Cek keamanan**: jika `isDeployed` sudah `true`, batalkan dan tampilkan pesan error |
-| 3 | `isDeployed = true;` | Ubah `isDeployed` menjadi `true` |
-| 4 | `}` | Akhir fungsi |
-
-> **Catatan**: Tanda `!` artinya "NOT" (kebalikan). `!isDeployed` berarti "isDeployed belum true".
-
----
-
-#### Fungsi 2: getOwner()
-
-**Tujuan**: Melihat siapa owner contract
-
-```sol
-function getOwner() public view returns (address) {
-    return owner;
-}
-```
-
-**Penjelasan:**
-
-| Kata Kunci | Artinya |
-|------------|---------|
-| `public` | Bisa dipanggil siapa saja |
-| `view` | Fungsi ini **hanya membaca**, tidak mengubah data |
-| `returns (address)` | Fungsi ini mengembalikan nilai bertipe `address` |
-
-> **Penting**: Fungsi `view` **tidak membutuhkan biaya gas** karena tidak mengubah blockchain - hanya membaca.
-
----
-
-#### Fungsi 3: setRelease()
-
-**Tujuan**: Melepaskan dana ke penerima (hanya bisa dilakukan owner)
-
-```sol
-function setRelease() external {
-    require(isDeployed, "contract belum di-deploy");
-    require(msg.sender == owner, "hanya owner yang bisa release");
-    require(!released, "dana sudah pernah di-release");
-    released = true;
-}
-```
-
-**Penjelasan 3 pengaman (require):**
-
-| Urutan | Require | Penjelasan |
-|--------|---------|------------|
-| 1 | `require(isDeployed, ...)` | Contract harus sudah aktif |
-| 2 | `require(msg.sender == owner, ...)` | Yang memanggil harus owner |
-| 3 | `require(!released, ...)` | Dana belum pernah dilepas sebelumnya |
-
-**Diagram alur:**
-
-```
-Seseorang memanggil setRelease()
-              │
-              ▼
-┌─────────────────────────────────┐
-│ Cek 1: isDeployed == true?      │──NO──→ GAGAL: "contract belum di-deploy"
-└─────────────────────────────────┘
-              │ YES
-              ▼
-┌─────────────────────────────────┐
-│ Cek 2: msg.sender == owner?     │──NO──→ GAGAL: "hanya owner yang bisa release"
-└─────────────────────────────────┘
-              │ YES
-              ▼
-┌─────────────────────────────────┐
-│ Cek 3: released == false?       │──NO──→ GAGAL: "dana sudah pernah di-release"
-└─────────────────────────────────┘
-              │ YES
-              ▼
-┌─────────────────────────────────┐
-│ SUKSES: released = true         │
-│ Data tersimpan di blockchain    │
-└─────────────────────────────────┘
-```
-
----
-
-#### Fungsi 4: getState()
-
-**Tujuan**: Melihat status contract (receiver, amount, released)
-
-```sol
-function getState() external view returns (string memory, uint, bool) {
-    return (receiver, amount, released);
-}
-```
-
-**Penjelasan:**
-
-Fungsi ini mengembalikan **3 nilai sekaligus**:
-1. `receiver` (string) - nama penerima
-2. `amount` (uint) - jumlah dana
-3. `released` (bool) - apakah sudah dilepas
-
-> **`external`** artinya fungsi hanya bisa dipanggil dari **luar** contract. Ini lebih hemat gas dibanding `public`.
-
-### 2.6 Konfigurasi Hardhat
-
-> **Langkah 5**: Periksa file konfigurasi
-
-File `hardhat.config.ts` berisi pengaturan untuk Hardhat. File ini biasanya **sudah ada** di project - kamu hanya perlu memahami isinya.
-
-**Lokasi file**: `smart-contract/contracts/hardhat.config.ts`
-
-```typescript
-// hardhat.config.ts
-import { defineConfig } from "hardhat/config";
-import hardhatEthers from "@nomicfoundation/hardhat-ethers";
-import hardhatMocha from "@nomicfoundation/hardhat-mocha";
-
-export default defineConfig({
-  plugins: [hardhatEthers, hardhatMocha],
-  solidity: {
-    version: "0.8.28",
-  },
-  paths: {
-    sources: "./contract",
-  },
-});
-```
-
-**Penjelasan setiap bagian:**
-
-| Bagian | Fungsi | Penjelasan Sederhana |
-|--------|--------|----------------------|
-| `plugins` | Menambahkan fitur tambahan | ethers.js untuk interact, Mocha untuk test |
-| `solidity.version` | Versi compiler | Harus sama dengan `pragma solidity` di file .sol |
-| `paths.sources` | Lokasi file .sol | Di mana Hardhat mencari file Solidity |
-
-**Troubleshooting umum:**
-
-| Error | Penyebab | Solusi |
-|-------|----------|--------|
-| `invalid opcode` | Versi EVM tidak cocok | Tambahkan `evmVersion: "london"` di settings |
-| `Source file not found` | Path salah | Periksa `paths.sources` cocok dengan lokasi file .sol |
-
-### 2.7 Kompilasi Contract
-
-> **Langkah 6**: Compile kode Solidity
-
-**Apa yang terjadi saat compile?**
-
-Kode Solidity yang kita tulis (bahasa manusia) diubah menjadi **bytecode** (bahasa mesin) yang bisa dipahami blockchain.
-
-**Cara compile:**
-
-1. Buka Terminal/Command Prompt
-2. Pindah ke folder contracts:
-   ```bash
-   cd smart-contract/contracts
-   ```
-3. Jalankan perintah compile:
-   ```bash
-   npx hardhat compile
-   ```
-
-**Output yang diharapkan (jika berhasil):**
-
-```
-Compiled 1 Solidity file successfully (evm target: paris).
-```
-
-**Jika ada error, periksa:**
-- Apakah ada typo di kode Solidity?
-- Apakah semua tanda kurung `{` `}` sudah berpasangan?
-- Apakah setiap baris diakhiri dengan titik koma `;`?
-
-**Hasil compile:**
-
-Setelah berhasil, akan muncul folder baru `artifacts/`:
-
-```
-artifacts/
-└── contract/
-    └── smart-contracts.sol/
-        └── EscrowContract.json   ← File penting!
-```
-
-**Isi file JSON:**
-
-| Bagian | Fungsi |
-|--------|--------|
-| `bytecode` | Kode mesin yang akan dikirim ke blockchain |
-| `abi` | "Daftar menu" fungsi contract |
-
-> **Tips**: Folder `artifacts/` dibuat otomatis. Jangan edit file di dalamnya secara manual.
-
-### 2.8 Deploy Contract ke Blockchain
-
-> **Langkah 7**: Siapkan koneksi dan deploy contract
-
-**A. Persiapan - Membuat file .env**
-
-File `.env` menyimpan data rahasia yang tidak boleh di-share ke orang lain.
-
-1. Buat file baru bernama `.env` di folder `smart-contract/contracts/`
-2. Isi dengan:
-
-```env
-RPC_URL=HTTP://127.0.0.1:7545
-PRIVATE_KEY=0x_private_key_dari_akun_lokal
-```
-
-**Cara mendapatkan nilai-nilai tersebut:**
-
-**Jika menggunakan Ganache:**
-1. Buka aplikasi Ganache
-2. **RPC URL**: Lihat di bagian atas, biasanya `HTTP://127.0.0.1:7545`
-3. **PRIVATE KEY**:
-   - Klik ikon kunci di samping salah satu akun
-   - Copy private key yang muncul
-   - Paste ke file `.env` (awali dengan `0x` jika belum ada)
-
-**Jika menggunakan Anvil:**
-1. Jalankan `anvil` di terminal
-2. RPC URL dan private key akan muncul otomatis di output
-
-> **PENTING**: Jangan pernah share file `.env` atau commit ke GitHub! Private key adalah seperti password ATM.
-
----
-
-**B. Memahami Script Deploy**
-
-File `deploy.ts` sudah disiapkan. Mari pahami apa yang dilakukan:
-
-```typescript
-import dotenv from "dotenv";
-import { ethers } from "ethers";
-import { readFileSync } from "fs";
-
-dotenv.config();  // Membaca file .env
-
-async function main() {
-  // LANGKAH 1: Koneksi ke local blockchain
-  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
-  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-
-  console.log("Terhubung dengan wallet:", wallet.address);
-
-  // LANGKAH 2: Baca hasil compile
-  const artifact = JSON.parse(
-    readFileSync("./artifacts/contract/smart-contracts.sol/EscrowContract.json", "utf8"),
-  );
-
-  // LANGKAH 3: Deploy contract dengan parameter constructor
-  const factory = new ethers.ContractFactory(
-    artifact.abi,
-    artifact.bytecode,
-    wallet,
-  );
-
-  // Parameter: contractId, receiver, amount
-  const contract = await factory.deploy("ESCROW-001", "Bob", 100);
-  await contract.waitForDeployment();
-
-  console.log("Contract deployed ke:", await contract.getAddress());
-}
-
-main().catch(console.error);
-```
-
-**Penjelasan setiap langkah:**
-
-| Langkah | Kode | Fungsi |
-|---------|------|--------|
-| 1 | `new ethers.JsonRpcProvider(...)` | Koneksi ke blockchain |
-| 1 | `new ethers.Wallet(...)` | Membuat "dompet" untuk transaksi |
-| 2 | `readFileSync(...)` | Membaca hasil compile |
-| 3 | `new ethers.ContractFactory(...)` | Menyiapkan "pabrik" contract |
-| 3 | `factory.deploy(...)` | Men-deploy dengan parameter |
-
----
-
-**C. Menjalankan Deploy**
-
-1. Pastikan Ganache/Anvil sudah berjalan
-2. Buka terminal di folder `smart-contract/contracts/`
-3. Jalankan:
-   ```bash
-   npx tsx deploy.ts
-   ```
-
-**Output yang diharapkan:**
-
-```
-Terhubung dengan wallet: 0x1234...5678
-Contract deployed ke: 0xAbCd...1234
-```
-
-> **PENTING**: Catat alamat contract (`0xAbCd...1234`) - kamu butuh ini untuk langkah selanjutnya!
-
-**Troubleshooting:**
-
-| Error | Penyebab | Solusi |
-|-------|----------|--------|
-| `connection refused` | Ganache/Anvil tidak jalan | Buka dan jalankan Ganache |
-| `invalid private key` | Format private key salah | Pastikan dimulai dengan `0x` |
-| `insufficient funds` | Saldo akun 0 | Gunakan akun lain di Ganache |
-
-### 2.9 Interaksi dengan Contract
-
-> **Langkah 8**: Berinteraksi dengan contract yang sudah di-deploy
-
-Setelah contract di-deploy, kita bisa memanggil fungsi-fungsinya menggunakan script `interact.ts`.
-
-**A. Update Alamat Contract**
-
-1. Buka file `interact.ts`
-2. Ganti `CONTRACT_ADDRESS` dengan alamat dari hasil deploy:
-
-```typescript
-const CONTRACT_ADDRESS = "0xAbCd...1234"; // GANTI dengan alamat dari hasil deploy
-```
-
----
-
-**B. Memahami Script Interact**
-
-```typescript
-import dotenv from "dotenv";
-import { ethers } from "ethers";
-import { readFileSync } from "fs";
-
-dotenv.config();
-
-const CONTRACT_ADDRESS = "0xAbCd...1234"; // dari hasil deploy
-
-async function main() {
-  // Koneksi ke blockchain (sama seperti di deploy.ts)
-  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
-  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-  const artifact = JSON.parse(
-    readFileSync("./artifacts/contract/smart-contracts.sol/EscrowContract.json", "utf8"),
-  );
-
-  // Membuat koneksi ke contract yang sudah di-deploy
-  const managed = new ethers.NonceManager(wallet);
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, artifact.abi, managed);
-
-  // ===== MEMANGGIL FUNGSI VIEW (gratis, hanya membaca) =====
-  console.log("=== State Awal ===");
-  const state = await contract.getState();
-  console.log("Receiver:", state[0]);
-  console.log("Amount:", state[1].toString());
-  console.log("Released:", state[2]);
-
-  // ===== MEMANGGIL FUNGSI YANG MENGUBAH DATA (butuh transaksi) =====
-  console.log("\n=== Aktivasi Contract ===");
-  const tx1 = await contract.deployContract();
-  await tx1.wait(); // Tunggu transaksi selesai!
-  console.log("Contract berhasil diaktifkan");
-
-  // ===== CEK OWNER =====
-  console.log("\n=== Cek Owner ===");
-  const owner = await contract.getOwner();
-  console.log("Owner:", owner);
-
-  // ===== RELEASE DANA =====
-  console.log("\n=== Release Dana ===");
-  const tx2 = await contract.setRelease();
-  await tx2.wait();
-  console.log("Dana berhasil di-release");
-
-  // ===== STATE AKHIR =====
-  console.log("\n=== State Akhir ===");
-  const finalState = await contract.getState();
-  console.log("Receiver:", finalState[0]);
-  console.log("Amount:", finalState[1].toString());
-  console.log("Released:", finalState[2]);
-}
-
-main().catch(console.error);
-```
-
----
-
-**C. Perbedaan Fungsi View vs Fungsi Biasa**
-
-| Aspek | Fungsi `view` | Fungsi biasa |
-|-------|---------------|--------------|
-| Contoh | `getState()`, `getOwner()` | `deployContract()`, `setRelease()` |
-| Mengubah data? | Tidak | Ya |
-| Butuh transaksi? | Tidak | Ya |
-| Biaya gas? | Gratis | Bayar gas |
-| Perlu `.wait()`? | Tidak | **Ya, wajib!** |
-
-> **Penting**: Untuk fungsi yang mengubah data, selalu tambahkan `await tx.wait()` untuk menunggu transaksi dikonfirmasi di blockchain.
-
----
-
-**D. Menjalankan Interaksi**
+Jika menggunakan Hardhat Toolbox, semua sudah terinstall:
 
 ```bash
-npx tsx interact.ts
+npm install --save-dev @nomicfoundation/hardhat-toolbox
 ```
 
-**Output yang diharapkan:**
+### 2.3 Konsep Dasar
 
+```javascript
+// Mocha: describe dan it
+describe("Nama Test Suite", function () {
+  it("Nama test case", async function () {
+    // Test code
+  });
+});
+
+// Chai: expect assertions
+expect(value).to.equal(expectedValue);
+expect(promise).to.be.revertedWith("Error message");
+
+// Ethers.js: berinteraksi dengan contract
+const Contract = await ethers.getContractFactory("ContractName");
+const contract = await Contract.deploy(args);
 ```
-=== State Awal ===
-Receiver: Bob
-Amount: 100
-Released: false
-
-=== Aktivasi Contract ===
-Contract berhasil diaktifkan
-
-=== Cek Owner ===
-Owner: 0x1234...5678
-
-=== Release Dana ===
-Dana berhasil di-release
-
-=== State Akhir ===
-Receiver: Bob
-Amount: 100
-Released: true
-```
-
-Perhatikan bahwa `Released` berubah dari `false` menjadi `true` setelah `setRelease()` dipanggil!
-
-### 2.10 Ringkasan: Apa yang Sudah Kita Lakukan
-
-**Selamat!** Kamu sudah berhasil:
-
-1. Menulis Smart Contract dengan Solidity
-2. Meng-compile kode menjadi bytecode
-3. Men-deploy contract ke local blockchain
-4. Berinteraksi dengan contract (memanggil fungsi)
-
-**Perubahan yang terjadi:**
-
-| State | Sebelum | Sesudah |
-|-------|---------|---------|
-| `isDeployed` | `false` | `true` |
-| `released` | `false` | `true` |
-
-Perubahan ini **tersimpan permanen** di blockchain! Jika kamu membuka Ganache, kamu bisa melihat transaksi-transaksi yang terjadi.
-
-**Cek di Ganache:**
-
-1. Buka tab "TRANSACTIONS" di Ganache
-2. Kamu akan melihat beberapa transaksi:
-   - Contract Creation (saat deploy)
-   - Transaction ke `deployContract()`
-   - Transaction ke `setRelease()`
-
-> **Eksperimen**: Coba jalankan `npx tsx interact.ts` lagi. Apa yang terjadi? (Hint: akan error karena `deployContract()` sudah pernah dipanggil!)
 
 ---
 
-## 3. Pengujian Contract
+## 3. Struktur Test File
 
-> **Bagian ini opsional untuk pemula**, tapi sangat penting dipahami untuk praktik profesional.
+### 3.1 Buat File Test
 
-### 3.1 Mengapa Contract Perlu Diuji?
+Hapus test sample dan buat file baru:
 
-**Analogi**: Testing seperti **latihan ujian** sebelum ujian sesungguhnya. Lebih baik menemukan kesalahan saat latihan daripada saat ujian!
-
-**Alasan penting:**
-
-| Masalah | Penjelasan |
-|---------|------------|
-| Kode tidak bisa diubah | Setelah di-deploy ke mainnet, contract **permanen** |
-| Bug = kehilangan uang | Kesalahan bisa menyebabkan dana hilang **selamanya** |
-| Setiap aksi butuh biaya | Di mainnet, setiap transaksi membutuhkan ETH sungguhan |
-
-> **Contoh kasus nyata**: Pada tahun 2016, bug di smart contract DAO menyebabkan kerugian 60 juta USD!
-
-**Solusi**: Test contract di lingkungan "aman" (Hardhat Network) sebelum deploy ke mainnet.
-
-### 3.2 Struktur Test
-
-**Lokasi file test:**
-
-```
-test/
-└── EscrowContract.test.ts
+```bash
+rm test/Lock.js
 ```
 
-**Struktur dasar file test:**
+Buat file `test/CourseReward.test.js`:
 
-```typescript
-import { expect } from "chai";       // Library untuk perbandingan
-import { network } from "hardhat";   // Koneksi ke Hardhat
+```javascript
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-const { ethers } = await network.connect();
+describe("CourseReward", function () {
+  // Variables untuk menyimpan contract dan accounts
+  let courseReward;
+  let owner;
+  let student1;
+  let student2;
 
-describe("NamaContract", () => {
-  // Grup test untuk satu contract
-
-  it("deskripsi test case 1", async () => {
-    // Test case 1
+  // Setup sebelum setiap test
+  beforeEach(async function () {
+    // Akan diisi nanti
   });
 
-  it("deskripsi test case 2", async () => {
-    // Test case 2
+  // Test cases
+  it("should do something", async function () {
+    // Test code
   });
 });
 ```
 
-**Penjelasan struktur:**
+### 3.2 Anatomi Test File
 
-| Bagian | Fungsi | Analogi |
-|--------|--------|---------|
-| `describe(...)` | Mengelompokkan test | Seperti bab di buku |
-| `it(...)` | Satu test case | Seperti soal ujian |
-| `expect(...)` | Memeriksa hasil | Seperti kunci jawaban |
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    STRUKTUR TEST FILE                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. Import dependencies                                         │
+│     ├── chai (expect)                                           │
+│     └── ethers (dari hardhat)                                   │
+│                                                                 │
+│  2. describe("Contract Name", function () {                     │
+│     │                                                           │
+│     ├── 3. Variables (let contract, owner, user...)             │
+│     │                                                           │
+│     ├── 4. beforeEach(async function () {                       │
+│     │      // Deploy fresh contract sebelum tiap test           │
+│     │   });                                                     │
+│     │                                                           │
+│     ├── 5. describe("Feature Group", function () {              │
+│     │      │                                                    │
+│     │      ├── it("should do X", async function () {            │
+│     │      │      // Single test case                           │
+│     │      │   });                                              │
+│     │      │                                                    │
+│     │      └── it("should do Y", async function () { ... });    │
+│     │   });                                                     │
+│     │                                                           │
+│     └── describe("Another Feature", function () { ... });       │
+│  });                                                            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-### 3.3 Menulis Test Case
+## 4. Setup Test Environment
 
-**Prinsip dasar**: Setiap test case menguji **satu hal saja**.
+### 4.1 beforeEach: Deploy Fresh Contract
 
-Ada 2 jenis test:
+```javascript
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
----
+describe("CourseReward", function () {
+  let courseReward;
+  let owner;
+  let student1;
+  let student2;
 
-**1. Test Positive (Happy Path)** - Menguji alur normal yang seharusnya berhasil
+  const INITIAL_REWARD = 100;
 
-```typescript
-it("state awal setelah deploy sesuai parameter constructor", async () => {
-  // STEP 1: Deploy contract dengan parameter
-  const contract = await ethers.deployContract("EscrowContract", [
-    "ESCROW-001",  // contractId
-    "Bob",         // receiver
-    100            // amount
-  ]);
-  await contract.waitForDeployment();
+  beforeEach(async function () {
+    // Ambil signers (akun testing)
+    [owner, student1, student2] = await ethers.getSigners();
 
-  // STEP 2: Panggil fungsi untuk dapat data
-  const state = await contract.getState();
+    // Deploy contract baru
+    const CourseReward = await ethers.getContractFactory("CourseReward");
+    courseReward = await CourseReward.deploy(INITIAL_REWARD);
+  });
 
-  // STEP 3: Bandingkan dengan yang diharapkan
-  expect(state[0]).to.equal("Bob");       // receiver harus "Bob"
-  expect(state[1]).to.equal(100n);        // amount harus 100
-  expect(state[2]).to.equal(false);       // released harus false
+  it("should deploy successfully", async function () {
+    expect(await courseReward.rewardAmount()).to.equal(INITIAL_REWARD);
+  });
 });
 ```
 
-**Penjelasan `expect`:**
-- `expect(A).to.equal(B)` = "Harapkan A sama dengan B"
-- Jika tidak sama, test **gagal**
+### 4.2 Penjelasan Kode
 
-> **Catatan**: `100n` (dengan huruf `n`) adalah BigInt, tipe angka khusus di JavaScript untuk angka besar.
+| Kode                            | Penjelasan                              |
+| ------------------------------- | --------------------------------------- |
+| `ethers.getSigners()`         | Mendapatkan array akun testing          |
+| `[owner, student1, student2]` | Destructuring: akun pertama jadi owner  |
+| `getContractFactory()`        | Mengambil contract yang sudah dicompile |
+| `deploy(INITIAL_REWARD)`      | Deploy dengan parameter constructor     |
+| `beforeEach`                  | Dijalankan sebelum SETIAP test case     |
 
----
+### 4.3 Mengapa beforeEach?
 
-**2. Test Negative (Error Path)** - Menguji bahwa error muncul saat kondisi tidak terpenuhi
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    BEFORE EACH FLOW                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Test 1                    Test 2                    Test 3     │
+│  ┌─────────────────┐      ┌─────────────────┐      ┌───────────┐│
+│  │ beforeEach()    │      │ beforeEach()    │      │beforeEach ││
+│  │ └─► Deploy new  │      │ └─► Deploy new  │      │ └─►Deploy ││
+│  │     contract    │      │     contract    │      │   new     ││
+│  │                 │      │                 │      │           ││
+│  │ it("test 1") {  │      │ it("test 2") {  │      │it("test3")││
+│  │   // fresh      │      │   // fresh      │      │  //fresh  ││
+│  │   // state      │      │   // state      │      │  //state  ││
+│  │ }               │      │ }               │      │}          ││
+│  └─────────────────┘      └─────────────────┘      └───────────┘│
+│                                                                 │
+│  Setiap test mendapat contract dengan state bersih!             │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-```typescript
-// Fungsi helper untuk mengecek error
-async function expectRevert(promise: Promise<unknown>, message: string) {
-  try {
-    await promise;
-    throw new Error("Seharusnya error, tapi tidak");
-  } catch (e: any) {
-    expect(e.message).to.include(message);
-  }
-}
+## 5. Menulis Test Cases
 
-it("setRelease gagal jika bukan owner", async () => {
-  // STEP 1: Dapatkan 2 akun berbeda
-  const [owner, orang_lain] = await ethers.getSigners();
+### 5.1 Test Deployment
 
-  // STEP 2: Deploy contract (owner = akun pertama)
-  const contract = await ethers.deployContract("EscrowContract", [
-    "ESCROW-001", "Bob", 100
-  ]);
-  await contract.waitForDeployment();
+```javascript
+describe("Deployment", function () {
+  it("should set the correct owner", async function () {
+    expect(await courseReward.owner()).to.equal(owner.address);
+  });
 
-  // Aktifkan contract dulu
-  await contract.deployContract();
+  it("should set the correct initial reward amount", async function () {
+    expect(await courseReward.rewardAmount()).to.equal(INITIAL_REWARD);
+  });
 
-  // STEP 3: Coba panggil setRelease dari akun lain (bukan owner)
-  await expectRevert(
-    contract.connect(orang_lain).setRelease(),  // Panggil dari orang_lain
-    "hanya owner yang bisa release"              // Pesan error yang diharapkan
-  );
+  it("should have zero rewards for new addresses", async function () {
+    expect(await courseReward.rewards(student1.address)).to.equal(0);
+  });
 });
 ```
 
-**Penjelasan:**
-- `ethers.getSigners()` = Dapatkan daftar akun test
-- `contract.connect(akun_lain)` = Panggil contract dari akun lain
-- Test ini **berhasil** jika muncul error dengan pesan yang sesuai
+### 5.2 Test Fungsi Utama: claimReward
 
-### 3.4 Menjalankan Test
+```javascript
+describe("Claim Reward", function () {
+  it("should allow student to claim reward", async function () {
+    // Student1 claim reward
+    await courseReward.connect(student1).claimReward();
 
-> **Langkah 9**: Jalankan semua test
+    // Cek reward bertambah
+    expect(await courseReward.rewards(student1.address)).to.equal(INITIAL_REWARD);
 
-**Cara menjalankan:**
+    // Cek status hasClaimed
+    expect(await courseReward.hasClaimed(student1.address)).to.equal(true);
+  });
+
+  it("should update rewards mapping correctly", async function () {
+    // Sebelum claim
+    expect(await courseReward.getMyReward({ from: student1.address }))
+      .to.equal(0);
+
+    // Claim
+    await courseReward.connect(student1).claimReward();
+
+    // Setelah claim - pakai connect untuk "impersonate"
+    expect(await courseReward.connect(student1).getMyReward())
+      .to.equal(INITIAL_REWARD);
+  });
+});
+```
+
+### 5.3 Penjelasan `connect()`
+
+```javascript
+// Default: transaksi dari owner (akun pertama)
+await courseReward.claimReward();  // msg.sender = owner
+
+// Dengan connect: transaksi dari akun lain
+await courseReward.connect(student1).claimReward();  // msg.sender = student1
+```
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CONNECT EXPLANATION                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Tanpa connect:                                                 │
+│  courseReward.claimReward()                                     │
+│       │                                                         │
+│       └──► msg.sender = owner (default signer)                  │
+│                                                                 │
+│  Dengan connect:                                                │
+│  courseReward.connect(student1).claimReward()                   │
+│       │                                                         │
+│       └──► msg.sender = student1                                │
+│                                                                 │
+│  Ini penting untuk test multi-user scenarios!                   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## 6. Test Skenario Gagal
+
+### 6.1 Mengapa Test Skenario Gagal?
+
+Test yang baik tidak hanya mengecek "happy path", tapi juga memastikan error handling bekerja dengan benar.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    TEST COVERAGE                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ✅ Positive Tests (Happy Path):                                │
+│     - Student bisa claim reward                                 │
+│     - Owner bisa ubah reward                                    │
+│                                                                 │
+│  ✅ Negative Tests (Error Cases):                               │
+│     - Student tidak bisa claim dua kali                         │
+│     - Non-owner tidak bisa ubah reward                          │
+│     - Invalid input handling                                    │
+│                                                                 │
+│  Test yang baik = Positive + Negative tests                     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 6.2 Test: Tidak Boleh Claim Dua Kali
+
+```javascript
+describe("Claim Restrictions", function () {
+  it("should not allow student to claim twice", async function () {
+    // Claim pertama - berhasil
+    await courseReward.connect(student1).claimReward();
+
+    // Claim kedua - harus gagal
+    await expect(
+      courseReward.connect(student1).claimReward()
+    ).to.be.revertedWith("Reward already claimed");
+  });
+
+  it("should allow different students to claim", async function () {
+    // Student1 claim
+    await courseReward.connect(student1).claimReward();
+
+    // Student2 juga bisa claim (berbeda orang)
+    await courseReward.connect(student2).claimReward();
+
+    expect(await courseReward.rewards(student1.address)).to.equal(INITIAL_REWARD);
+    expect(await courseReward.rewards(student2.address)).to.equal(INITIAL_REWARD);
+  });
+});
+```
+
+### 6.3 Pattern: revertedWith
+
+```javascript
+// Memastikan transaksi gagal dengan error message tertentu
+await expect(
+  contract.functionThatShouldFail()
+).to.be.revertedWith("Expected error message");
+
+// Atau untuk custom error (Solidity 0.8.4+)
+await expect(
+  contract.functionThatShouldFail()
+).to.be.revertedWithCustomError(contract, "CustomErrorName");
+```
+
+## 7. Test Access Control
+
+### 7.1 Test Owner Functions
+
+```javascript
+describe("Access Control", function () {
+  describe("setRewardAmount", function () {
+    it("should allow owner to change reward amount", async function () {
+      const newAmount = 200;
+
+      await courseReward.setRewardAmount(newAmount);
+
+      expect(await courseReward.rewardAmount()).to.equal(newAmount);
+    });
+
+    it("should reject non-owner changing reward amount", async function () {
+      await expect(
+        courseReward.connect(student1).setRewardAmount(200)
+      ).to.be.revertedWith("Only owner can call this function");
+    });
+  });
+});
+```
+
+### 7.2 Pattern Test Access Control
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                ACCESS CONTROL TEST PATTERN                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Untuk setiap function dengan modifier (onlyOwner, dll):        │
+│                                                                 │
+│  1. Test authorized user BISA memanggil                         │
+│     it("owner should be able to...", async function () {        │
+│       await contract.restrictedFunction();  // ✅ Success       │
+│     });                                                         │
+│                                                                 │
+│  2. Test unauthorized user TIDAK BISA memanggil                 │
+│     it("non-owner should not be able to...", async function () {│
+│       await expect(                                             │
+│         contract.connect(nonOwner).restrictedFunction()         │
+│       ).to.be.revertedWith("...");  // ✅ Reverted              │
+│     });                                                         │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## 8. Test Event
+
+### 8.1 Mengapa Test Event?
+
+Event penting untuk:
+
+- Frontend listening (realtime updates)
+- Indexing (The Graph, dll)
+- Audit trail
+
+### 8.2 Test Event Emission
+
+```javascript
+describe("Events", function () {
+  it("should emit RewardClaimed event when student claims", async function () {
+    await expect(courseReward.connect(student1).claimReward())
+      .to.emit(courseReward, "RewardClaimed")
+      .withArgs(student1.address, INITIAL_REWARD);
+  });
+
+  it("should emit RewardAmountChanged when owner changes amount", async function () {
+    const oldAmount = INITIAL_REWARD;
+    const newAmount = 200;
+
+    await expect(courseReward.setRewardAmount(newAmount))
+      .to.emit(courseReward, "RewardAmountChanged")
+      .withArgs(oldAmount, newAmount);
+  });
+});
+```
+
+### 8.3 Pattern Test Event
+
+```javascript
+// Test bahwa event di-emit
+await expect(transaction)
+  .to.emit(contract, "EventName");
+
+// Test event dengan arguments
+await expect(transaction)
+  .to.emit(contract, "EventName")
+  .withArgs(arg1, arg2, arg3);
+
+// Test multiple events
+await expect(transaction)
+  .to.emit(contract, "Event1")
+  .to.emit(contract, "Event2");
+```
+
+## 9. Menjalankan Test
+
+### 9.1 File Test Lengkap
+
+Berikut file test lengkap `test/CourseReward.test.js`:
+
+```javascript
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
+
+describe("CourseReward", function () {
+  let courseReward;
+  let owner;
+  let student1;
+  let student2;
+
+  const INITIAL_REWARD = 100;
+
+  beforeEach(async function () {
+    [owner, student1, student2] = await ethers.getSigners();
+
+    const CourseReward = await ethers.getContractFactory("CourseReward");
+    courseReward = await CourseReward.deploy(INITIAL_REWARD);
+  });
+
+  describe("Deployment", function () {
+    it("should set the correct owner", async function () {
+      expect(await courseReward.owner()).to.equal(owner.address);
+    });
+
+    it("should set the correct initial reward amount", async function () {
+      expect(await courseReward.rewardAmount()).to.equal(INITIAL_REWARD);
+    });
+  });
+
+  describe("Claim Reward", function () {
+    it("should allow student to claim reward", async function () {
+      await courseReward.connect(student1).claimReward();
+
+      expect(await courseReward.rewards(student1.address)).to.equal(INITIAL_REWARD);
+      expect(await courseReward.hasClaimed(student1.address)).to.equal(true);
+    });
+
+    it("should not allow student to claim twice", async function () {
+      await courseReward.connect(student1).claimReward();
+
+      await expect(
+        courseReward.connect(student1).claimReward()
+      ).to.be.revertedWith("Reward already claimed");
+    });
+
+    it("should allow different students to claim", async function () {
+      await courseReward.connect(student1).claimReward();
+      await courseReward.connect(student2).claimReward();
+
+      expect(await courseReward.rewards(student1.address)).to.equal(INITIAL_REWARD);
+      expect(await courseReward.rewards(student2.address)).to.equal(INITIAL_REWARD);
+    });
+  });
+
+  describe("Access Control", function () {
+    it("should allow owner to change reward amount", async function () {
+      await courseReward.setRewardAmount(200);
+      expect(await courseReward.rewardAmount()).to.equal(200);
+    });
+
+    it("should reject non-owner changing reward amount", async function () {
+      await expect(
+        courseReward.connect(student1).setRewardAmount(200)
+      ).to.be.revertedWith("Only owner can call this function");
+    });
+  });
+
+  describe("Events", function () {
+    it("should emit RewardClaimed event", async function () {
+      await expect(courseReward.connect(student1).claimReward())
+        .to.emit(courseReward, "RewardClaimed")
+        .withArgs(student1.address, INITIAL_REWARD);
+    });
+
+    it("should emit RewardAmountChanged event", async function () {
+      await expect(courseReward.setRewardAmount(200))
+        .to.emit(courseReward, "RewardAmountChanged")
+        .withArgs(INITIAL_REWARD, 200);
+    });
+  });
+});
+```
+
+### 9.2 Jalankan Test
 
 ```bash
 npx hardhat test
 ```
 
-**Output saat semua test LULUS:**
+**Expected Output:**
 
-```
-Running Mocha tests
+```text
+  CourseReward
+    Deployment
+      ✔ should set the correct owner
+      ✔ should set the correct initial reward amount
+    Claim Reward
+      ✔ should allow student to claim reward
+      ✔ should not allow student to claim twice
+      ✔ should allow different students to claim
+    Access Control
+      ✔ should allow owner to change reward amount
+      ✔ should reject non-owner changing reward amount
+    Events
+      ✔ should emit RewardClaimed event
+      ✔ should emit RewardAmountChanged event
 
-  EscrowContract
-    ✔ state awal setelah deploy sesuai parameter constructor
-    ✔ owner sesuai dengan deployer
-    ✔ fungsi aktivasi mengubah status menjadi true
-    ✔ fungsi aktivasi tidak bisa dipanggil dua kali
-    ✔ fungsi release berhasil pada alur normal
-    ✔ fungsi release gagal jika belum diaktifkan
-    ✔ fungsi release gagal jika bukan owner
-    ✔ fungsi release tidak bisa dipanggil dua kali
-
-  8 passing (163ms)
-```
-
-**Cara membaca output:**
-- `✔` = Test lulus (hijau)
-- `✘` = Test gagal (merah)
-- `8 passing` = 8 dari 8 test berhasil
-
-**Jika ada test GAGAL:**
-
-```
-  EscrowContract
-    ✔ state awal setelah deploy sesuai parameter constructor
-    ✘ owner sesuai dengan deployer
-      AssertionError: expected '0x123...' to equal '0x456...'
-        at Context.<anonymous> (test/EscrowContract.test.ts:25:18)
+  9 passing (1s)
 ```
 
-**Cara debug:**
-1. Baca pesan error (`AssertionError: expected ... to equal ...`)
-2. Lihat file dan baris yang error (`test/EscrowContract.test.ts:25`)
-3. Periksa kode di baris tersebut
+### 9.3 Opsi Test Command
 
-> **Tips**: Jalankan test setiap kali kamu mengubah kode contract. Lebih baik menemukan bug lebih awal!
+| Command                                        | Fungsi                                |
+| ---------------------------------------------- | ------------------------------------- |
+| `npx hardhat test`                           | Jalankan semua test                   |
+| `npx hardhat test test/CourseReward.test.js` | Jalankan test spesifik                |
+| `npx hardhat test --grep "claim"`            | Jalankan test yang mengandung "claim" |
+| `npx hardhat test --parallel`                | Jalankan test secara parallel         |
 
----
+## 10. Test Coverage
 
-## Latihan
+### 10.1 Apa itu Test Coverage?
 
-> **Petunjuk**: Kerjakan latihan secara berurutan. Latihan 1-2 adalah modifikasi contract yang sudah ada. Latihan 3-5 adalah membuat contract baru.
+Test coverage mengukur berapa persen kode yang diuji oleh test.
 
----
-
-### Latihan 1: Tambah Fungsi Refund (Tingkat: Mudah)
-
-**Tugas**: Tambahkan fungsi `refund()` yang memungkinkan owner menarik kembali dana jika `released` masih `false`.
-
-**Hint kode:**
-
-```sol
-function refund() external {
-    // 1. Cek apakah pemanggil adalah owner
-    // 2. Cek apakah released masih false
-    // 3. Lakukan sesuatu (misalnya set released = true dan emit event)
-}
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    TEST COVERAGE                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Coverage mengukur:                                             │
+│                                                                 │
+│  ┌────────────────┐                                             │
+│  │ Statements     │  Berapa % statement yang dieksekusi         │
+│  ├────────────────┤                                             │
+│  │ Branches       │  Berapa % if/else yang ditest               │
+│  ├────────────────┤                                             │
+│  │ Functions      │  Berapa % function yang dipanggil           │
+│  ├────────────────┤                                             │
+│  │ Lines          │  Berapa % baris yang dieksekusi             │
+│  └────────────────┘                                             │
+│                                                                 │
+│  Target ideal: 80-100% coverage                                 │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**Langkah pengerjaan:**
-1. Buka file `smart-contracts.sol`
-2. Tambahkan fungsi `refund()` di bawah fungsi `setRelease()`
-3. Compile ulang: `npx hardhat compile`
-4. Buat test case untuk fungsi ini
+### 10.2 Jalankan Coverage
 
----
-
-### Latihan 2: Tambah Status Text (Tingkat: Mudah)
-
-**Tugas**: Tambahkan variabel `string public status` yang nilainya berubah sesuai kondisi:
-- `"pending"` - saat pertama di-deploy
-- `"released"` - setelah `setRelease()` dipanggil
-- `"refunded"` - setelah `refund()` dipanggil
-
-**Langkah pengerjaan:**
-1. Tambahkan state variable: `string public status;`
-2. Di constructor, set: `status = "pending";`
-3. Di `setRelease()`, tambahkan: `status = "released";`
-4. Di `refund()`, tambahkan: `status = "refunded";`
-5. Ubah `getState()` agar juga mengembalikan `status`
-
----
-
-### Latihan 3: Buat VotingContract (Tingkat: Menengah)
-
-**Tugas**: Buat contract baru untuk sistem voting sederhana.
-
-**Spesifikasi:**
-- Menyimpan daftar kandidat dan jumlah suaranya
-- Fungsi `vote(string memory candidate)` - setiap alamat hanya boleh vote 1x
-- Fungsi `getResult(string memory candidate)` - melihat jumlah suara
-
-**Hint struktur:**
-
-```sol
-contract VotingContract {
-    // Mapping untuk menyimpan jumlah suara per kandidat
-    mapping(string => uint) public votes;
-
-    // Mapping untuk mencatat siapa saja yang sudah vote
-    mapping(address => bool) public hasVoted;
-
-    function vote(string memory candidate) public {
-        // 1. Cek apakah pemanggil sudah pernah vote
-        // 2. Jika belum, tambah suara ke kandidat
-        // 3. Tandai bahwa pemanggil sudah vote
-    }
-
-    function getResult(string memory candidate) public view returns (uint) {
-        // Kembalikan jumlah suara kandidat
-    }
-}
+```bash
+npx hardhat coverage
 ```
 
-> **Konsep baru: `mapping`** - Seperti dictionary di Python. `mapping(string => uint)` artinya "dari string ke angka".
+**Expected Output:**
 
----
+```text
+------------------|----------|----------|----------|----------|
+File              |  % Stmts | % Branch |  % Funcs |  % Lines |
+------------------|----------|----------|----------|----------|
+ contracts/       |      100 |       75 |      100 |      100 |
+  CourseReward.sol|      100 |       75 |      100 |      100 |
+------------------|----------|----------|----------|----------|
+All files         |      100 |       75 |      100 |      100 |
+------------------|----------|----------|----------|----------|
+```
 
-### Latihan 4: Deploy dan Test VotingContract (Tingkat: Menengah)
+### 10.3 Membaca Coverage Report
 
-**Tugas**: Deploy `VotingContract` ke local blockchain dan test menggunakan script interact.
+| Metric     | Nilai | Interpretasi                                |
+| ---------- | ----- | ------------------------------------------- |
+| Statements | 100%  | Semua statement dieksekusi ✅               |
+| Branch     | 75%   | Ada branch (if/else) yang belum ditest ⚠️ |
+| Functions  | 100%  | Semua function dipanggil ✅                 |
+| Lines      | 100%  | Semua baris dieksekusi ✅                   |
 
-**Langkah:**
-1. Buat file `deploy-voting.ts` (copy dari `deploy.ts`, sesuaikan nama contract)
-2. Buat file `interact-voting.ts` untuk simulasi voting
-3. Simulasikan beberapa akun berbeda yang melakukan vote
+### 10.4 HTML Coverage Report
 
-**Hint untuk menggunakan akun berbeda:**
+Coverage juga generate HTML report di folder `coverage/`:
 
-```typescript
-// Di Ganache, kamu bisa copy private key dari beberapa akun berbeda
-const wallet1 = new ethers.Wallet(PRIVATE_KEY_1, provider);
-const wallet2 = new ethers.Wallet(PRIVATE_KEY_2, provider);
-
-// Atau gunakan provider.getSigner() jika pakai Hardhat Network
+```bash
+open coverage/index.html  # Mac
+start coverage/index.html  # Windows
 ```
 
 ---
 
-### Latihan 5: Test Case untuk VotingContract (Tingkat: Menengah)
+## Tugas
 
-**Tugas**: Tulis minimal 5 test case untuk `VotingContract`.
+### Tugas 1: Tulis Test untuk Contract Anda
 
-**Test case yang disarankan:**
-1. Vote berhasil menambah jumlah suara
-2. Satu alamat tidak bisa vote dua kali (harus error)
-3. Dua alamat berbeda bisa vote kandidat yang sama
-4. `getResult()` mengembalikan 0 untuk kandidat yang belum pernah di-vote
-5. Vote dari 3 akun berbeda ke kandidat yang sama menghasilkan total 3 suara
+1. Buat file test untuk smart contract project Anda
+2. Minimal 5 test case:
+   - Test deployment
+   - Test fungsi utama (positive)
+   - Test skenario gagal (negative)
+   - Test access control
+   - Test event
 
-**Template test:**
+### Tugas 2: Achieve 80% Coverage
 
-```typescript
-describe("VotingContract", () => {
-  it("vote berhasil menambah jumlah suara", async () => {
-    // Deploy contract
-    // Vote untuk "Alice"
-    // Cek getResult("Alice") == 1
-  });
+1. Jalankan `npx hardhat coverage`
+2. Pastikan coverage minimal 80% untuk semua metrics
+3. Screenshot hasil coverage
 
-  it("satu alamat tidak bisa vote dua kali", async () => {
-    // Deploy contract
-    // Vote pertama (harus berhasil)
-    // Vote kedua (harus error)
-  });
+### Tugas 3: Tambah Test Case Kreatif
 
-  // ... tambahkan test case lainnya
-});
-```
+1. Tambahkan minimal 1 test case yang tidak ada di modul
+2. Jelaskan mengapa test tersebut penting
 
----
+### Deliverable
 
-## Checklist Penyelesaian
+Kumpulkan:
 
-Tandai setiap item yang sudah selesai:
+1. File test (`test/NamaContract.test.js`)
+2. Screenshot hasil `npx hardhat test` (semua passing)
+3. Screenshot hasil `npx hardhat coverage`
 
-- [ ] Berhasil install Node.js dan pnpm
-- [ ] Berhasil menjalankan Ganache
-- [ ] Berhasil compile contract (`npx hardhat compile`)
-- [ ] Berhasil deploy contract (`npx tsx deploy.ts`)
-- [ ] Berhasil interact dengan contract (`npx tsx interact.ts`)
-- [ ] Berhasil menjalankan test (`npx hardhat test`)
-- [ ] Menyelesaikan Latihan 1
-- [ ] Menyelesaikan Latihan 2
-- [ ] Menyelesaikan Latihan 3
-- [ ] Menyelesaikan Latihan 4
-- [ ] Menyelesaikan Latihan 5
+## Referensi
 
-> **Butuh bantuan?** Jika stuck, coba baca ulang bagian teori yang relevan atau tanyakan ke asisten/dosen.
+- [Hardhat Testing Documentation](https://hardhat.org/tutorial/testing-contracts)
+- [Chai Assertion Library](https://www.chaijs.com/)
+- [Hardhat Chai Matchers](https://hardhat.org/hardhat-chai-matchers/docs/overview)
+- [Mocha Test Framework](https://mochajs.org/)

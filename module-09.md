@@ -1,555 +1,687 @@
-# Module 09. Persiapan Environment untuk Smart Contract Development
+# Module 09. Hardhat Project Setup & Compile
 
 ## Deskripsi
 
-Modul ini adalah **persiapan teknis** sebelum masuk ke Module 10 (Smart Contract dengan Hardhat). Di sini kamu akan menginstall semua tools yang dibutuhkan untuk development Smart Contract secara lokal.
-
-> **Penting**: Selesaikan modul ini terlebih dahulu sebelum melanjutkan ke Module 10. Pastikan semua tools terinstall dengan benar.
-
-**Estimasi waktu**: 30-60 menit (tergantung kecepatan internet)
+Modul ini membahas cara membuat project smart contract menggunakan **Hardhat**, framework development Ethereum yang paling populer. Mahasiswa akan belajar setup environment, memahami struktur project, menulis smart contract, dan melakukan compile.
 
 ## Tujuan Pembelajaran
 
-Setelah mengikuti modul ini, kamu akan:
+Setelah menyelesaikan modul ini, mahasiswa mampu:
 
-1. Memahami mengapa perlu development environment lokal
-2. Berhasil menginstall Node.js
-3. Berhasil menginstall pnpm (package manager)
-4. Berhasil menginstall dan menjalankan Ganache (local blockchain)
-5. Menginstall extension Solidity di VS Code
-6. Memverifikasi semua instalasi berfungsi dengan benar
+1. Membuat project Hardhat dari awal
+2. Memahami struktur folder project smart contract
+3. Mengkonfigurasi Hardhat untuk berbagai network
+4. Memindahkan contract dari Remix ke project lokal
+5. Menjalankan compile dan memahami output (ABI, bytecode, artifacts)
+
+## Prasyarat
+
+Sebelum memulai, pastikan sudah terinstall:
+
+- **Node.js** v18+ ([Download](https://nodejs.org))
+- **npm** (sudah termasuk dalam Node.js)
+- **VS Code** dengan extension Solidity
+- **Terminal** (Command Prompt, PowerShell, atau Terminal)
+
+Cek instalasi:
+
+```bash
+node -v   # v18.x.x atau lebih baru
+npm -v    # 9.x.x atau lebih baru
+```
 
 ## List of Contents
 
 - [Deskripsi](#deskripsi)
 - [Tujuan Pembelajaran](#tujuan-pembelajaran)
-- [1. Mengapa Perlu Development Environment Lokal?](#1-mengapa-perlu-development-environment-lokal)
-- [2. Instalasi Node.js](#2-instalasi-nodejs)
-  - [2.1 Windows](#21-windows)
-  - [2.2 macOS](#22-macos)
-  - [2.3 Linux (Ubuntu/Debian)](#23-linux-ubuntudebian)
-  - [2.4 Verifikasi Instalasi Node.js](#24-verifikasi-instalasi-nodejs)
-- [3. Instalasi pnpm (Package Manager)](#3-instalasi-pnpm-package-manager)
-- [4. Instalasi Ganache (Local Blockchain)](#4-instalasi-ganache-local-blockchain)
-  - [4.1 Download dan Install](#41-download-dan-install)
-  - [4.2 Mengenal Tampilan Ganache](#42-mengenal-tampilan-ganache)
-  - [4.3 Informasi Penting di Ganache](#43-informasi-penting-di-ganache)
-- [5. Setup VS Code untuk Solidity](#5-setup-vs-code-untuk-solidity)
-- [6. Clone dan Setup Project](#6-clone-dan-setup-project)
-- [7. Verifikasi Akhir](#7-verifikasi-akhir)
-- [Troubleshooting](#troubleshooting)
+- [Prasyarat](#prasyarat)
+- [1. Pengantar Hardhat](#1-pengantar-hardhat)
+- [2. Setup Project Hardhat](#2-setup-project-hardhat)
+- [3. Struktur Project](#3-struktur-project)
+- [4. Konfigurasi Hardhat](#4-konfigurasi-hardhat)
+- [5. Menulis Smart Contract](#5-menulis-smart-contract)
+- [6. Compile Contract](#6-compile-contract)
+- [7. Memahami Output Compile](#7-memahami-output-compile)
+- [8. Troubleshooting](#8-troubleshooting)
+- [Ringkasan](#ringkasan)
+- [Tugas](#tugas)
 
 ---
 
-## 1. Mengapa Perlu Development Environment Lokal?
+## 1. Pengantar Hardhat
 
-Pada Module 08, kita menggunakan **Remix IDE** yang berjalan di browser. Ini bagus untuk belajar, tapi memiliki keterbatasan:
+### 1.1 Apa itu Hardhat?
 
-| Aspek | Remix IDE (Browser) | Development Lokal (Hardhat) |
-|-------|---------------------|----------------------------|
-| Setup | Tidak perlu install | Perlu install tools |
-| Proyek besar | Sulit dikelola | Mudah diorganisir |
-| Version control | Tidak ada | Bisa pakai Git |
-| Testing | Manual | Otomatis dengan script |
-| Deployment | Satu-satu | Bisa diotomasi |
-| Kolaborasi | Sulit | Mudah dengan Git |
+**Hardhat** adalah development environment untuk Ethereum yang memungkinkan developer untuk:
 
-**Kesimpulan**: Untuk proyek Smart Contract yang serius, kita butuh development environment lokal.
-
-**Tools yang akan kita install:**
+- Compile smart contract
+- Deploy ke berbagai network
+- Menulis dan menjalankan test
+- Debug smart contract
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  NODE.JS                                                    │
-│  Platform untuk menjalankan JavaScript di luar browser      │
-│  └── pnpm (package manager untuk install library)           │
-│      └── Hardhat (framework Smart Contract)                 │
-│          └── ethers.js (library untuk interact blockchain)  │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│  GANACHE                                                    │
-│  Blockchain lokal (tiruan) untuk testing                    │
-│  - Gratis, tidak pakai ETH sungguhan                        │
-│  - 10 akun dengan saldo 100 ETH masing-masing               │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│  VS CODE + Extension Solidity                               │
-│  Editor kode dengan fitur syntax highlighting               │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    HARDHAT ECOSYSTEM                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐     │
+│   │  Write   │──►│ Compile  │──►│   Test   │──►│  Deploy  │     │
+│   │ Contract │   │          │   │          │   │          │     │
+│   └──────────┘   └──────────┘   └──────────┘   └──────────┘     │
+│                                                                 │
+│   Tools:                                                        │
+│   - Solidity Compiler                                           │
+│   - Hardhat Network (local blockchain)                          │
+│   - Ethers.js integration                                       │
+│   - Testing framework (Mocha + Chai)                            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
----
+### 1.2 Remix vs Hardhat
 
-## 2. Instalasi Node.js
+| Aspek                     | Remix IDE                  | Hardhat                         |
+| ------------------------- | -------------------------- | ------------------------------- |
+| **Tipe**            | Browser-based IDE          | Local development framework     |
+| **Cocok untuk**     | Belajar cepat, prototyping | Project serius, tim development |
+| **Testing**         | Manual (klik function)     | Automated unit testing          |
+| **Version Control** | Sulit                      | Mudah (Git)                     |
+| **CI/CD**           | Tidak mendukung            | Mendukung                       |
+| **Extensibility**   | Terbatas                   | Plugin ecosystem                |
 
-**Apa itu Node.js?**
-
-Node.js adalah platform yang memungkinkan kita menjalankan JavaScript di luar browser. Hardhat dan tools blockchain lainnya dibangun di atas Node.js.
-
-### 2.1 Windows
-
-**Langkah-langkah:**
-
-1. **Buka website Node.js**
-   - Buka browser dan kunjungi: https://nodejs.org
-
-2. **Download installer**
-   - Klik tombol **LTS** (Long Term Support) - yang berwarna hijau
-   - File akan terdownload (contoh: `node-v20.11.0-x64.msi`)
-
-   ![Download Node.js](image/module-08b/nodejs-download.png)
-
-3. **Jalankan installer**
-   - Double-click file yang sudah didownload
-   - Klik **Next** di setiap langkah
-   - Biarkan semua pengaturan default
-   - Klik **Install**
-   - Tunggu proses instalasi selesai
-   - Klik **Finish**
-
-4. **Buka Command Prompt**
-   - Tekan `Windows + R` di keyboard
-   - Ketik `cmd`
-   - Tekan Enter
-
-5. **Cek instalasi**
-   - Di Command Prompt, ketik:
-   ```bash
-   node --version
-   ```
-   - Tekan Enter
-
-**Hasil yang diharapkan:**
 ```
-v20.11.0
-```
-(Angka versi mungkin berbeda, yang penting muncul angka versi)
+Remix: Cocok untuk belajar dan eksperimen cepat
+       └─► Langsung di browser, tidak perlu setup
 
-### 2.2 macOS
-
-**Langkah-langkah:**
-
-1. **Buka website Node.js**
-   - Buka browser dan kunjungi: https://nodejs.org
-
-2. **Download installer**
-   - Klik tombol **LTS** (warna hijau)
-   - File `.pkg` akan terdownload
-
-3. **Jalankan installer**
-   - Buka file `.pkg` yang sudah didownload
-   - Ikuti petunjuk instalasi (klik Continue/Next)
-   - Masukkan password Mac jika diminta
-   - Klik Install
-   - Tunggu sampai selesai
-
-4. **Buka Terminal**
-   - Tekan `Cmd + Space`
-   - Ketik `Terminal`
-   - Tekan Enter
-
-5. **Cek instalasi**
-   ```bash
-   node --version
-   ```
-
-**Hasil yang diharapkan:**
-```
-v20.11.0
+Hardhat: Cocok untuk project yang lebih rapi
+         └─► Bisa ditest, dideploy, dan dikembangkan secara profesional
 ```
 
-### 2.3 Linux (Ubuntu/Debian)
+### 1.3 Mengapa Hardhat?
 
-**Langkah-langkah:**
+**Kelebihan Hardhat:**
 
-1. **Buka Terminal**
-   - Tekan `Ctrl + Alt + T`
+| Fitur                        | Penjelasan                                    |
+| ---------------------------- | --------------------------------------------- |
+| **Hardhat Network**    | Built-in local Ethereum network untuk testing |
+| **Solidity Debugging** | Stack traces dan console.log di Solidity      |
+| **Flexible Testing**   | Integrasi dengan Mocha, Chai, Ethers.js       |
+| **Plugin System**      | Ekstensif plugin untuk berbagai kebutuhan     |
+| **TypeScript Support** | First-class TypeScript support                |
 
-2. **Tambahkan repository NodeSource**
-   ```bash
-   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-   ```
-   - Masukkan password jika diminta
-   - Tunggu proses selesai
+## 2. Setup Project Hardhat
 
-3. **Install Node.js**
-   ```bash
-   sudo apt-get install -y nodejs
-   ```
-
-4. **Cek instalasi**
-   ```bash
-   node --version
-   ```
-
-**Hasil yang diharapkan:**
-```
-v20.11.0
-```
-
-### 2.4 Verifikasi Instalasi Node.js
-
-Setelah instalasi, pastikan juga **npm** (Node Package Manager) terinstall:
+#### Step 1: Buat Folder Project
 
 ```bash
-npm --version
+mkdir project-smart-contract
+cd project-smart-contract
 ```
 
-**Hasil yang diharapkan:**
-```
-10.2.3
-```
-(Angka versi mungkin berbeda)
+#### Step 2: Inisialisasi npm
 
-> **Checkpoint 1**: Jika `node --version` dan `npm --version` keduanya menampilkan angka versi, lanjut ke langkah berikutnya!
-
----
-
-## 3. Instalasi pnpm (Package Manager)
-
-**Apa itu pnpm?**
-
-pnpm adalah package manager alternatif yang lebih cepat dan hemat ruang disk dibanding npm. Kita akan menggunakan pnpm untuk menginstall library-library yang dibutuhkan project.
-
-**Langkah-langkah (semua OS sama):**
-
-1. **Buka Terminal/Command Prompt**
-
-2. **Jalankan perintah instalasi**
-   ```bash
-   npm install -g pnpm
-   ```
-
-   **Penjelasan:**
-   - `npm` = package manager bawaan Node.js
-   - `install` = perintah untuk menginstall
-   - `-g` = global (bisa dipakai di mana saja)
-   - `pnpm` = nama package yang diinstall
-
-3. **Tunggu proses instalasi**
-   - Akan muncul progress bar
-   - Tunggu sampai selesai
-
-4. **Verifikasi instalasi**
-   ```bash
-   pnpm --version
-   ```
-
-**Hasil yang diharapkan:**
-```
-8.15.4
+```bash
+npm init -y
 ```
 
-**Troubleshooting:**
+Perintah ini membuat file `package.json` dengan konfigurasi default.
 
-| Error | Penyebab | Solusi |
-|-------|----------|--------|
-| `EACCES permission denied` | Tidak punya akses | **macOS/Linux**: tambahkan `sudo` di depan: `sudo npm install -g pnpm` |
-| `npm is not recognized` | Node.js belum terinstall | Kembali ke langkah 2 (Install Node.js) |
-| `command not found: pnpm` | PATH belum terupdate | Tutup dan buka ulang Terminal/Command Prompt |
+#### Step 3: Install Hardhat
 
-> **Checkpoint 2**: Jika `pnpm --version` menampilkan angka versi, lanjut ke langkah berikutnya!
-
----
-
-## 4. Instalasi Ganache (Local Blockchain)
-
-**Apa itu Ganache?**
-
-Ganache adalah blockchain tiruan yang berjalan di komputer kita. Ini memungkinkan kita untuk:
-- Testing Smart Contract tanpa biaya
-- Mendapatkan ETH gratis (uang tiruan)
-- Melihat transaksi secara visual
-- Debug dengan mudah
-
-**Analogi**: Ganache seperti "simulator" pesawat untuk pilot. Kita bisa belajar dan bereksperimen tanpa risiko.
-
-### 4.1 Download dan Install
-
-1. **Buka website Ganache**
-   - Kunjungi: https://trufflesuite.com/ganache
-
-2. **Download sesuai OS**
-   - Klik tombol download untuk OS kamu:
-     - Windows: `.exe` atau `.appx`
-     - macOS: `.dmg`
-     - Linux: `.AppImage`
-
-3. **Install aplikasi**
-
-   **Windows:**
-   - Double-click file installer
-   - Ikuti petunjuk instalasi
-   - Selesai
-
-   **macOS:**
-   - Buka file `.dmg`
-   - Drag Ganache ke folder Applications
-   - Buka dari Launchpad atau Applications
-
-   **Linux:**
-   - Buat file executable: `chmod +x Ganache-*.AppImage`
-   - Jalankan: `./Ganache-*.AppImage`
-
-4. **Jalankan Ganache**
-   - Buka aplikasi Ganache
-   - Klik **Quickstart** untuk memulai blockchain lokal
-
-### 4.2 Mengenal Tampilan Ganache
-
-Setelah Ganache berjalan, kamu akan melihat tampilan seperti ini:
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  GANACHE                                                    [─][□][×]│
-├─────────────────────────────────────────────────────────────────────┤
-│  ACCOUNTS  BLOCKS  TRANSACTIONS  CONTRACTS  EVENTS  LOGS           │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  RPC SERVER: HTTP://127.0.0.1:7545    NETWORK ID: 5777              │
-│                                                                     │
-├─────────────────────────────────────────────────────────────────────┤
-│  ACCOUNT                                          BALANCE           │
-│  ────────────────────────────────────────────────────────────────   │
-│  0x1234...5678  [🔑]                              100.00 ETH        │
-│  0xAbCd...9012  [🔑]                              100.00 ETH        │
-│  0x3456...7890  [🔑]                              100.00 ETH        │
-│  ... (total 10 akun)                                                │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+```bash
+npm install --save-dev hardhat
 ```
 
-### 4.3 Informasi Penting di Ganache
+#### Step 4: Inisialisasi Hardhat
 
-**1. RPC Server URL**
-```
-HTTP://127.0.0.1:7545
-```
-Ini adalah "alamat" blockchain lokal kita. Nanti kita akan menggunakan URL ini untuk koneksi dari script.
-
-**2. Daftar Akun**
-- Ada 10 akun yang sudah dibuat otomatis
-- Setiap akun punya saldo 100 ETH (uang tiruan)
-- Setiap akun punya alamat unik (contoh: `0x1234...5678`)
-
-**3. Private Key** (sangat penting!)
-- Klik ikon kunci (🔑) di samping akun untuk melihat private key
-- **JANGAN PERNAH** share private key ke siapapun!
-- Kita akan membutuhkan private key ini di Module 10
-
-**Cara mendapatkan Private Key:**
-1. Klik ikon kunci (🔑) di samping salah satu akun
-2. Akan muncul popup dengan private key
-3. Copy private key tersebut (akan dipakai di Module 10)
-
-```
-┌────────────────────────────────────────────────┐
-│  ACCOUNT KEYS                                  │
-│                                                │
-│  Address:                                      │
-│  0x1234567890abcdef1234567890abcdef12345678    │
-│                                                │
-│  Private Key:                                  │
-│  0xabcdef1234567890abcdef1234567890abcdef...   │
-│                                        [COPY]  │
-└────────────────────────────────────────────────┘
+```bash
+npx hardhat init
 ```
 
-> **Checkpoint 3**: Jika Ganache berjalan dan menampilkan daftar akun, lanjut ke langkah berikutnya!
+Pilih opsi berikut saat muncul prompt:
 
----
+```text
+? What do you want to do?
+  Create a JavaScript project      ← Pilih ini untuk pemula
+  Create a TypeScript project
+  Create a TypeScript project (with Viem)
+  Create an empty hardhat.config.js
+  Quit
 
-## 5. Setup VS Code untuk Solidity
+? Hardhat project root: (tekan Enter untuk current directory)
 
-**Apa itu extension Solidity?**
+? Do you want to add a .gitignore? Yes
 
-Extension ini menambahkan fitur-fitur yang memudahkan menulis kode Solidity:
-- Syntax highlighting (kode berwarna)
-- Auto-completion (saran kode otomatis)
-- Error detection (mendeteksi kesalahan)
+? Do you want to install this sample project's dependencies with npm? Yes
+```
 
-**Langkah-langkah:**
+**Catatan:** Pilih JavaScript project untuk kemudahan belajar. TypeScript bisa dipelajari nanti.
 
-1. **Buka VS Code**
+#### Step 5: Verifikasi Instalasi
 
-2. **Buka panel Extensions**
-   - Tekan `Ctrl + Shift + X` (Windows/Linux)
-   - Atau `Cmd + Shift + X` (macOS)
-   - Atau klik ikon kotak-kotak di sidebar kiri
+```bash
+npx hardhat compile
+```
 
-3. **Cari extension Solidity**
-   - Ketik `solidity` di kotak pencarian
-   - Cari extension **"Solidity"** oleh **Juan Blanco**
-   - Ini adalah extension Solidity paling populer
+**Expected Output:**
 
-4. **Install extension**
-   - Klik tombol **Install** berwarna biru
-   - Tunggu sampai selesai
+```text
+Compiled 1 Solidity file successfully (evm target: paris).
+```
 
-5. **Verifikasi**
-   - Buat file baru dengan ekstensi `.sol`
-   - Ketik beberapa kode Solidity
-   - Jika kode berwarna-warni, extension sudah aktif!
+## 3. Struktur Project
 
-**Test extension:**
+Setelah inisialisasi, struktur folder project adalah:
 
-Buat file `test.sol` dan ketik:
+```text
+project-smart-contract/
+├── contracts/              ← File smart contract Solidity
+│   └── Lock.sol           ← Sample contract dari Hardhat
+├── ignition/              ← Module deployment (Hardhat Ignition)
+│   └── modules/
+│       └── Lock.js
+├── test/                  ← File unit test
+│   └── Lock.js
+├── hardhat.config.js      ← Konfigurasi Hardhat
+├── package.json           ← Dependencies dan scripts
+├── package-lock.json
+├── .gitignore
+└── README.md
+```
+
+### 3.1 Penjelasan Folder
+
+| Folder/File           | Fungsi                                         |
+| --------------------- | ---------------------------------------------- |
+| `contracts/`        | Tempat semua file smart contract (.sol)        |
+| `ignition/`         | Script deployment menggunakan Hardhat Ignition |
+| `test/`             | File unit test untuk smart contract            |
+| `hardhat.config.js` | Konfigurasi compiler, network, plugins         |
+| `artifacts/`        | Hasil compile (muncul setelah compile)         |
+| `cache/`            | Cache untuk mempercepat compile                |
+
+### 3.2 Folder artifacts (setelah compile)
+
+```text
+artifacts/
+├── contracts/
+│   └── Lock.sol/
+│       ├── Lock.json          ← ABI + Bytecode
+│       └── Lock.dbg.json      ← Debug info
+├── build-info/
+│   └── xxx.json               ← Build metadata
+└── ...
+```
+
+## 4. Konfigurasi Hardhat
+
+### 4.1 File hardhat.config.js
+
+Buka file `hardhat.config.js`:
+
+```javascript
+require("@nomicfoundation/hardhat-toolbox");
+
+/** @type import('hardhat/config').HardhatUserConfig */
+module.exports = {
+  solidity: "0.8.28",
+};
+```
+
+### 4.2 Konfigurasi Lengkap
+
+Modifikasi menjadi konfigurasi yang lebih lengkap:
+
+```javascript
+require("@nomicfoundation/hardhat-toolbox");
+
+/** @type import('hardhat/config').HardhatUserConfig */
+module.exports = {
+  solidity: {
+    version: "0.8.20",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },
+  networks: {
+    // Hardhat Network (default, built-in)
+    hardhat: {
+      chainId: 31337
+    },
+    // Localhost (untuk npx hardhat node)
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      chainId: 31337
+    },
+    // Ganache (opsional)
+    ganache: {
+      url: "http://127.0.0.1:7545",
+      chainId: 1337
+    }
+  }
+};
+```
+
+### 4.3 Penjelasan Konfigurasi
+
+| Bagian                          | Fungsi                                 |
+| ------------------------------- | -------------------------------------- |
+| `solidity.version`            | Versi compiler Solidity                |
+| `solidity.settings.optimizer` | Optimasi bytecode untuk gas efficiency |
+| `networks.hardhat`            | Built-in network untuk testing         |
+| `networks.localhost`          | Koneksi ke Hardhat node yang berjalan  |
+| `networks.ganache`            | Koneksi ke Ganache GUI/CLI             |
+
+### 4.4 Network Options
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    NETWORK OPTIONS                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Local Development:                                             │
+│  ┌──────────────────┐    ┌──────────────────┐                   │
+│  │  Hardhat Network │    │     Ganache      │                   │
+│  │  Port: 8545      │    │  Port: 7545      │                   │
+│  │  Chain ID: 31337 │    │  Chain ID: 1337  │                   │
+│  │  Built-in        │    │  Separate app    │                   │
+│  └──────────────────┘    └──────────────────┘                   │
+│                                                                 │
+│  Testnet (untuk nanti):                                         │
+│  ┌──────────────────┐    ┌──────────────────┐                   │
+│  │     Sepolia      │    │     Goerli       │                   │
+│  │  Real testnet    │    │  (Deprecated)    │                   │
+│  └──────────────────┘    └──────────────────┘                   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## 5. Menulis Smart Contract
+
+### 5.1 Hapus Sample Contract
+
+Hapus file sample dan buat contract baru:
+
+```bash
+rm contracts/Lock.sol
+```
+
+### 5.2 Buat Contract Baru
+
+Buat file `contracts/CourseReward.sol`:
+
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
-contract Test {
-    uint public angka = 42;
+/**
+ * @title CourseReward
+ * @dev Contract untuk memberikan reward kepada mahasiswa yang menyelesaikan kursus
+ * @notice Contract ini digunakan sebagai contoh pembelajaran Hardhat
+ */
+contract CourseReward {
+    // ============ State Variables ============
+
+    /// @notice Address owner/dosen yang membuat contract
+    address public owner;
+
+    /// @notice Jumlah reward yang diberikan per mahasiswa
+    uint256 public rewardAmount;
+
+    /// @notice Mapping untuk menyimpan total reward per mahasiswa
+    mapping(address => uint256) public rewards;
+
+    /// @notice Mapping untuk tracking apakah mahasiswa sudah claim
+    mapping(address => bool) public hasClaimed;
+
+    // ============ Events ============
+
+    /// @notice Event yang di-emit saat mahasiswa claim reward
+    event RewardClaimed(address indexed student, uint256 amount);
+
+    /// @notice Event yang di-emit saat owner mengubah reward amount
+    event RewardAmountChanged(uint256 oldAmount, uint256 newAmount);
+
+    // ============ Modifiers ============
+
+    /// @notice Modifier untuk membatasi akses hanya untuk owner
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can call this function");
+        _;
+    }
+
+    // ============ Constructor ============
+
+    /**
+     * @notice Membuat contract baru dengan reward amount tertentu
+     * @param _rewardAmount Jumlah reward per mahasiswa
+     */
+    constructor(uint256 _rewardAmount) {
+        owner = msg.sender;
+        rewardAmount = _rewardAmount;
+    }
+
+    // ============ External Functions ============
+
+    /**
+     * @notice Mahasiswa claim reward mereka
+     * @dev Setiap mahasiswa hanya bisa claim sekali
+     */
+    function claimReward() external {
+        require(!hasClaimed[msg.sender], "Reward already claimed");
+
+        rewards[msg.sender] += rewardAmount;
+        hasClaimed[msg.sender] = true;
+
+        emit RewardClaimed(msg.sender, rewardAmount);
+    }
+
+    /**
+     * @notice Owner mengubah jumlah reward
+     * @param _newAmount Jumlah reward baru
+     */
+    function setRewardAmount(uint256 _newAmount) external onlyOwner {
+        uint256 oldAmount = rewardAmount;
+        rewardAmount = _newAmount;
+
+        emit RewardAmountChanged(oldAmount, _newAmount);
+    }
+
+    // ============ View Functions ============
+
+    /**
+     * @notice Mendapatkan total reward yang dimiliki pemanggil
+     * @return Total reward dalam wei
+     */
+    function getMyReward() external view returns (uint256) {
+        return rewards[msg.sender];
+    }
+
+    /**
+     * @notice Cek apakah address tertentu sudah claim
+     * @param _student Address mahasiswa yang dicek
+     * @return true jika sudah claim, false jika belum
+     */
+    function hasStudentClaimed(address _student) external view returns (bool) {
+        return hasClaimed[_student];
+    }
 }
 ```
 
-Jika kode terlihat berwarna-warni (bukan hitam putih semua), extension sudah bekerja!
+### 5.3 Anatomi Smart Contract
 
-> **Checkpoint 4**: Extension Solidity terinstall dan aktif.
-
----
-
-## 6. Clone dan Setup Project
-
-**Langkah-langkah:**
-
-1. **Buka Terminal/Command Prompt**
-
-2. **Pindah ke folder project**
-   ```bash
-   cd smart-contract/contracts
-   ```
-
-   > Jika folder belum ada, tanyakan ke dosen/asisten untuk mendapatkan project files.
-
-3. **Install dependensi**
-   ```bash
-   pnpm install
-   ```
-
-   **Apa yang terjadi:**
-   - pnpm membaca file `package.json`
-   - Menginstall semua library yang tercantum
-   - Membuat folder `node_modules`
-
-4. **Tunggu proses instalasi**
-   - Ini mungkin memakan waktu 1-5 menit
-   - Tergantung kecepatan internet
-
-**Output yang diharapkan:**
 ```
-Packages: +245
-++++++++++++++++++++++++++++++++++++++++++++++++++
-Progress: resolved 245, reused 0, downloaded 245, added 245, done
+┌─────────────────────────────────────────────────────────────────┐
+│                    STRUKTUR SMART CONTRACT                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. SPDX License Identifier                                     │
+│     └─► Lisensi open source                                     │
+│                                                                 │
+│  2. Pragma                                                      │
+│     └─► Versi compiler Solidity                                 │
+│                                                                 │
+│  3. Contract Declaration                                        │
+│     └─► contract ContractName { ... }                           │
+│                                                                 │
+│  4. State Variables                                             │
+│     └─► Data yang disimpan di blockchain                        │
+│                                                                 │
+│  5. Events                                                      │
+│     └─► Log untuk tracking aktivitas                            │
+│                                                                 │
+│  6. Modifiers                                                   │
+│     └─► Reusable access control                                 │
+│                                                                 │
+│  7. Constructor                                                 │
+│     └─► Dijalankan sekali saat deploy                           │
+│                                                                 │
+│  8. Functions                                                   │
+│     └─► Logic contract                                          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-> **Checkpoint 5**: `pnpm install` berhasil tanpa error.
+### 5.4 Konsep Penting dalam Contract
 
----
+| Konsep                   | Penjelasan                  | Contoh                                          |
+| ------------------------ | --------------------------- | ----------------------------------------------- |
+| **State Variable** | Data permanen di blockchain | `address public owner;`                       |
+| **Mapping**        | Key-value storage           | `mapping(address => uint256) public rewards;` |
+| **Event**          | Log untuk frontend/indexer  | `emit RewardClaimed(student, amount);`        |
+| **Modifier**       | Reusable condition check    | `modifier onlyOwner()`                        |
+| **require**        | Validasi kondisi            | `require(!hasClaimed[msg.sender], "...");`    |
+| **msg.sender**     | Address pemanggil function  | `owner = msg.sender;`                         |
 
-## 7. Verifikasi Akhir
+## 6. Compile Contract
 
-Sebelum melanjutkan ke Module 10, pastikan semua tools berfungsi dengan menjalankan checklist ini:
+### 6.1 Jalankan Compile
 
-### Checklist Instalasi
-
-Buka Terminal/Command Prompt dan jalankan perintah-perintah berikut:
-
-**1. Node.js**
 ```bash
-node --version
+npx hardhat compile
 ```
-Expected: `v20.x.x` atau lebih baru
 
-**2. npm**
+**Expected Output:**
+
+```text
+Compiled 1 Solidity file successfully (evm target: paris).
+```
+
+### 6.2 Compile dengan Clean
+
+Jika perlu compile ulang dari awal:
+
 ```bash
-npm --version
+npx hardhat clean
+npx hardhat compile
 ```
-Expected: `10.x.x` atau lebih baru
 
-**3. pnpm**
+### 6.3 Compile Specific File
+
 ```bash
-pnpm --version
+npx hardhat compile --force
 ```
-Expected: `8.x.x` atau lebih baru
 
-**4. Ganache**
-- Buka aplikasi Ganache
-- Klik Quickstart
-- Pastikan muncul daftar 10 akun
+### 6.4 Hasil Compile
 
-**5. VS Code Extension**
-- Buat file `.sol`
-- Pastikan syntax highlighting aktif (kode berwarna)
+Setelah compile, folder `artifacts` akan muncul:
 
-### Ringkasan Informasi Penting
+```text
+artifacts/
+└── contracts/
+    └── CourseReward.sol/
+        ├── CourseReward.json      ← File utama (ABI + Bytecode)
+        └── CourseReward.dbg.json  ← Debug information
+```
 
-Catat informasi berikut untuk dipakai di Module 10:
+## 7. Memahami Output Compile
 
-| Item | Nilai | Contoh |
-|------|-------|--------|
-| Node.js version | ... | v20.11.0 |
-| pnpm version | ... | 8.15.4 |
-| Ganache RPC URL | ... | HTTP://127.0.0.1:7545 |
-| Private Key (akun 1) | ... | 0xabcd... |
+### 7.1 File CourseReward.json
+
+Buka file `artifacts/contracts/CourseReward.sol/CourseReward.json`:
+
+```json
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "CourseReward",
+  "sourceName": "contracts/CourseReward.sol",
+  "abi": [...],
+  "bytecode": "0x608060405234801561001057600080fd5b50...",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50...",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
+```
+
+### 7.2 Komponen Output
+
+| Komponen                    | Penjelasan                                                 |
+| --------------------------- | ---------------------------------------------------------- |
+| **ABI**               | Application Binary Interface - definisi function dan event |
+| **Bytecode**          | Kode yang akan dideploy ke blockchain                      |
+| **Deployed Bytecode** | Kode yang tersimpan di blockchain setelah deploy           |
+
+### 7.3 ABI (Application Binary Interface)
+
+ABI adalah "kontrak" antara smart contract dan aplikasi yang ingin berinteraksi:
+
+```json
+{
+  "abi": [
+    {
+      "inputs": [{"name": "_rewardAmount", "type": "uint256"}],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "claimReward",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "rewardAmount",
+      "outputs": [{"type": "uint256"}],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}
+```
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         ABI USAGE                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   Frontend/Script                        Smart Contract         │
+│   ┌─────────────┐                       ┌─────────────┐         │
+│   │             │   ABI defines how     │             │         │
+│   │  ethers.js  │◄─────────────────────►│ CourseReward│         │
+│   │  web3.js    │   to call functions   │             │         │
+│   │             │                       │             │         │
+│   └─────────────┘                       └─────────────┘         │
+│                                                                 │
+│   ABI tells the frontend:                                       │
+│   - What functions exist                                        │
+│   - What parameters they need                                   │
+│   - What they return                                            │
+│   - What events can be emitted                                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 7.4 Bytecode
+
+Bytecode adalah representasi biner dari smart contract yang akan dieksekusi oleh EVM:
+
+```
+Source Code (Solidity)     Compile      Bytecode (Hex)
+┌──────────────────────┐    ─────►    ┌─────────────────────┐
+│ function claim() {   │              │ 0x608060405234801   │
+│   rewards[msg.sender]│              │ 561001057600080fd   │
+│   += rewardAmount;   │              │ 5b5060405161...     │
+│ }                    │              │                     │
+└──────────────────────┘              └─────────────────────┘
+```
+
+## 8. Troubleshooting
+
+### 8.1 Error Compile Umum
+
+| Error                                               | Penyebab                       | Solusi                               |
+| --------------------------------------------------- | ------------------------------ | ------------------------------------ |
+| `ParserError: Expected ';'`                       | Kurang titik koma              | Tambahkan `;` di akhir statement   |
+| `DeclarationError: Identifier not found`          | Variable tidak dideklarasi     | Cek nama variable                    |
+| `TypeError: ... is not implicitly convertible`    | Tipe data tidak cocok          | Cek tipe data                        |
+| `CompilerError: Stack too deep`                   | Terlalu banyak local variables | Refactor code                        |
+| `Source file requires different compiler version` | Versi pragma tidak cocok       | Sesuaikan versi di hardhat.config.js |
+
+### 8.2 Contoh Error dan Solusi
+
+**Error: Kurang titik koma**
+
+```solidity
+// Error
+uint256 public rewardAmount  // Kurang ;
+
+// Fix
+uint256 public rewardAmount;
+```
+
+**Error: Versi compiler tidak cocok**
+
+```solidity
+// Contract pakai ^0.8.20
+pragma solidity ^0.8.20;
+
+// hardhat.config.js pakai 0.8.17
+solidity: "0.8.17"  // Error!
+
+// Fix: sesuaikan versi
+solidity: "0.8.20"
+```
+
+**Error: Typo nama function**
+
+```solidity
+// Error
+function claimReward() public {
+    rewards[msg.sender] += rewardAmout;  // Typo: rewardAmout
+}
+
+// Fix
+function claimReward() public {
+    rewards[msg.sender] += rewardAmount;  // Correct
+}
+```
+
+### 8.3 Tips Debugging
+
+1. **Baca error message dengan teliti** - Solidity compiler memberikan informasi yang cukup detail
+2. **Cek line number** - Error message biasanya mencantumkan baris yang bermasalah
+3. **Compile sering** - Compile setiap selesai menulis satu function
+4. **Gunakan VS Code extension** - Solidity extension memberikan real-time error highlighting
 
 ---
 
-## Troubleshooting
+## Tugas
 
-### Error Umum dan Solusinya
+Sifat: Individu
 
-**1. `node is not recognized` / `command not found: node`**
+- Setiap mahasiswa membuat Github repository untuk Tugas Blockchain.
 
-| Penyebab | Solusi |
-|----------|--------|
-| Node.js belum terinstall | Install Node.js dari awal |
-| PATH belum terupdate | Restart Terminal/Command Prompt |
-| Instalasi gagal | Uninstall dan install ulang Node.js |
+### Tugas 1: Setup Project
 
-**2. `EACCES permission denied`**
+1. Buat project Hardhat baru dengan nama `project2-smart-contract`
+2. Konfigurasi `hardhat.config.js` dengan network localhost dan ganache
 
-| OS | Solusi |
-|-----|--------|
-| macOS/Linux | Tambahkan `sudo` di depan perintah |
-| Windows | Jalankan Command Prompt sebagai Administrator |
+### Tugas 2: Buat Smart Contract
 
-**3. `npm ERR! network`**
+1. Buat smart contract sesuai tema project kalian
+2. Contract minimal memiliki:
+   - 2 state variables
+   - 1 mapping
+   - 1 event
+   - 1 modifier
+   - 3 functions
+3. Compile dan pastikan tidak ada error
 
-| Penyebab | Solusi |
-|----------|--------|
-| Tidak ada internet | Cek koneksi internet |
-| Firewall/proxy | Minta bantuan IT untuk konfigurasi |
+### Deliverable
 
-**4. Ganache tidak bisa dibuka**
+Kumpulkan:
 
-| Penyebab | Solusi |
-|----------|--------|
-| Port 7545 sudah dipakai | Tutup aplikasi lain yang mungkin pakai port tersebut |
-| File corrupt | Download ulang dan install ulang |
+1. Screenshot hasil `npx hardhat compile`
+2. Screenshot struktur folder project
+3. Link repository GitHub (jika sudah di-commit)
 
-**5. Extension Solidity tidak aktif**
+## Referensi
 
-| Penyebab | Solusi |
-|----------|--------|
-| File bukan `.sol` | Pastikan nama file diakhiri `.sol` |
-| Extension belum direload | Restart VS Code |
-| Konflik dengan extension lain | Disable extension Solidity lain |
-
----
-
-## Selesai!
-
-Jika semua checkpoint sudah selesai:
-
-- [x] Node.js terinstall
-- [x] pnpm terinstall
-- [x] Ganache terinstall dan berjalan
-- [x] VS Code extension Solidity aktif
-- [x] Project dependencies terinstall
-
-**Kamu siap melanjutkan ke [Module 10: Smart Contract dengan Solidity dan Hardhat](module-10.md)!**
-
-> **Tips**: Biarkan Ganache tetap berjalan di background saat mengerjakan Module 10.
+- [Hardhat Documentation](https://hardhat.org/docs)
+- [Hardhat Getting Started](https://hardhat.org/hardhat-runner/docs/getting-started)
+- [Solidity Documentation](https://docs.soliditylang.org/)
