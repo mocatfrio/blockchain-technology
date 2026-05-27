@@ -1,4 +1,4 @@
-# Module 09. Hardhat Project Setup & Compile
+# Modul 9. Hardhat Project Setup & Compile
 
 ## Deskripsi
 
@@ -35,22 +35,231 @@ npm -v    # 9.x.x atau lebih baru
 - [Deskripsi](#deskripsi)
 - [Tujuan Pembelajaran](#tujuan-pembelajaran)
 - [Prasyarat](#prasyarat)
-- [1. Pengantar Hardhat](#1-pengantar-hardhat)
-- [2. Setup Project Hardhat](#2-setup-project-hardhat)
-- [3. Struktur Project](#3-struktur-project)
-- [4. Konfigurasi Hardhat](#4-konfigurasi-hardhat)
-- [5. Menulis Smart Contract](#5-menulis-smart-contract)
-- [6. Compile Contract](#6-compile-contract)
-- [7. Memahami Output Compile](#7-memahami-output-compile)
-- [8. Troubleshooting](#8-troubleshooting)
+- [1. Pengenalan Node.js dan npm](#1-pengenalan-nodejs-dan-npm)
+- [2. Pengantar Hardhat](#2-pengantar-hardhat)
+- [3. Setup Project Hardhat](#3-setup-project-hardhat)
+- [4. Struktur Project](#4-struktur-project)
+- [5. Konfigurasi Hardhat](#5-konfigurasi-hardhat)
+- [6. Menulis Smart Contract](#6-menulis-smart-contract)
+- [7. Compile Contract](#7-compile-contract)
+- [8. Memahami Output Compile](#8-memahami-output-compile)
+- [9. Troubleshooting](#9-troubleshooting)
 - [Ringkasan](#ringkasan)
 - [Tugas](#tugas)
 
 ---
 
-## 1. Pengantar Hardhat
+## 1. Pengenalan Node.js dan npm
 
-### 1.1 Apa itu Hardhat?
+Sebelum memulai development dengan Hardhat, kita perlu memahami dan menginstall **Node.js** dan **npm** terlebih dahulu karena Hardhat berjalan di atas Node.js.
+
+### 1.1 Apa itu Node.js?
+
+**Node.js** adalah runtime environment yang memungkinkan JavaScript berjalan di luar browser (di sisi server/komputer). Dengan Node.js, developer dapat menjalankan kode JavaScript langsung di terminal/command line.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     NODE.JS OVERVIEW                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   Sebelum Node.js:                                              │
+│   ┌──────────────┐                                              │
+│   │   Browser    │  JavaScript hanya bisa jalan di browser      │
+│   │  (Chrome,    │                                              │
+│   │  Firefox)    │                                              │
+│   └──────────────┘                                              │
+│                                                                 │
+│   Dengan Node.js:                                               │
+│   ┌──────────────┐    ┌──────────────┐                          │
+│   │   Browser    │    │   Server/    │  JavaScript bisa jalan   │
+│   │              │    │   Terminal   │  di mana saja!           │
+│   └──────────────┘    └──────────────┘                          │
+│                                                                 │
+│   Kegunaan Node.js:                                             │
+│   - Menjalankan tools development (Hardhat, Webpack, dll)       │
+│   - Membuat server backend                                      │
+│   - Menjalankan script automation                               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 1.2 Apa itu npm?
+
+**npm (Node Package Manager)** adalah package manager untuk JavaScript yang digunakan untuk:
+
+- Menginstall library/package dari komunitas
+- Mengelola dependencies project
+- Menjalankan script project
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                       npm OVERVIEW                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   npm Registry (npmjs.com)                                      │
+│   ┌─────────────────────────────────────────────────────┐       │
+│   │  hardhat  │  ethers  │  web3  │  react  │  ...      │       │
+│   │  2M+ packages tersedia                              │       │
+│   └─────────────────────────────────────────────────────┘       │
+│                          ▲                                      │
+│                          │ npm install                          │
+│                          ▼                                      │
+│   Project Lokal (node_modules/)                                 │
+│   ┌─────────────────────────────────────────────────────┐       │
+│   │  Semua package yang diinstall tersimpan di sini     │       │
+│   └─────────────────────────────────────────────────────┘       │
+│                                                                 │
+│   Commands npm yang sering digunakan:                           │
+│   - npm init          : Membuat project baru                    │
+│   - npm install       : Install semua dependencies              │
+│   - npm install <pkg> : Install package tertentu                │
+│   - npm run <script>  : Menjalankan script                      │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 1.3 Instalasi Node.js di Windows
+
+#### Metode 1: Download Installer (Recommended untuk Pemula)
+
+1. **Kunjungi website resmi Node.js**
+
+   Buka browser dan akses: https://nodejs.org
+2. **Download installer**
+
+   - Pilih versi **LTS (Long Term Support)** - lebih stabil
+   - Klik tombol download untuk Windows (file `.msi`)
+3. **Jalankan installer**
+
+   - Double-click file yang sudah didownload
+   - Ikuti wizard instalasi:
+     - Klik "Next"
+     - Accept license agreement
+     - Pilih lokasi instalasi (default saja)
+     - **Pastikan** opsi "Add to PATH" tercentang
+     - Klik "Install"
+   - Tunggu proses instalasi selesai
+   - Klik "Finish"
+4. **Verifikasi instalasi**
+
+   Buka **Command Prompt** atau **PowerShell** dan ketik:
+
+   ```bash
+   node -v
+   npm -v
+   ```
+
+   Output yang diharapkan:
+
+   ```text
+   v18.x.x  (atau versi lebih baru)
+   9.x.x    (atau versi lebih baru)
+   ```
+
+#### Metode 2: Menggunakan Chocolatey (Package Manager Windows)
+
+Jika sudah memiliki Chocolatey terinstall:
+
+```powershell
+choco install nodejs-lts
+```
+
+### 1.4 Instalasi Node.js di macOS
+
+#### Metode 1: Download Installer
+
+1. **Kunjungi website resmi Node.js**
+
+   Buka browser dan akses: https://nodejs.org
+2. **Download installer**
+
+   - Pilih versi **LTS (Long Term Support)**
+   - Klik tombol download untuk macOS (file `.pkg`)
+3. **Jalankan installer**
+
+   - Double-click file `.pkg` yang sudah didownload
+   - Ikuti wizard instalasi
+   - Masukkan password administrator jika diminta
+   - Tunggu proses instalasi selesai
+4. **Verifikasi instalasi**
+
+   Buka **Terminal** dan ketik:
+
+   ```bash
+   node -v
+   npm -v
+   ```
+
+#### Metode 2: Menggunakan Homebrew (Recommended)
+
+Homebrew adalah package manager populer untuk macOS. Jika belum terinstall, install dulu dengan:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Kemudian install Node.js:
+
+```bash
+brew install node
+```
+
+#### Metode 3: Menggunakan nvm (Node Version Manager)
+
+nvm memungkinkan kita menginstall dan switch antara berbagai versi Node.js:
+
+```bash
+# Install nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# Restart terminal, kemudian install Node.js
+nvm install --lts
+nvm use --lts
+```
+
+### 1.5 Verifikasi Instalasi
+
+Setelah instalasi selesai, pastikan Node.js dan npm terinstall dengan benar:
+
+```bash
+# Cek versi Node.js
+node -v
+
+# Cek versi npm
+npm -v
+
+# Test menjalankan JavaScript
+node -e "console.log('Hello from Node.js!')"
+```
+
+**Output yang diharapkan:**
+
+```text
+v18.x.x
+9.x.x
+Hello from Node.js!
+```
+
+### 1.6 Troubleshooting Instalasi
+
+| Masalah                         | Penyebab                  | Solusi                                                              |
+| ------------------------------- | ------------------------- | ------------------------------------------------------------------- |
+| `'node' is not recognized`    | Node.js tidak ada di PATH | Restart terminal/komputer, atau reinstall dengan opsi "Add to PATH" |
+| Permission denied (macOS/Linux) | Tidak punya akses write   | Gunakan `sudo` atau install via nvm                               |
+| Versi terlalu lama              | Instalasi lama            | Update Node.js ke versi terbaru                                     |
+| npm error EACCES                | Permission issue          | Gunakan nvm atau fix npm permissions                                |
+
+**Tips:**
+
+- Selalu gunakan versi **LTS** untuk development karena lebih stabil
+- Restart terminal setelah instalasi agar perubahan PATH ter-apply
+- Jika sering berganti versi Node.js, pertimbangkan menggunakan **nvm**
+
+---
+
+## 2. Pengantar Hardhat
+
+### 2.1 Apa itu Hardhat?
 
 **Hardhat** adalah development environment untuk Ethereum yang memungkinkan developer untuk:
 
@@ -78,7 +287,7 @@ npm -v    # 9.x.x atau lebih baru
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 1.2 Remix vs Hardhat
+### 2.2 Remix vs Hardhat
 
 | Aspek                     | Remix IDE                  | Hardhat                         |
 | ------------------------- | -------------------------- | ------------------------------- |
@@ -97,7 +306,7 @@ Hardhat: Cocok untuk project yang lebih rapi
          └─► Bisa ditest, dideploy, dan dikembangkan secara profesional
 ```
 
-### 1.3 Mengapa Hardhat?
+### 2.3 Mengapa Hardhat?
 
 **Kelebihan Hardhat:**
 
@@ -109,7 +318,7 @@ Hardhat: Cocok untuk project yang lebih rapi
 | **Plugin System**      | Ekstensif plugin untuk berbagai kebutuhan     |
 | **TypeScript Support** | First-class TypeScript support                |
 
-## 2. Setup Project Hardhat
+## 3. Setup Project Hardhat
 
 #### Step 1: Buat Folder Project
 
@@ -169,7 +378,7 @@ npx hardhat compile
 Compiled 1 Solidity file successfully (evm target: paris).
 ```
 
-## 3. Struktur Project
+## 4. Struktur Project
 
 Setelah inisialisasi, struktur folder project adalah:
 
@@ -189,7 +398,7 @@ project-smart-contract/
 └── README.md
 ```
 
-### 3.1 Penjelasan Folder
+### 4.1 Penjelasan Folder
 
 | Folder/File           | Fungsi                                         |
 | --------------------- | ---------------------------------------------- |
@@ -200,7 +409,7 @@ project-smart-contract/
 | `artifacts/`        | Hasil compile (muncul setelah compile)         |
 | `cache/`            | Cache untuk mempercepat compile                |
 
-### 3.2 Folder artifacts (setelah compile)
+### 4.2 Folder artifacts (setelah compile)
 
 ```text
 artifacts/
@@ -213,9 +422,9 @@ artifacts/
 └── ...
 ```
 
-## 4. Konfigurasi Hardhat
+## 5. Konfigurasi Hardhat
 
-### 4.1 File hardhat.config.js
+### 5.1 File hardhat.config.js
 
 Buka file `hardhat.config.js`:
 
@@ -228,7 +437,7 @@ module.exports = {
 };
 ```
 
-### 4.2 Konfigurasi Lengkap
+### 5.2 Konfigurasi Lengkap
 
 Modifikasi menjadi konfigurasi yang lebih lengkap:
 
@@ -265,7 +474,7 @@ module.exports = {
 };
 ```
 
-### 4.3 Penjelasan Konfigurasi
+### 5.3 Penjelasan Konfigurasi
 
 | Bagian                          | Fungsi                                 |
 | ------------------------------- | -------------------------------------- |
@@ -275,7 +484,7 @@ module.exports = {
 | `networks.localhost`          | Koneksi ke Hardhat node yang berjalan  |
 | `networks.ganache`            | Koneksi ke Ganache GUI/CLI             |
 
-### 4.4 Network Options
+### 5.4 Network Options
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -299,9 +508,9 @@ module.exports = {
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 5. Menulis Smart Contract
+## 6. Menulis Smart Contract
 
-### 5.1 Hapus Sample Contract
+### 6.1 Hapus Sample Contract
 
 Hapus file sample dan buat contract baru:
 
@@ -309,7 +518,7 @@ Hapus file sample dan buat contract baru:
 rm contracts/Lock.sol
 ```
 
-### 5.2 Buat Contract Baru
+### 6.2 Buat Contract Baru
 
 Buat file `contracts/CourseReward.sol`:
 
@@ -411,7 +620,7 @@ contract CourseReward {
 }
 ```
 
-### 5.3 Anatomi Smart Contract
+### 6.3 Anatomi Smart Contract
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -445,7 +654,7 @@ contract CourseReward {
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 5.4 Konsep Penting dalam Contract
+### 6.4 Konsep Penting dalam Contract
 
 | Konsep                   | Penjelasan                  | Contoh                                          |
 | ------------------------ | --------------------------- | ----------------------------------------------- |
@@ -456,9 +665,9 @@ contract CourseReward {
 | **require**        | Validasi kondisi            | `require(!hasClaimed[msg.sender], "...");`    |
 | **msg.sender**     | Address pemanggil function  | `owner = msg.sender;`                         |
 
-## 6. Compile Contract
+## 7. Compile Contract
 
-### 6.1 Jalankan Compile
+### 7.1 Jalankan Compile
 
 ```bash
 npx hardhat compile
@@ -470,7 +679,7 @@ npx hardhat compile
 Compiled 1 Solidity file successfully (evm target: paris).
 ```
 
-### 6.2 Compile dengan Clean
+### 7.2 Compile dengan Clean
 
 Jika perlu compile ulang dari awal:
 
@@ -479,13 +688,13 @@ npx hardhat clean
 npx hardhat compile
 ```
 
-### 6.3 Compile Specific File
+### 7.3 Compile Specific File
 
 ```bash
 npx hardhat compile --force
 ```
 
-### 6.4 Hasil Compile
+### 7.4 Hasil Compile
 
 Setelah compile, folder `artifacts` akan muncul:
 
@@ -497,9 +706,9 @@ artifacts/
         └── CourseReward.dbg.json  ← Debug information
 ```
 
-## 7. Memahami Output Compile
+## 8. Memahami Output Compile
 
-### 7.1 File CourseReward.json
+### 8.1 File CourseReward.json
 
 Buka file `artifacts/contracts/CourseReward.sol/CourseReward.json`:
 
@@ -516,7 +725,7 @@ Buka file `artifacts/contracts/CourseReward.sol/CourseReward.json`:
 }
 ```
 
-### 7.2 Komponen Output
+### 8.2 Komponen Output
 
 | Komponen                    | Penjelasan                                                 |
 | --------------------------- | ---------------------------------------------------------- |
@@ -524,7 +733,7 @@ Buka file `artifacts/contracts/CourseReward.sol/CourseReward.json`:
 | **Bytecode**          | Kode yang akan dideploy ke blockchain                      |
 | **Deployed Bytecode** | Kode yang tersimpan di blockchain setelah deploy           |
 
-### 7.3 ABI (Application Binary Interface)
+### 8.3 ABI (Application Binary Interface)
 
 ABI adalah "kontrak" antara smart contract dan aplikasi yang ingin berinteraksi:
 
@@ -576,7 +785,7 @@ ABI adalah "kontrak" antara smart contract dan aplikasi yang ingin berinteraksi:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 7.4 Bytecode
+### 8.4 Bytecode
 
 Bytecode adalah representasi biner dari smart contract yang akan dieksekusi oleh EVM:
 
@@ -590,9 +799,9 @@ Source Code (Solidity)     Compile      Bytecode (Hex)
 └──────────────────────┘              └─────────────────────┘
 ```
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
-### 8.1 Error Compile Umum
+### 9.1 Error Compile Umum
 
 | Error                                               | Penyebab                       | Solusi                               |
 | --------------------------------------------------- | ------------------------------ | ------------------------------------ |
@@ -602,7 +811,7 @@ Source Code (Solidity)     Compile      Bytecode (Hex)
 | `CompilerError: Stack too deep`                   | Terlalu banyak local variables | Refactor code                        |
 | `Source file requires different compiler version` | Versi pragma tidak cocok       | Sesuaikan versi di hardhat.config.js |
 
-### 8.2 Contoh Error dan Solusi
+### 9.2 Contoh Error dan Solusi
 
 **Error: Kurang titik koma**
 
@@ -641,7 +850,7 @@ function claimReward() public {
 }
 ```
 
-### 8.3 Tips Debugging
+### 9.3 Tips Debugging
 
 1. **Baca error message dengan teliti** - Solidity compiler memberikan informasi yang cukup detail
 2. **Cek line number** - Error message biasanya mencantumkan baris yang bermasalah

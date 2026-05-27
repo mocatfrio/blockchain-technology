@@ -1,4 +1,4 @@
-# Module 01. Installation Guide: Python dan Visual Studio Code
+# Modul 1. Installation Guide: Python dan Visual Studio Code
 
 ## Deskripsi
 

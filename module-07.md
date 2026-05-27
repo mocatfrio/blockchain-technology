@@ -1,4 +1,4 @@
-# Module 07. Smart Contracts
+# Modul 7. Smart Contracts
 
 ## Deskripsi
 

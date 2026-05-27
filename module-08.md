@@ -1,4 +1,4 @@
-# Module 08. Smart Contract dengan Solidity dan Remix IDE
+# Modul 8. Smart Contract dengan Solidity dan Remix IDE
 
 ## Deskripsi
 
@@ -193,8 +193,8 @@ Salin dan gunakan kode berikut di Remix:
 pragma solidity ^0.8.20;
 
 contract SimpleVoting {
-    address public owner;          
-    uint public yesCount;          
+    address public owner;        
+    uint public yesCount;        
     mapping(address => bool) public hasVoted;  
 
     constructor() {

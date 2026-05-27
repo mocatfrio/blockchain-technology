@@ -1,4 +1,4 @@
-# Module 03. Advanced Blockchain Concepts
+# Modul 3. Advanced Blockchain Concepts
 
 ## Deskripsi
 
@@ -85,14 +85,15 @@ Merkle Tree pertama kali dipatenkan oleh Ralph Merkle pada tahun 1979 dan menjad
 
 Merkle Tree memberikan beberapa keuntungan penting:
 
-| Keuntungan | Penjelasan |
-|------------|------------|
-| **Verifikasi Efisien** | Tidak perlu mengunduh seluruh block untuk memverifikasi satu transaksi |
-| **Integritas Data** | Perubahan satu transaksi akan mengubah Merkle Root |
-| **Light Client Support** | Memungkinkan SPV (Simplified Payment Verification) |
-| **Bandwidth Efficient** | Hanya perlu log₂(n) hash untuk membuktikan satu transaksi |
+| Keuntungan                     | Penjelasan                                                             |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| **Verifikasi Efisien**   | Tidak perlu mengunduh seluruh block untuk memverifikasi satu transaksi |
+| **Integritas Data**      | Perubahan satu transaksi akan mengubah Merkle Root                     |
+| **Light Client Support** | Memungkinkan SPV (Simplified Payment Verification)                     |
+| **Bandwidth Efficient**  | Hanya perlu log₂(n) hash untuk membuktikan satu transaksi             |
 
 Contoh efisiensi:
+
 - Block dengan 1000 transaksi
 - Tanpa Merkle Tree: perlu 1000 hash untuk verifikasi
 - Dengan Merkle Tree: hanya perlu ~10 hash (log₂(1000) ≈ 10)
@@ -157,6 +158,7 @@ Untuk membuktikan Tx B ada dalam block:
 ```
 
 **Data yang diperlukan untuk proof:**
+
 1. Hash transaksi target: H(B)
 2. Sibling hash: H(A)
 3. Uncle hash: H(CD)
@@ -170,13 +172,14 @@ Dengan 3 hash saja, kita bisa membuktikan Tx B ada dalam block yang berisi 4 tra
 
 Mining adalah proses yang membutuhkan sumber daya komputasi. Tanpa insentif, tidak ada motivasi bagi node untuk melakukan mining. **Mining Reward** memberikan:
 
-| Aspek | Penjelasan |
-|-------|------------|
-| **Insentif Ekonomi** | Miner mendapat imbalan atas kerja komputasinya |
-| **Distribusi Coin** | Cara untuk menerbitkan coin baru ke dalam sistem |
-| **Keamanan Jaringan** | Semakin banyak miner, semakin aman jaringan |
+| Aspek                       | Penjelasan                                       |
+| --------------------------- | ------------------------------------------------ |
+| **Insentif Ekonomi**  | Miner mendapat imbalan atas kerja komputasinya   |
+| **Distribusi Coin**   | Cara untuk menerbitkan coin baru ke dalam sistem |
+| **Keamanan Jaringan** | Semakin banyak miner, semakin aman jaringan      |
 
 Mining reward terdiri dari dua komponen:
+
 1. **Block Subsidy** - Coin baru yang diciptakan
 2. **Transaction Fees** - Biaya dari pengirim transaksi
 
@@ -221,13 +224,13 @@ Total Reward = Block Subsidy + Transaction Fees
 
 Pada Bitcoin, block subsidy mengalami **halving** (pengurangan setengah) setiap 210.000 block (~4 tahun):
 
-| Era | Block Range | Subsidy | Tahun |
-|-----|------------|---------|-------|
-| 1 | 0 - 209,999 | 50 BTC | 2009-2012 |
-| 2 | 210,000 - 419,999 | 25 BTC | 2012-2016 |
-| 3 | 420,000 - 629,999 | 12.5 BTC | 2016-2020 |
-| 4 | 630,000 - 839,999 | 6.25 BTC | 2020-2024 |
-| 5 | 840,000 - ... | 3.125 BTC | 2024-... |
+| Era | Block Range       | Subsidy   | Tahun     |
+| --- | ----------------- | --------- | --------- |
+| 1   | 0 - 209,999       | 50 BTC    | 2009-2012 |
+| 2   | 210,000 - 419,999 | 25 BTC    | 2012-2016 |
+| 3   | 420,000 - 629,999 | 12.5 BTC  | 2016-2020 |
+| 4   | 630,000 - 839,999 | 6.25 BTC  | 2020-2024 |
+| 5   | 840,000 - ...     | 3.125 BTC | 2024-...  |
 
 Halving memastikan total supply Bitcoin terbatas (21 juta BTC).
 
@@ -237,15 +240,16 @@ Halving memastikan total supply Bitcoin terbatas (21 juta BTC).
 
 Ada dua model utama untuk melacak kepemilikan dalam blockchain:
 
-| Aspek | UTXO Model (Bitcoin) | Account Model (Ethereum) |
-|-------|---------------------|-------------------------|
-| **Konsep** | Seperti uang kertas - setiap "koin" adalah output yang belum digunakan | Seperti rekening bank - setiap alamat punya saldo |
-| **Transaksi** | Menghabiskan UTXO lama, membuat UTXO baru | Mengurangi saldo pengirim, menambah saldo penerima |
-| **Privacy** | Lebih baik (alamat bisa berubah) | Kurang (alamat tetap) |
-| **Smart Contract** | Sulit | Mudah |
-| **Kompleksitas** | Lebih kompleks | Lebih sederhana |
+| Aspek                    | UTXO Model (Bitcoin)                                                   | Account Model (Ethereum)                           |
+| ------------------------ | ---------------------------------------------------------------------- | -------------------------------------------------- |
+| **Konsep**         | Seperti uang kertas - setiap "koin" adalah output yang belum digunakan | Seperti rekening bank - setiap alamat punya saldo  |
+| **Transaksi**      | Menghabiskan UTXO lama, membuat UTXO baru                              | Mengurangi saldo pengirim, menambah saldo penerima |
+| **Privacy**        | Lebih baik (alamat bisa berubah)                                       | Kurang (alamat tetap)                              |
+| **Smart Contract** | Sulit                                                                  | Mudah                                              |
+| **Kompleksitas**   | Lebih kompleks                                                         | Lebih sederhana                                    |
 
 **Contoh UTXO:**
+
 ```
 Alice memiliki:
 - UTXO #1: 30 coins
@@ -258,6 +262,7 @@ Alice kirim 45 coins ke Bob:
 ```
 
 **Contoh Account Model:**
+
 ```
 State awal:
 - Alice: 50 coins
@@ -290,6 +295,7 @@ def get_balance(address):
 ### 4.1 Apa itu Mempool?
 
 **Mempool** (Memory Pool) adalah tempat penyimpanan sementara untuk transaksi yang:
+
 - Sudah divalidasi
 - Belum dimasukkan ke dalam block
 - Menunggu untuk di-mining
@@ -334,11 +340,13 @@ sorted_transactions = sorted(mempool, key=lambda tx: tx.fee, reverse=True)
 ### 5.1 Mengapa Perlu Adjustment?
 
 Seiring waktu, faktor-faktor berikut berubah:
+
 - Jumlah miner bertambah/berkurang
 - Hardware mining semakin canggih
 - Total hash power jaringan berfluktuasi
 
 Tanpa adjustment, block time bisa menjadi:
+
 - Terlalu cepat → keamanan berkurang
 - Terlalu lambat → transaksi menumpuk
 
@@ -347,10 +355,10 @@ Tanpa adjustment, block time bisa menjadi:
 Setiap blockchain memiliki target block time:
 
 | Blockchain | Target Block Time |
-|------------|-------------------|
-| Bitcoin | ~10 menit |
-| Ethereum | ~12 detik |
-| Litecoin | ~2.5 menit |
+| ---------- | ----------------- |
+| Bitcoin    | ~10 menit         |
+| Ethereum   | ~12 detik         |
+| Litecoin   | ~2.5 menit        |
 
 **Algoritma Adjustment Sederhana:**
 
@@ -412,7 +420,7 @@ class MerkleTree:
 
     @staticmethod
     def get_proof(transactions, target_index):
-       
+     
         if not transactions or target_index >= len(transactions):
             return []
 
@@ -918,13 +926,8 @@ except ValueError as e:
 ## Latihan
 
 1. **Merkle Tree dengan transaksi ganjil**: Tambahkan 5 atau 7 transaksi dan verifikasi bahwa Merkle Tree tetap bekerja dengan benar.
-
 2. **Implementasi Transaction Pool Limit**: Modifikasi mempool agar hanya menerima maksimal N transaksi. Transaksi dengan fee terendah akan dibuang jika mempool penuh.
-
 3. **Visualisasi Merkle Tree**: Buat fungsi untuk menampilkan struktur Merkle Tree secara visual (ASCII art).
-
 4. **Double Spending Prevention**: Tambahkan validasi untuk mencegah double spending - transaksi yang menggunakan saldo yang sudah dipakai di transaksi lain dalam mempool.
-
 5. **Block Size Limit**: Implementasikan batasan ukuran block (maksimal N transaksi per block). Transaksi yang tidak muat akan tetap di mempool.
-
 6. **Statistik Mining**: Buat fungsi untuk menampilkan statistik mining (total hash rate, rata-rata waktu per block, total coin yang sudah di-mining).

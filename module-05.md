@@ -1,4 +1,4 @@
-# Module 05. Cryptocurrency
+# Modul 5. Cryptocurrency
 
 ## Deskripsi
 
@@ -9,8 +9,8 @@ Modul ini merupakan kelanjutan dari [Module 04](module-04.md) dan menjadi **solu
 | Mining Reward      | [Module 03](module-03.md) |
 | Multi-Node Network | [Module 04](module-04.md) |
 | Flask API          | [Module 04](module-04.md) |
-| Digital Signature  | Modul ini                 |
-| Wallet             | Modul ini                 |
+| Digital Signature  | Modul ini              |
+| Wallet             | Modul ini              |
 
 Fitur yang diimplementasikan pada modul ini:
 
@@ -102,13 +102,13 @@ Cryptocurrency mencakup keseluruhan ekosistem:
 
 **Komponen utama Cryptocurrency:**
 
-| Komponen | Deskripsi | Dibahas di |
-|----------|-----------|------------|
-| Wallet | Menyimpan keypair untuk kepemilikan coin | Module 05, 06 |
-| Digital Signature | Membuktikan kepemilikan dan keaslian | Module 05 |
-| Mining | Proses pembuatan block baru | Module 02, 03, 05 |
-| Network | Komunikasi antar node | Module 04, 05 |
-| Consensus | Kesepakatan state blockchain | Module 04, 05 |
+| Komponen          | Deskripsi                                | Dibahas di        |
+| ----------------- | ---------------------------------------- | ----------------- |
+| Wallet            | Menyimpan keypair untuk kepemilikan coin | Module 05, 06     |
+| Digital Signature | Membuktikan kepemilikan dan keaslian     | Module 05         |
+| Mining            | Proses pembuatan block baru              | Module 02, 03, 05 |
+| Network           | Komunikasi antar node                    | Module 04, 05     |
+| Consensus         | Kesepakatan state blockchain             | Module 04, 05     |
 
 ### 1.2 Apa itu Cryptocurrency Transaction?
 
@@ -146,16 +146,16 @@ Cryptocurrency mencakup keseluruhan ekosistem:
 
 **Fokus Cryptocurrency Transaction:**
 
-| Aspek | Deskripsi | Dibahas di |
-|-------|-----------|------------|
-| Transaction Structure | Format data transaksi (sender, receiver, amount) | Module 02, 05 |
-| Transaction Signing | Penandatanganan dengan private key | Module 05 |
-| Transaction Verification | Verifikasi keaslian transaksi | Module 05 |
-| Transaction Broadcasting | Penyebaran ke seluruh network | Module 06 |
-| Double Spending Prevention | Mencegah penggunaan coin ganda | Module 06 |
-| Block Confirmation | Tingkat keamanan berdasarkan konfirmasi | Module 06 |
-| Transaction Fee | Biaya transaksi untuk miner | Module 03, 06 |
-| UTXO Model | Model input/output transaksi | Module 06 |
+| Aspek                      | Deskripsi                                        | Dibahas di    |
+| -------------------------- | ------------------------------------------------ | ------------- |
+| Transaction Structure      | Format data transaksi (sender, receiver, amount) | Module 02, 05 |
+| Transaction Signing        | Penandatanganan dengan private key               | Module 05     |
+| Transaction Verification   | Verifikasi keaslian transaksi                    | Module 05     |
+| Transaction Broadcasting   | Penyebaran ke seluruh network                    | Module 06     |
+| Double Spending Prevention | Mencegah penggunaan coin ganda                   | Module 06     |
+| Block Confirmation         | Tingkat keamanan berdasarkan konfirmasi          | Module 06     |
+| Transaction Fee            | Biaya transaksi untuk miner                      | Module 03, 06 |
+| UTXO Model                 | Model input/output transaksi                     | Module 06     |
 
 ### 1.3 Hubungan Keduanya
 
@@ -183,11 +183,11 @@ Cryptocurrency mencakup keseluruhan ekosistem:
 
 **Analogi sederhana:**
 
-| Analogi | Cryptocurrency | Cryptocurrency Transaction |
-|---------|----------------|---------------------------|
-| Perbankan | Sistem perbankan (ATM, rekening, transfer, bunga) | Proses transfer uang antar rekening |
-| E-commerce | Platform belanja online (toko, keranjang, pembayaran) | Proses checkout dan pembayaran |
-| Email | Sistem email (inbox, compose, contacts) | Proses pengiriman satu email |
+| Analogi    | Cryptocurrency                                        | Cryptocurrency Transaction          |
+| ---------- | ----------------------------------------------------- | ----------------------------------- |
+| Perbankan  | Sistem perbankan (ATM, rekening, transfer, bunga)     | Proses transfer uang antar rekening |
+| E-commerce | Platform belanja online (toko, keranjang, pembayaran) | Proses checkout dan pembayaran      |
+| Email      | Sistem email (inbox, compose, contacts)               | Proses pengiriman satu email        |
 
 **Dalam modul ini:**
 

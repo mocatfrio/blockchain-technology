@@ -1,4 +1,4 @@
-# Module 06. Advanced Cryptocurrency
+# Modul 6. Advanced Cryptocurrency
 
 ## Deskripsi
 
@@ -94,12 +94,12 @@ coin yang sama ke banyak orang.
 
 Ada beberapa mekanisme pencegahan:
 
-| Mekanisme | Penjelasan |
-|-----------|------------|
-| **UTXO Tracking** | Setiap coin dilacak sebagai output yang belum digunakan |
-| **Mempool Validation** | Cek apakah input sudah digunakan di transaksi lain |
-| **Blockchain Validation** | Cek apakah input sudah digunakan di block sebelumnya |
-| **Confirmation** | Tunggu beberapa block untuk memastikan transaksi final |
+| Mekanisme                       | Penjelasan                                              |
+| ------------------------------- | ------------------------------------------------------- |
+| **UTXO Tracking**         | Setiap coin dilacak sebagai output yang belum digunakan |
+| **Mempool Validation**    | Cek apakah input sudah digunakan di transaksi lain      |
+| **Blockchain Validation** | Cek apakah input sudah digunakan di block sebelumnya    |
+| **Confirmation**          | Tunggu beberapa block untuk memastikan transaksi final  |
 
 ### 1.3 Implementasi
 
@@ -296,13 +296,13 @@ Transaksi kita memiliki 4 konfirmasi.
 
 ### 3.2 Berapa Konfirmasi yang Aman?
 
-| Konfirmasi | Keamanan | Use Case |
-|------------|----------|----------|
-| 0 (unconfirmed) | Sangat rendah | Tidak disarankan |
-| 1 | Rendah | Transaksi kecil, instant |
-| 3 | Sedang | Transaksi normal |
-| 6 | Tinggi | Standar Bitcoin |
-| 12+ | Sangat tinggi | Transaksi besar |
+| Konfirmasi      | Keamanan      | Use Case                 |
+| --------------- | ------------- | ------------------------ |
+| 0 (unconfirmed) | Sangat rendah | Tidak disarankan         |
+| 1               | Rendah        | Transaksi kecil, instant |
+| 3               | Sedang        | Transaksi normal         |
+| 6               | Tinggi        | Standar Bitcoin          |
+| 12+             | Sangat tinggi | Transaksi besar          |
 
 Semakin banyak konfirmasi, semakin sulit bagi attacker untuk melakukan **reorganisasi** (mengganti block dengan versi alternatif).
 
@@ -384,13 +384,13 @@ class ConfirmationTracker:
 
 ### 4.1 UTXO vs Account Model
 
-| Aspek | UTXO (Bitcoin) | Account (Ethereum) |
-|-------|----------------|-------------------|
-| Konsep | Seperti uang kertas | Seperti rekening bank |
-| Balance | Jumlah semua UTXO | Satu nilai saldo |
-| Transaksi | Consume UTXO lama, create baru | Update saldo |
-| Privacy | Lebih baik | Kurang |
-| Parallelization | Lebih mudah | Lebih sulit |
+| Aspek           | UTXO (Bitcoin)                 | Account (Ethereum)    |
+| --------------- | ------------------------------ | --------------------- |
+| Konsep          | Seperti uang kertas            | Seperti rekening bank |
+| Balance         | Jumlah semua UTXO              | Satu nilai saldo      |
+| Transaksi       | Consume UTXO lama, create baru | Update saldo          |
+| Privacy         | Lebih baik                     | Kurang                |
+| Parallelization | Lebih mudah                    | Lebih sulit           |
 
 ### 4.2 Cara Kerja UTXO
 
@@ -597,13 +597,13 @@ class UTXOSet:
 
 ### 5.1 Mengapa ECDSA?
 
-| Aspek | RSA | ECDSA |
-|-------|-----|-------|
-| Key Size | 2048-4096 bit | 256 bit |
-| Signature Size | ~256 bytes | ~64 bytes |
-| Speed | Lebih lambat | Lebih cepat |
-| Security | Sama untuk key yang setara | Sama |
-| Digunakan oleh | TLS, Email | Bitcoin, Ethereum |
+| Aspek          | RSA                        | ECDSA             |
+| -------------- | -------------------------- | ----------------- |
+| Key Size       | 2048-4096 bit              | 256 bit           |
+| Signature Size | ~256 bytes                 | ~64 bytes         |
+| Speed          | Lebih lambat               | Lebih cepat       |
+| Security       | Sama untuk key yang setara | Sama              |
+| Digunakan oleh | TLS, Email                 | Bitcoin, Ethereum |
 
 ECDSA memberikan keamanan yang sama dengan key yang jauh lebih kecil.
 
@@ -734,6 +734,7 @@ class ECDSAWallet:
 ### 6.1 Mengapa Base58?
 
 Base58 menghilangkan karakter yang membingungkan:
+
 - `0` (nol) dan `O` (huruf O)
 - `I` (huruf I) dan `l` (huruf L)
 - `+` dan `/` (tidak URL-safe)
@@ -880,12 +881,12 @@ Setiap cabang adalah keypair yang valid!
 
 ### 7.2 Keuntungan HD Wallet
 
-| Keuntungan | Penjelasan |
-|------------|------------|
-| **Single Backup** | Hanya perlu backup seed sekali |
-| **Privacy** | Bisa generate address baru untuk setiap transaksi |
-| **Organization** | Bisa pisahkan akun (personal, bisnis, dll) |
-| **Security** | Bisa share public key tanpa expose private key |
+| Keuntungan              | Penjelasan                                        |
+| ----------------------- | ------------------------------------------------- |
+| **Single Backup** | Hanya perlu backup seed sekali                    |
+| **Privacy**       | Bisa generate address baru untuk setiap transaksi |
+| **Organization**  | Bisa pisahkan akun (personal, bisnis, dll)        |
+| **Security**      | Bisa share public key tanpa expose private key    |
 
 ### 7.3 Derivation Path
 
@@ -1348,7 +1349,6 @@ class SPVClient:
         return results
 ```
 
-
 ## 10. Program Lengkap
 
 ```python
@@ -1423,13 +1423,8 @@ if __name__ == "__main__":
 ## Latihan
 
 1. **Multi-signature Wallet**: Implementasikan wallet yang membutuhkan 2-of-3 signature untuk mengirim transaksi.
-
 2. **Transaction Fee Estimation**: Buat fungsi yang mengestimasi fee berdasarkan ukuran transaksi dan kondisi mempool.
-
 3. **Address Watch**: Implementasikan fitur untuk memantau address tertentu dan mendapat notifikasi ketika ada transaksi masuk.
-
 4. **Wallet Encryption**: Tambahkan fitur enkripsi untuk menyimpan private key dengan password.
-
 5. **Transaction History**: Buat fungsi untuk menampilkan riwayat transaksi lengkap dari sebuah address.
-
 6. **HD Wallet dengan Multiple Accounts**: Extend HD Wallet untuk mendukung beberapa account dengan label (personal, business, savings).

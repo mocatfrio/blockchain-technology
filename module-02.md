@@ -1,4 +1,4 @@
-# Module 02. Blockchain Fundamentals
+# Modul 2. Blockchain Fundamentals
 
 ## Deskripsi
 
@@ -7,14 +7,14 @@ Modul ini membahas konsep dasar blockchain dan implementasi sederhananya menggun
 Topik yang dibahas pada modul ini:
 
 1. **Transaction** – Implementasi transaksi sederhana
-2.  **Block** – Proses pembentukan blok
-3.  **Hash** – Penggunaan hash untuk menghubungkan antarblok
-4.  **Proof of Work** – Mekanisme konsensus berbasis komputasi untuk memvalidasi blok
-5.  **Mining** – Proses penambangan blok dengan mencari hash yang sesuai
-6.  **Difficulty** – Tingkat kesulitan dalam proses mining
-7.  **Nonce** – Nilai yang digunakan untuk menghasilkan hash yang valid
-8.  **Validasi Blockchain** – Proses verifikasi integritas rantai blok
-9.  **Pengukuran Performa** – Pengukuran waktu eksekusi dan penggunaan memori
+2. **Block** – Proses pembentukan blok
+3. **Hash** – Penggunaan hash untuk menghubungkan antarblok
+4. **Proof of Work** – Mekanisme konsensus berbasis komputasi untuk memvalidasi blok
+5. **Mining** – Proses penambangan blok dengan mencari hash yang sesuai
+6. **Difficulty** – Tingkat kesulitan dalam proses mining
+7. **Nonce** – Nilai yang digunakan untuk menghasilkan hash yang valid
+8. **Validasi Blockchain** – Proses verifikasi integritas rantai blok
+9. **Pengukuran Performa** – Pengukuran waktu eksekusi dan penggunaan memori
 
 ## Prasyarat
 
@@ -31,28 +31,28 @@ Sebelum mempelajari modul ini, peserta sebaiknya:
 - [Prasyarat](#prasyarat)
 - [List of Contents](#list-of-contents)
 - [1. Teori Dasar Blockchain](#1-teori-dasar-blockchain)
-   - [1.1 Apa itu Blockchain?](#11-apa-itu-blockchain)
-   - [1.2 Mengapa Blockchain Penting?](#12-mengapa-blockchain-penting)
-   - [1.3 Komponen Utama Blockchain](#13-komponen-utama-blockchain)
-   - [1.4 Konsep Hash](#14-konsep-hash)
-   - [1.5 Previous Hash dan Keterhubungan Block](#15-previous-hash-dan-keterhubungan-block)
-   - [1.6 Apa itu Mining?](#16-apa-itu-mining)
-   - [1.7 Nonce](#17-nonce)
-   - [1.8 Proof of Work](#18-proof-of-work)
-   - [1.9 Validasi Blockchain](#19-validasi-blockchain)
+  - [1.1 Apa itu Blockchain?](#11-apa-itu-blockchain)
+  - [1.2 Mengapa Blockchain Penting?](#12-mengapa-blockchain-penting)
+  - [1.3 Komponen Utama Blockchain](#13-komponen-utama-blockchain)
+  - [1.4 Konsep Hash](#14-konsep-hash)
+  - [1.5 Previous Hash dan Keterhubungan Block](#15-previous-hash-dan-keterhubungan-block)
+  - [1.6 Apa itu Mining?](#16-apa-itu-mining)
+  - [1.7 Nonce](#17-nonce)
+  - [1.8 Proof of Work](#18-proof-of-work)
+  - [1.9 Validasi Blockchain](#19-validasi-blockchain)
 - [2. Implementasi Program](#2-implementasi-program)
-   - [2.1 Import Library](#21-import-library)
-   - [2.2 Membuat Class Transaction](#22-membuat-class-transaction)
-   - [2.3 Membuat Class Block](#23-membuat-class-block)
-   - [2.4 Menghitung Hash Block](#24-menghitung-hash-block)
-   - [2.5 Mining Block](#25-mining-block)
-   - [2.6 Membuat Class Blockchain](#26-membuat-class-blockchain)
-   - [2.7 Genesis Block](#27-genesis-block)
-   - [2.8 Mengambil Block Terakhir](#28-mengambil-block-terakhir)
-   - [2.9 Menambahkan Transaksi](#29-menambahkan-transaksi)
-   - [2.10 Mining Pending Transactions](#210-mining-pending-transactions)
-   - [2.11 Validasi Blockchain](#211-validasi-blockchain)
-   - [2.12 Program Utama](#212-program-utama)
+  - [2.1 Import Library](#21-import-library)
+  - [2.2 Membuat Class Transaction](#22-membuat-class-transaction)
+  - [2.3 Membuat Class Block](#23-membuat-class-block)
+  - [2.4 Menghitung Hash Block](#24-menghitung-hash-block)
+  - [2.5 Mining Block](#25-mining-block)
+  - [2.6 Membuat Class Blockchain](#26-membuat-class-blockchain)
+  - [2.7 Genesis Block](#27-genesis-block)
+  - [2.8 Mengambil Block Terakhir](#28-mengambil-block-terakhir)
+  - [2.9 Menambahkan Transaksi](#29-menambahkan-transaksi)
+  - [2.10 Mining Pending Transactions](#210-mining-pending-transactions)
+  - [2.11 Validasi Blockchain](#211-validasi-blockchain)
+  - [2.12 Program Utama](#212-program-utama)
 - [Latihan](#latihan)
 
 ## 1. Teori Dasar Blockchain
