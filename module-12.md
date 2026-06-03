@@ -674,6 +674,15 @@ npx hardhat init
 
 ### 7.3 Step 2: Setup Frontend dengan Vite
 
+> **Apa yang akan kita lakukan?**
+>
+> Kita akan membuat aplikasi React menggunakan Vite (build tool modern yang sangat cepat). Vite akan menjadi "rumah" untuk frontend dApp kita, tempat user berinteraksi dengan smart contract.
+>
+> **Kenapa Vite?**
+> - Lebih cepat dari Create React App
+> - Hot Module Replacement (HMR) instan
+> - Konfigurasi minimal
+
 ```bash
 # Kembali ke folder utama
 cd ..
@@ -761,6 +770,17 @@ frontend/src/
 
 ### 8.2 Copy ABI dari Hardhat
 
+> **Apa itu ABI dan kenapa perlu di-copy?**
+>
+> ABI (Application Binary Interface) adalah "kamus" yang menjelaskan function apa saja yang ada di smart contract. Frontend butuh file ini untuk:
+> - Tahu function mana yang bisa dipanggil
+> - Tahu parameter apa yang dibutuhkan
+> - Encode/decode data dengan benar
+>
+> **Lokasi file ABI:**
+> Setelah `npx hardhat compile`, file ABI ada di:
+> `contracts/artifacts/contracts/NamaContract.sol/NamaContract.json`
+
 Setelah compile smart contract di Hardhat, copy file ABI ke frontend:
 
 ```bash
@@ -796,6 +816,22 @@ node scripts/copy-abi.js
 ```
 
 ### 8.3 Contract Addresses File
+
+> **Kenapa perlu file addresses.js?**
+>
+> Contract address berbeda di setiap network:
+> - Deploy ke Hardhat local → address A
+> - Deploy ke Sepolia testnet → address B
+> - Deploy ke Ethereum mainnet → address C
+>
+> File ini menyimpan semua address dan memilih yang tepat berdasarkan chainId yang aktif.
+>
+> **Cara mendapatkan address:**
+> Setiap kali deploy, catat address dari output terminal:
+> ```
+> CourseReward deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+> ```
+> Kemudian update file ini sesuai network-nya.
 
 **frontend/src/contracts/addresses.js:**
 ```javascript
@@ -835,6 +871,24 @@ export function getContractAddress(contractName, chainId) {
 ### 9.1 Membuat Komponen Sederhana
 
 Mari buat dApp sederhana yang bisa connect ke MetaMask dan menampilkan alamat wallet.
+
+> **Apa yang akan kita buat?**
+>
+> Sebuah halaman web sederhana dengan tombol "Connect Wallet" yang:
+> 1. Memunculkan popup MetaMask saat diklik
+> 2. Setelah user approve, menampilkan alamat wallet
+> 3. Menampilkan saldo ETH wallet tersebut
+>
+> **Konsep penting yang digunakan:**
+> - `window.ethereum` → objek yang disediakan MetaMask di browser
+> - `eth_requestAccounts` → meminta izin akses ke wallet user
+> - `BrowserProvider` → ethers.js wrapper untuk MetaMask
+> - `useState` & `useEffect` → React hooks untuk state management
+>
+> **Cara kerja singkat:**
+> ```
+> User klik tombol → MetaMask popup → User approve → Dapat address → Tampilkan di UI
+> ```
 
 **frontend/src/App.jsx:**
 ```jsx
@@ -980,6 +1034,15 @@ export default App
 ```
 
 ### 9.2 Styling
+
+> **Tips untuk pemula:**
+>
+> CSS ini memberikan tampilan modern dengan gradient background dan card design. Tidak perlu menghafal semua properti CSS - cukup copy paste dan modifikasi sesuai selera.
+>
+> **Poin penting:**
+> - `.connect-btn` → styling untuk tombol connect
+> - `.wallet-info` → container untuk info wallet setelah terhubung
+> - `.error` → styling untuk pesan error (warna merah)
 
 **frontend/src/App.css:**
 ```css

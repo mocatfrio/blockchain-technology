@@ -44,6 +44,28 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 
 ### 1.1 Event Listener Hook
 
+> **Custom Hook untuk Event Listening:**
+>
+> Hook ini memudahkan kita mendengarkan event dari smart contract. Cukup berikan contract instance dan nama event, hook akan handle sisanya.
+>
+> **Fitur yang disediakan:**
+> | Return Value | Fungsi |
+> |--------------|--------|
+> | `events` | Array event yang sudah diterima |
+> | `isListening` | Boolean apakah sedang aktif listen |
+> | `startListening()` | Mulai listen real-time |
+> | `stopListening()` | Berhenti listen |
+> | `fetchPastEvents()` | Ambil event yang sudah terjadi |
+>
+> **Cara pakai:**
+> ```jsx
+> const { events, startListening } = useContractEvents(
+>   contract,
+>   'RewardClaimed',
+>   (data) => console.log('New claim!', data)
+> )
+> ```
+
 **frontend/src/hooks/useContractEvents.js:**
 ```javascript
 import { useState, useEffect, useCallback } from 'react'
@@ -131,6 +153,23 @@ export function useContractEvents(contract, eventName, callback) {
 ```
 
 ### 1.2 Event History Component
+
+> **Komponen Live Feed:**
+>
+> Komponen ini menampilkan riwayat claim secara real-time. Saat ada user lain claim reward, list akan otomatis update!
+>
+> **Yang ditampilkan per event:**
+> - Address yang claim (disingkat)
+> - Jumlah poin yang didapat
+> - Block number
+>
+> **Indikator status:**
+> - 🟢 "Live" = sedang aktif mendengarkan event baru
+> - ⚪ "Disconnected" = tidak aktif
+>
+> **Animasi UX:**
+> - Event baru muncul dari kiri (slide-in animation)
+> - Status dot berkedip saat Live (pulse animation)
 
 **frontend/src/components/EventHistory.jsx:**
 ```jsx
@@ -364,6 +403,32 @@ export default EventHistory
 
 ### 2.1 Toast Notification Context
 
+> **Sistem Notifikasi Pop-up:**
+>
+> Toast adalah notifikasi kecil yang muncul di pojok layar, kemudian hilang otomatis. Sangat berguna untuk feedback user.
+>
+> **Tipe toast yang tersedia:**
+> | Tipe | Warna | Kegunaan |
+> |------|-------|----------|
+> | `success` | Hijau | Transaksi berhasil |
+> | `error` | Merah | Ada error |
+> | `warning` | Oranye | Perlu perhatian |
+> | `info` | Biru | Informasi umum |
+>
+> **Cara pakai di komponen:**
+> ```jsx
+> const toast = useToast()
+>
+> // Panggil sesuai kebutuhan
+> toast.success('Transaction successful!')
+> toast.error('Something went wrong')
+> toast.warning('Please check your network')
+> toast.info('Processing your request...')
+> ```
+>
+> **Kenapa pakai Context?**
+> Agar toast bisa dipanggil dari komponen mana saja tanpa prop drilling.
+
 **frontend/src/contexts/ToastContext.jsx:**
 ```jsx
 import { createContext, useContext, useState, useCallback } from 'react'
@@ -562,6 +627,27 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
 ### 3.1 Data Caching Hook
 
+> **Kenapa Perlu Caching?**
+>
+> Setiap kali memanggil function contract = request ke RPC node. Jika terlalu sering:
+> - Lambat (network latency)
+> - Bisa kena rate limit
+> - User experience buruk
+>
+> **Solusi: Cache data di memory**
+>
+> | Tanpa Cache | Dengan Cache |
+> |-------------|--------------|
+> | Setiap render = fetch lagi | Fetch sekali, pakai cache |
+> | Lambat | Cepat |
+> | Boros request | Hemat request |
+>
+> **Hook ini menyediakan:**
+> - `data` → hasil fetch (dari cache jika masih valid)
+> - `loading` → status loading
+> - `refetch()` → paksa fetch ulang
+> - `cacheTime` → berapa lama cache valid (default 30 detik)
+
 **frontend/src/hooks/useContractData.js:**
 ```javascript
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -685,6 +771,20 @@ function ContractInfo({ contract }) {
 
 ### 3.3 Skeleton Loading
 
+> **Skeleton = Placeholder Saat Loading**
+>
+> Daripada menampilkan "Loading..." yang membosankan, skeleton menampilkan bentuk konten yang akan muncul dengan animasi shimmer.
+>
+> **Keuntungan Skeleton:**
+> - User tahu bentuk UI yang akan muncul
+> - Terasa lebih cepat secara psikologis
+> - UI tidak "loncat" saat data muncul
+>
+> **Cara pakai:**
+> ```jsx
+> {loading ? <CardSkeleton /> : <ActualCard data={data} />}
+> ```
+
 **frontend/src/components/Skeleton.jsx:**
 ```jsx
 import './Skeleton.css'
@@ -731,6 +831,40 @@ export function CardSkeleton() {
 ## 4. Context API untuk Global State
 
 ### 4.1 Web3 Context
+
+> **Global State untuk Web3:**
+>
+> Web3Context menggabungkan semua state Web3 (wallet + contract) ke satu tempat. Semua komponen bisa akses tanpa perlu prop drilling.
+>
+> **Data yang disimpan:**
+>
+> | Kategori | Data |
+> |----------|------|
+> | **Wallet** | account, chainId, balance, isConnected |
+> | **Contract** | contract instance, contractWithSigner |
+> | **Contract Data** | rewardAmount, owner |
+> | **User Data** | hasClaimed, rewards |
+>
+> **Actions yang tersedia:**
+> - `connect()` → connect MetaMask
+> - `disconnect()` → reset semua state
+> - `refreshData()` → refetch semua data
+>
+> **Keuntungan pakai Context:**
+> ```jsx
+> // TANPA Context - prop drilling 😫
+> <App>
+>   <Navbar account={account} />
+>   <Main>
+>     <Dashboard account={account} contract={contract} />
+>   </Main>
+> </App>
+>
+> // DENGAN Context - bersih! 😊
+> <Web3Provider>
+>   <App />  // Semua child bisa akses via useWeb3()
+> </Web3Provider>
+> ```
 
 **frontend/src/contexts/Web3Context.jsx:**
 ```jsx
@@ -1010,12 +1144,29 @@ function MyComponent() {
 
 ### 5.1 Setup Alchemy/Infura
 
+> **Kenapa Perlu Alchemy/Infura?**
+>
+> Untuk deploy ke testnet/mainnet, kita butuh "jalan masuk" ke network tersebut. Alchemy menyediakan layanan ini gratis untuk developer.
+>
+> **Analogi:** Alchemy = ISP (Internet Service Provider) untuk blockchain
+
+**Langkah Detail:**
+
 1. **Buat akun di Alchemy:** https://alchemy.com
+   - Sign up dengan Google/GitHub
+   - Verifikasi email
+
 2. **Buat App baru:**
+   - Klik "Create App"
    - Name: CourseReward
    - Chain: Ethereum
    - Network: Sepolia
-3. **Copy API Key**
+   - Klik "Create"
+
+3. **Copy API Key:**
+   - Buka app yang baru dibuat
+   - Klik "API Key"
+   - Copy "HTTPS" URL (format: `https://eth-sepolia.g.alchemy.com/v2/xxx...`)
 
 ### 5.2 Update Hardhat Config
 
@@ -1057,6 +1208,22 @@ module.exports = {
 
 ### 5.3 Environment Variables
 
+> **PENTING: Keamanan Environment Variables**
+>
+> File `.env` berisi data sensitif yang **TIDAK BOLEH** di-commit ke GitHub!
+>
+> **Langkah keamanan:**
+> 1. Pastikan `.env` ada di `.gitignore`
+> 2. Jangan share private key ke siapapun
+> 3. Gunakan wallet terpisah untuk development (jangan wallet utama!)
+>
+> **Cara membuat file .env:**
+> ```bash
+> cd contracts
+> touch .env
+> # Edit dengan text editor
+> ```
+
 **contracts/.env:**
 ```env
 # RPC URLs
@@ -1078,11 +1245,47 @@ ETHERSCAN_API_KEY=your-etherscan-api-key
 
 ### 5.4 Get Sepolia ETH
 
-1. Buka https://sepoliafaucet.com atau https://www.alchemy.com/faucets/ethereum-sepolia
-2. Masukkan wallet address
-3. Request test ETH
+> **Apa itu Faucet?**
+>
+> Faucet adalah layanan yang memberikan ETH gratis untuk testnet. ETH ini tidak bernilai uang sungguhan, hanya untuk testing.
+>
+> **Langkah mendapatkan Sepolia ETH:**
+
+1. **Buka salah satu faucet:**
+   - https://sepoliafaucet.com (by Alchemy)
+   - https://www.infura.io/faucet/sepolia
+   - https://faucets.chain.link/sepolia
+
+2. **Masukkan wallet address:**
+   - Copy address dari MetaMask
+   - Paste di form faucet
+
+3. **Request test ETH:**
+   - Klik tombol "Send me ETH" atau sejenisnya
+   - Tunggu beberapa detik
+   - Cek MetaMask (pastikan sudah switch ke Sepolia network)
+
+> **Tips:** Jika satu faucet tidak berfungsi, coba faucet lainnya. Kadang faucet rate-limited atau maintenance.
 
 ### 5.5 Deploy Script untuk Testnet
+
+> **Perbedaan Deploy ke Testnet vs Localhost:**
+>
+> | Aspek | Localhost | Testnet |
+> |-------|-----------|---------|
+> | Gas fee | Gratis | Bayar (ETH testnet) |
+> | Kecepatan | Instant | ~15 detik per block |
+> | Persistensi | Reset saat node restart | Permanen |
+> | Verifikasi | Tidak perlu | Bisa verify di Etherscan |
+>
+> **Script ini melakukan:**
+> 1. Deploy contract ke Sepolia
+> 2. Tunggu 5 block confirmations (untuk keamanan)
+> 3. Verifikasi contract di Etherscan (agar source code public)
+>
+> **Output yang penting disimpan:**
+> - Contract Address → masukkan ke `addresses.js` di frontend
+> - Etherscan link → untuk verifikasi dan share
 
 **contracts/scripts/deploy-sepolia.js:**
 ```javascript
@@ -1138,10 +1341,34 @@ main()
 
 ### 5.6 Deploy Command
 
+> **Checklist Sebelum Deploy:**
+> - [ ] File `.env` sudah terisi dengan benar
+> - [ ] Wallet ada Sepolia ETH (minimal 0.01 ETH)
+> - [ ] Alchemy API key sudah diset
+> - [ ] Private key sudah diset (HATI-HATI jangan sampai commit!)
+
 ```bash
 cd contracts
 npx hardhat run scripts/deploy-sepolia.js --network sepolia
 ```
+
+> **Output yang diharapkan:**
+> ```
+> Deploying to Sepolia...
+> Deploying with account: 0x...
+> Account balance: 0.5 ETH
+> CourseReward deployed to: 0x1234...
+> Waiting for block confirmations...
+> Verifying on Etherscan...
+> Contract verified on Etherscan!
+>
+> === DEPLOYMENT COMPLETE ===
+> Network: Sepolia
+> Contract Address: 0x1234...
+> Etherscan: https://sepolia.etherscan.io/address/0x1234...
+> ```
+>
+> **Simpan Contract Address!** Akan digunakan di frontend.
 
 ### 5.7 Update Frontend Addresses
 
@@ -1229,10 +1456,15 @@ export function getContractAddress(chainId) {
 
 ### 7.3 Deploy Steps
 
+> **Step-by-Step Deploy ke Vercel:**
+>
+> Vercel adalah platform hosting gratis yang sangat mudah digunakan. Cukup connect GitHub, dan setiap push akan otomatis deploy!
+
 1. **Import Project:**
-   - Login ke Vercel
+   - Login ke Vercel dengan GitHub
    - Click "New Project"
-   - Import repository dari GitHub
+   - Pilih repository dApp kamu
+   - Click "Import"
 
 2. **Configure:**
    - Framework Preset: Vite

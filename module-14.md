@@ -171,6 +171,34 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 
 ### 3.1 Basic Transaction
 
+> **Langkah-langkah Mengirim Transaksi:**
+>
+> Berbeda dengan read (yang instant), write operation melibatkan beberapa langkah:
+>
+> ```
+> 1. Frontend menyiapkan transaksi
+>        ↓
+> 2. MetaMask popup muncul (user harus approve)
+>        ↓
+> 3. User klik "Confirm" di MetaMask
+>        ↓
+> 4. Transaksi dikirim ke network → dapat tx hash
+>        ↓
+> 5. Menunggu transaksi di-mining (masuk ke block)
+>        ↓
+> 6. Dapat receipt → transaksi berhasil!
+> ```
+>
+> **Perbedaan penting dengan Read:**
+> - Butuh **Signer** (bukan Provider)
+> - User harus **approve di MetaMask**
+> - Ada **gas fee** yang harus dibayar
+> - **Tidak instant** - harus menunggu block mining
+>
+> **Kode penting yang perlu dipahami:**
+> - `await contract.claimReward()` → mengirim tx, dapat tx object
+> - `await tx.wait()` → menunggu tx selesai, dapat receipt
+
 ```javascript
 import { ethers } from 'ethers'
 import CourseRewardABI from './contracts/CourseReward.json'
@@ -325,6 +353,24 @@ async function claimRewardWithCustomGas() {
 ```
 
 ### 4.2 Handling States in React
+
+> **Mengelola State Transaksi di UI:**
+>
+> Karena transaksi blockchain tidak instant, kita perlu memberitahu user apa yang sedang terjadi. Gunakan state machine sederhana:
+>
+> | Status | Artinya | Tampilan UI |
+> |--------|---------|-------------|
+> | `idle` | Belum ada aksi | Tombol "Claim Reward" aktif |
+> | `awaiting_signature` | Menunggu approve MetaMask | "Confirm in Wallet..." |
+> | `pending` | Tx sudah dikirim, menunggu mining | "Processing..." + spinner |
+> | `success` | Tx berhasil | "Claimed!" + pesan sukses |
+> | `failed` | Tx gagal | Pesan error + tombol retry |
+> | `rejected` | User cancel di MetaMask | "Transaction cancelled" |
+>
+> **Tips UX penting:**
+> - **Disable tombol** saat sedang proses (mencegah double-click)
+> - **Tampilkan tx hash** agar user bisa verifikasi
+> - **Beri opsi retry** jika gagal
 
 ```jsx
 import { useState } from 'react'
@@ -519,6 +565,21 @@ event RewardAmountChanged(uint256 oldAmount, uint256 newAmount);
 
 ### 6.2 Listening to Past Events
 
+> **Cara Membaca Event yang Sudah Terjadi:**
+>
+> Event adalah "log" yang dicatat smart contract saat sesuatu terjadi. Berguna untuk:
+> - Melihat riwayat transaksi
+> - Menampilkan notifikasi real-time
+> - Audit trail
+>
+> **Langkah-langkahnya:**
+> 1. Buat filter untuk event yang diinginkan
+> 2. Query filter dari block tertentu sampai 'latest'
+> 3. Loop hasil dan ekstrak data dari `event.args`
+>
+> **Parameter indexed:**
+> Event `RewardClaimed(address indexed student, uint256 amount)` → kita bisa filter berdasarkan `student` karena `indexed`
+
 ```javascript
 async function getPastClaimEvents(contract, fromBlock = 0) {
   // Query past events
@@ -539,6 +600,18 @@ async function getPastClaimEvents(contract, fromBlock = 0) {
 ```
 
 ### 6.3 Real-time Event Listening
+
+> **Event Real-time = Notifikasi Instan!**
+>
+> Dengan `contract.on('EventName', callback)`, kita bisa langsung dapat notifikasi saat event terjadi - bahkan jika aksi dilakukan oleh user lain!
+>
+> **Use case:**
+> - Live feed "User X just claimed 100 points!"
+> - Update UI otomatis tanpa refresh
+> - Notifikasi saat ada aktivitas baru
+>
+> **Penting untuk cleanup:**
+> Di React, pastikan memanggil `contract.off('EventName')` saat komponen unmount untuk mencegah memory leak.
 
 ```javascript
 function listenToClaimEvents(contract, callback) {
@@ -603,6 +676,33 @@ async function getRecentClaims(contract, blocksBack = 1000) {
 ## 7. Hands-on: Claim Reward Feature
 
 ### 7.1 ClaimReward Component
+
+> **Komponen Inti dApp - Claim Reward!**
+>
+> Komponen ini memungkinkan user untuk claim reward mereka. Ini adalah contoh lengkap write operation.
+>
+> **Fitur yang diimplementasi:**
+> 1. **Cek status claim** saat load (sudah claim atau belum)
+> 2. **Tampilkan reward amount** yang akan didapat
+> 3. **Handle semua state** (idle, awaiting, pending, success, error)
+> 4. **Tampilkan tx hash** untuk verifikasi
+> 5. **Refresh data** setelah sukses
+>
+> **Alur user:**
+> ```
+> Buka halaman → Cek sudah claim? →
+>   ├─ Sudah: Tampilkan "Already Claimed" (tombol disabled)
+>   └─ Belum: Tampilkan tombol "Claim X Points"
+>        ↓
+> Klik tombol → MetaMask popup →
+>   ├─ Cancel: "Transaction rejected", tombol aktif lagi
+>   └─ Confirm: "Processing..." → "Success!" atau "Failed"
+> ```
+>
+> **Tips debugging:**
+> - Cek Console browser untuk error detail
+> - Pastikan wallet punya cukup ETH untuk gas
+> - Pastikan connect ke network yang benar (Hardhat = localhost:8545)
 
 **frontend/src/components/ClaimReward.jsx:**
 ```jsx
@@ -974,6 +1074,25 @@ export default ClaimReward
 ## 8. Hands-on: Admin Panel
 
 ### 8.1 AdminPanel Component
+
+> **Panel Admin - Hanya untuk Owner!**
+>
+> Komponen ini hanya muncul jika wallet yang connect adalah owner contract. Digunakan untuk mengubah reward amount.
+>
+> **Fitur keamanan:**
+> - Cek apakah `account == owner` sebelum render
+> - Jika bukan owner, komponen tidak tampil sama sekali (return null)
+>
+> **Cara kerja:**
+> 1. Load halaman → cek ownership
+> 2. Jika owner → tampilkan form dengan input reward baru
+> 3. Submit → panggil `setRewardAmount(newAmount)`
+> 4. Refresh data setelah sukses
+>
+> **Testing tips:**
+> - Import account pertama dari Hardhat (pasti owner karena yang deploy)
+> - Private key ada di terminal saat `npx hardhat node`
+> - Import ke MetaMask: Settings > Import Account > Paste private key
 
 **frontend/src/components/AdminPanel.jsx:**
 ```jsx
@@ -1381,6 +1500,26 @@ export default App
 ```
 
 ### 9.2 Error Handler Utility
+
+> **Utilitas untuk Parsing Error:**
+>
+> Error dari blockchain bisa membingungkan. Utility ini mengubah error teknis menjadi pesan yang mudah dipahami user.
+>
+> **Contoh transformasi:**
+> | Error Code | Pesan untuk User |
+> |------------|------------------|
+> | 4001 | "Transaction was rejected" |
+> | INSUFFICIENT_FUNDS | "Insufficient ETH for gas fee" |
+> | CALL_EXCEPTION | "Contract execution failed" |
+>
+> **Cara pakai:**
+> ```javascript
+> catch (err) {
+>   const { message, retry } = parseTransactionError(err)
+>   setError(message)
+>   if (retry) showRetryButton()
+> }
+> ```
 
 **frontend/src/utils/errorHandler.js:**
 ```javascript

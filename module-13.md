@@ -124,6 +124,18 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 
 ### 1.4 Membuat Provider
 
+> **Langkah Praktis - Kapan pakai Provider mana?**
+>
+> | Situasi | Provider yang dipakai |
+> |---------|----------------------|
+> | User sudah connect MetaMask | `BrowserProvider` |
+> | Hanya baca data tanpa wallet | `JsonRpcProvider` |
+> | Butuh koneksi ke testnet/mainnet | `JsonRpcProvider` dengan URL Alchemy/Infura |
+>
+> **Analogi sederhana:**
+> - `BrowserProvider` = masuk toko dengan kartu identitas (bisa beli barang)
+> - `JsonRpcProvider` = lihat-lihat etalase toko (hanya bisa lihat, tidak bisa beli)
+
 ```javascript
 import { ethers } from 'ethers'
 
@@ -188,6 +200,27 @@ Untuk berinteraksi dengan smart contract, kita butuh:
 ```
 
 ### 2.2 Membuat Contract Instance
+
+> **Step-by-Step untuk Pemula:**
+>
+> Untuk "berbicara" dengan smart contract dari frontend, kita butuh 3 hal:
+>
+> 1. **Contract Address** → "Alamat rumah" contract di blockchain
+>    - Dapat dari hasil deploy (lihat terminal saat `npx hardhat run scripts/deploy.js`)
+>    - Contoh: `0x5FbDB2315678afecb367f032d93F642f64180aa3`
+>
+> 2. **ABI (Application Binary Interface)** → "Buku petunjuk" function apa saja yang ada
+>    - File JSON yang berisi daftar functions, events, dll
+>    - Lokasi: `contracts/artifacts/contracts/NamaContract.sol/NamaContract.json`
+>
+> 3. **Provider/Signer** → "Koneksi" ke blockchain
+>    - Provider untuk baca, Signer untuk baca+tulis
+>
+> **Cara copy ABI ke frontend:**
+> ```bash
+> # Dari folder project utama
+> cp contracts/artifacts/contracts/CourseReward.sol/CourseReward.json frontend/src/contracts/
+> ```
 
 ```javascript
 import { ethers } from 'ethers'
@@ -265,6 +298,23 @@ View functions adalah functions yang tidak mengubah state blockchain. Karakteris
 ```
 
 ### 3.2 Memanggil View Functions
+
+> **Cara Membaca Data dari Smart Contract:**
+>
+> View functions adalah function yang hanya membaca data, tidak mengubah apapun di blockchain.
+>
+> **Langkah-langkahnya:**
+> 1. Buat provider (koneksi ke blockchain)
+> 2. Buat contract instance (gabungan address + ABI + provider)
+> 3. Panggil function seperti memanggil method biasa
+>
+> **Contoh view functions di CourseReward:**
+> - `rewardAmount()` → berapa poin reward
+> - `owner()` → siapa pemilik contract
+> - `hasClaimed(address)` → apakah address sudah claim
+> - `rewards(address)` → berapa reward yang sudah dikumpulkan
+>
+> **Tips:** Semua view function gratis (tidak bayar gas) dan instant!
 
 ```javascript
 import { ethers } from 'ethers'
@@ -349,6 +399,27 @@ async function readAllData() {
 ## 4. State Management dengan React
 
 ### 4.1 Basic Pattern
+
+> **Pola Dasar React + Blockchain:**
+>
+> Saat membuat komponen yang membaca data dari blockchain, kita selalu butuh 3 state:
+>
+> | State | Fungsi | Nilai Awal |
+> |-------|--------|------------|
+> | `data` | Menyimpan hasil dari blockchain | `null` |
+> | `loading` | Menandakan sedang fetch data | `true` |
+> | `error` | Menyimpan pesan error jika gagal | `null` |
+>
+> **Alur yang terjadi:**
+> ```
+> Komponen mount → loading=true → Fetch data →
+>   ├─ Sukses: data=hasil, loading=false
+>   └─ Gagal: error=pesan, loading=false
+> ```
+>
+> **Kenapa pakai useEffect?**
+> - Fetch data otomatis saat komponen pertama kali tampil
+> - Bisa di-trigger ulang saat dependencies berubah
 
 ```jsx
 import { useState, useEffect } from 'react'
@@ -510,6 +581,32 @@ function UserContractInfo({ userAddress }) {
 ### 5.1 Membuat useContract Hook
 
 Custom hooks memungkinkan kita me-reuse logic di multiple components.
+
+> **Apa itu Custom Hook?**
+>
+> Custom hook adalah function yang dimulai dengan `use` dan bisa menggunakan React hooks lainnya. Tujuannya untuk **mengumpulkan logic yang sering dipakai** agar tidak perlu ditulis ulang di setiap komponen.
+>
+> **Kenapa butuh useContract?**
+>
+> Tanpa custom hook, di setiap komponen kita harus:
+> ```javascript
+> // Kode ini harus ditulis di SETIAP komponen 😫
+> const provider = new ethers.BrowserProvider(window.ethereum)
+> const contract = new ethers.Contract(address, abi, provider)
+> const result = await contract.someFunction()
+> ```
+>
+> Dengan `useContract`, cukup:
+> ```javascript
+> // Sekali tulis, pakai di mana saja 😊
+> const { contract, read } = useContract(address, abi)
+> const result = await read('someFunction')
+> ```
+>
+> **Langkah membuat custom hook:**
+> 1. Buat file baru di `src/hooks/`
+> 2. Export function yang dimulai dengan `use`
+> 3. Gunakan React hooks di dalamnya (useState, useEffect, dll)
 
 **frontend/src/hooks/useContract.js:**
 ```javascript
@@ -676,6 +773,31 @@ function Dashboard() {
 ## 6. Custom Hook: useWallet
 
 ### 6.1 Membuat useWallet Hook
+
+> **Apa yang dilakukan useWallet?**
+>
+> Hook ini menangani semua hal yang berhubungan dengan wallet:
+>
+> | Fitur | Penjelasan |
+> |-------|------------|
+> | `connect()` | Memunculkan popup MetaMask |
+> | `disconnect()` | Reset semua state |
+> | `account` | Address wallet yang terhubung |
+> | `balance` | Saldo ETH wallet |
+> | `chainId` | Network mana yang aktif (Hardhat=31337, Sepolia=11155111) |
+> | `isConnected` | Boolean apakah sudah connect |
+>
+> **Event listeners yang dihandle:**
+> - `accountsChanged` → User ganti account di MetaMask
+> - `chainChanged` → User ganti network
+>
+> **Cara pakai nanti:**
+> ```jsx
+> function MyComponent() {
+>   const { account, balance, connect, isConnected } = useWallet()
+>   // Langsung pakai!
+> }
+> ```
 
 **frontend/src/hooks/useWallet.js:**
 ```javascript
@@ -943,6 +1065,23 @@ export function getAddress(contractName, chainId) {
 
 ### 7.3 Komponen Navbar
 
+> **Komponen Navbar menampilkan:**
+> - Nama dApp di kiri
+> - Info network (Hardhat, Sepolia, dll)
+> - Tombol Connect Wallet / Info wallet yang terhubung di kanan
+>
+> **Fitur penting:**
+> - Saat belum connect → tampil tombol "Connect Wallet"
+> - Saat sudah connect → tampil address (disingkat) + balance + tombol Disconnect
+> - Menampilkan badge nama network agar user tahu di network mana
+>
+> **Cara menyingkat address:**
+> ```
+> 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+> ↓ formatAddress()
+> 0xf39F...2266
+> ```
+
 **frontend/src/components/Navbar.jsx:**
 ```jsx
 import { useWallet } from '../hooks/useWallet'
@@ -1099,6 +1238,23 @@ export default Navbar
 ```
 
 ### 7.4 Komponen ContractInfo
+
+> **Komponen ini menampilkan info umum contract:**
+> - Contract Address
+> - Owner address
+> - Reward Amount (berapa poin per claim)
+>
+> **Alur kerja komponen:**
+> 1. Cek apakah wallet sudah connect
+> 2. Ambil contract address berdasarkan chainId
+> 3. Buat contract instance
+> 4. Panggil `rewardAmount()` dan `owner()` secara paralel
+> 5. Tampilkan hasilnya
+>
+> **Error handling yang perlu diperhatikan:**
+> - Wallet belum connect → tampilkan pesan "Connect wallet to view"
+> - Contract tidak ada di network ini → tampilkan pesan error
+> - Gagal fetch data → tampilkan error + tombol Retry
 
 **frontend/src/components/ContractInfo.jsx:**
 ```jsx
@@ -1304,6 +1460,17 @@ export default ContractInfo
 
 ### 7.5 Komponen UserStatus
 
+> **Komponen ini menampilkan status user yang sedang login:**
+> - Sudah claim atau belum (badge hijau/oranye)
+> - Total reward yang sudah dikumpulkan
+>
+> **Perbedaan dengan ContractInfo:**
+> - ContractInfo → data umum contract (sama untuk semua orang)
+> - UserStatus → data spesifik per user (berbeda tiap address)
+>
+> **Re-fetch otomatis:**
+> Komponen ini akan refetch data setiap kali `account` berubah (user ganti wallet di MetaMask).
+
 **frontend/src/components/UserStatus.jsx:**
 ```jsx
 import { useState, useEffect } from 'react'
@@ -1451,6 +1618,23 @@ export default UserStatus
 ```
 
 ### 7.6 Main App Component
+
+> **App.jsx adalah komponen utama yang menyatukan semuanya:**
+>
+> ```
+> App
+> ├── Navbar          → Header dengan tombol connect
+> ├── Global Error    → Tampilkan error jika ada
+> └── Main Content
+>     ├── ContractInfo  → Info contract (reward amount, owner)
+>     └── UserStatus    → Status user (sudah claim?, total rewards)
+> ```
+>
+> **Flow data:**
+> 1. User connect wallet di Navbar
+> 2. ContractInfo dan UserStatus membaca chainId untuk mendapatkan contract address
+> 3. Data di-fetch dari blockchain
+> 4. UI di-render dengan data tersebut
 
 **frontend/src/App.jsx:**
 ```jsx
