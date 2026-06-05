@@ -41,12 +41,13 @@ Blockchain technology is a database mechanism that enables transparent informati
 | 9      | 9-10   | Hardhat Project Setup & Compile     | 3.2      | [Go to module](module-09.md) |
 | 10     | 10     | Smart Contract Testing              | 3.3      | [Go to module](module-10.md) |
 | 11     | 10     | Deployment & MetaMask Interaction   | 3.3      | [Go to module](module-11.md) |
-| -      | 11     | **Demo Proyek 3: Smart Contract**   | 3.4      | - |
-| 14     | 12     | Web3 Interaction & MetaMask Integration | 4.1  | [Go to module](module-14.md) |
-| 15     | 13     | dApp Development (React + Ethers.js) | 4.2     | [Go to module](module-15.md) |
-| 16     | 14     | Smart Contract Integration          | 4.3      | [Go to module](module-16.md) |
-| 17     | 15     | Final Project Progress              | 4.4      | [Go to module](module-17.md) |
+| -      | 11     | **Demo Proyek 2: Smart Contract**   | 3.4      | - |
+| 12     | 12     | Pengenalan dApp & Arsitektur Web3   | 4.1      | [Go to module](module-12.md) |
+| 13     | 13     | Frontend Integration - Read Operations | 4.2   | [Go to module](module-13.md) |
+| 14     | 14     | Frontend Integration - Write Operations | 4.3  | [Go to module](module-14.md) |
+| 15     | 15     | dApp Advanced Features & Deployment | 4.4      | [Go to module](module-15.md) |
 | -      | 16     | **Demo Proyek Akhir: dApp**         | 4.5      | - |
+| 16     | -      | Smart Contract Security (Supplementary) | 3.x  | [Go to module](module-16.md) |
 
 ## Concept Mapping
 
@@ -88,8 +89,8 @@ Blockchain technology is a database mechanism that enables transparent informati
 │  │                           FASE 3: dApp DEVELOPMENT (Minggu 12-16)                                │  │
 │  │                                           CPMK-4                                                 │  │
 │  │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ╔═════════════╗    │  │
-│  │   │  Module 14  │───►│  Module 15  │───►│  Module 16  │───►│  Module 17  │───►║  DEMO       ║    │  │
-│  │   │ Web3+Wallet │    │ React+Ethers│    │ Integration │    │  Progress   │    ║  PROYEK 3   ║    │  │
+│  │   │  Module 12  │───►│  Module 13  │───►│  Module 14  │───►│  Module 15  │───►║  DEMO       ║    │  │
+│  │   │ dApp+Web3   │    │ Read Ops    │    │ Write Ops   │    │ Advanced    │    ║  PROYEK 3   ║    │  │
 │  │   │ (Minggu 12) │    │ (Minggu 13) │    │ (Minggu 14) │    │ (Minggu 15) │    ║ AKHIR (16)  ║    │  │
 │  │   └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘    ╚═════════════╝    │  │
 │  └──────────────────────────────────────────────────────────────────────────────────────────────────┘  │
@@ -149,6 +150,23 @@ Blockchain technology is a database mechanism that enables transparent informati
 | **Contract Testing**    | Unit Test, Mocha, Chai, Coverage      | [Module 10](module-10.md)                         |
 | **Deployment**          | Local Blockchain, Deploy Script       | [Module 11](module-11.md)                         |
 | **MetaMask**            | Wallet, dApp Connection               | [Module 11](module-11.md)                         |
+| **Security**            | Reentrancy, Access Control, DoS       | [Module 16](module-16.md)                         |
+
+### 4. dApp Development (Integration)
+
+| Topic                         | Sub-Topics                            | Module                                         |
+| ----------------------------- | ------------------------------------- | ---------------------------------------------- |
+| **Web3 Architecture**   | Decentralized Apps, Traditional vs Web3 | [Module 12](module-12.md)                       |
+| **dApp Components**     | Frontend, Smart Contract, Wallet      | [Module 12](module-12.md)                       |
+| **Provider Setup**      | Ethers.js Provider, RPC Connection    | [Module 12](module-12.md)                       |
+| **Wallet Integration**  | MetaMask Connection, Account Access   | [Module 12](module-12.md)                       |
+| **Read Operations**     | Contract Instance, View Functions     | [Module 13](module-13.md)                       |
+| **Data Display**        | React State, Blockchain Data          | [Module 13](module-13.md)                       |
+| **Write Operations**    | Signer, State-Changing Functions      | [Module 14](module-14.md)                       |
+| **Transaction Handling**| Confirmation, Receipt, Error Handling | [Module 14](module-14.md)                       |
+| **Event Listening**     | Real-time Updates, WebSocket          | [Module 15](module-15.md)                       |
+| **UX Optimization**     | Loading States, Error Messages        | [Module 15](module-15.md)                       |
+| **Testnet Deployment**  | Sepolia, Vercel, Production Ready     | [Module 15](module-15.md)                       |
 
 ### Learning Path
 
@@ -176,9 +194,9 @@ FASE 2: SMART CONTRACT (Minggu 8-11) ──────────────�
 FASE 3: dApp DEVELOPMENT (Minggu 12-16) ────────────────────────────────────────────────────────────────
                                                                                           CPMK-4
      ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ╔═════════════╗
-     │  Module 14  │────►│  Module 15  │────►│  Module 16  │────►│  Module 17  │────►║   DEMO      ║
-     │ Web3+Wallet │     │ React+Ethers│     │ Integration │     │  Progress   │     ║  PROYEK 3   ║
-     │  MetaMask   │     │    dApp     │     │  Frontend   │     │  Akhir      │     ║AKHIR (25%)  ║
+     │  Module 12  │────►│  Module 13  │────►│  Module 14  │────►│  Module 15  │────►║   DEMO      ║
+     │ dApp+Web3   │     │  Read Ops   │     │ Write Ops   │     │ Advanced    │     ║  PROYEK 3   ║
+     │ Arsitektur  │     │  Frontend   │     │ Transactions│     │ Deployment  │     ║AKHIR (25%)  ║
      └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘     ╚═════════════╝
         Minggu 12           Minggu 13           Minggu 14           Minggu 15           Minggu 16
 ```
@@ -189,7 +207,7 @@ FASE 3: dApp DEVELOPMENT (Minggu 12-16) ─────────────�
 |------|----------|-------|--------|--------|
 | 1 | **Blockchain & Cryptocurrency** | Python, Flask, Postman, RSA/ECDSA | Module 01-06 | 1-7 |
 | 2 | **Smart Contract** | Remix IDE, Solidity, Hardhat, MetaMask | Module 07-11 | 8-11 |
-| 3 | **dApp Development** | React, Ethers.js, MetaMask, Vercel, Sepolia | Module 14-17 | 12-16 |
+| 3 | **dApp Development** | React, Ethers.js, MetaMask, Vercel, Sepolia | Module 12-15 | 12-16 |
 
 ---
 
@@ -219,10 +237,10 @@ FASE 3: dApp DEVELOPMENT (Minggu 12-16) ─────────────�
 
 | Minggu | Sub-CPMK | Deskripsi Sub-CPMK | Topik | Module | Aktivitas | Asesmen |
 |--------|----------|-------------------|-------|--------|-----------|---------|
-| 12 | **Sub-CPMK-4.1** | Mahasiswa mampu mengintegrasikan wallet MetaMask dengan aplikasi web dan memahami konsep Web3 | Web3 Interaction: Konsep Web3, integrasi wallet, MetaMask | [Module 14](module-14.md) | Hands-on: Menghubungkan MetaMask ke dApp | Partisipasi Kelas |
-| 13 | **Sub-CPMK-4.2** | Mahasiswa mampu membangun antarmuka frontend dApp menggunakan React dan Ethers.js | dApp Development: Arsitektur dApp, React basics, frontend blockchain | [Module 15](module-15.md) | Hands-on: Setup React, install Ethers.js | Partisipasi Kelas |
-| 14 | **Sub-CPMK-4.3** | Mahasiswa mampu mengintegrasikan frontend dengan smart contract untuk membaca data blockchain dan mengirim transaksi | Smart Contract Integration: Memanggil contract dari frontend, read/write data | [Module 16](module-16.md) | Hands-on: Integrasi React dan smart contract | Partisipasi Kelas |
-| 15 | **Sub-CPMK-4.4** | Mahasiswa mampu mengembangkan dan menyempurnakan dApp sesuai dengan use case yang dipilih | Final Project Progress: Pengembangan dan penyempurnaan dApp | [Module 17](module-17.md) | Progress proyek akhir | Proyek Akhir |
+| 12 | **Sub-CPMK-4.1** | Mahasiswa mampu memahami arsitektur Web3 dan komponen-komponen dApp | Pengenalan dApp: Konsep Web3, arsitektur dApp, komponen-komponen | [Module 12](module-12.md) | Hands-on: Setup project dApp, integrasi MetaMask | Partisipasi Kelas |
+| 13 | **Sub-CPMK-4.2** | Mahasiswa mampu membaca data dari smart contract menggunakan frontend React dan Ethers.js | Frontend Integration Read: Provider, contract instance, view functions | [Module 13](module-13.md) | Hands-on: Read operations dari smart contract | Partisipasi Kelas |
+| 14 | **Sub-CPMK-4.3** | Mahasiswa mampu mengirim transaksi ke smart contract dan menangani state-changing operations | Frontend Integration Write: Signer, transactions, event handling | [Module 14](module-14.md) | Hands-on: Write operations dan transaction handling | Partisipasi Kelas |
+| 15 | **Sub-CPMK-4.4** | Mahasiswa mampu mengimplementasikan fitur lanjutan dan men-deploy dApp ke testnet | dApp Advanced: Real-time events, optimasi UX, deployment ke testnet | [Module 15](module-15.md) | Hands-on: Event listening, deployment ke Sepolia | Partisipasi Kelas |
 | 16 | **Sub-CPMK-4.5** | Mahasiswa mampu mempresentasikan dApp lengkap yang mengintegrasikan smart contract, wallet, dan frontend | **Demo Proyek 3: dApp** | - | Presentasi dApp lengkap | **Proyek 3 (25%)** |
 
 ---
@@ -241,11 +259,17 @@ FASE 3: dApp DEVELOPMENT (Minggu 12-16) ─────────────�
 | 9 | 09 | Hardhat Project Setup & Compile |
 | 10 | 10, 11 | Smart Contract Testing, Deployment & MetaMask Interaction |
 | 11 | - | **Demo Proyek 2: Smart Contract** |
-| 12 | 12 | Web3 Interaction & MetaMask Integration |
-| 13 | 13 | dApp Development (React + Ethers.js) |
-| 14 | 14 | Smart Contract Integration |
-| 15 | 15 | Final Project Progress |
+| 12 | 12 | Pengenalan dApp & Arsitektur Web3 |
+| 13 | 13 | Frontend Integration - Read Operations |
+| 14 | 14 | Frontend Integration - Write Operations |
+| 15 | 15 | dApp Advanced Features & Deployment |
 | 16 | - | **Demo Proyek 3: dApp** |
+
+### Modul Tambahan (Supplementary)
+
+| Minggu | Module | Judul Module |
+|--------|--------|--------------|
+| - | 16 | Smart Contract Security (dapat dipelajari setelah Module 10) |
 
 ---
 

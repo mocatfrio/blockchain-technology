@@ -49,7 +49,7 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    DEFINISI dApp                                 │
+│                    DEFINISI dApp                                │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  dApp = Decentralized Application                               │
@@ -86,7 +86,7 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    KATEGORI dApp                                 │
+│                    KATEGORI dApp                                │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  DeFi (Decentralized Finance)                                   │
@@ -115,14 +115,14 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 
 ### 1.4 Kelebihan dan Kekurangan dApp
 
-| Aspek              | Kelebihan                        | Kekurangan                        |
-| ------------------ | -------------------------------- | --------------------------------- |
-| **Control**  | User memiliki kontrol penuh      | User bertanggung jawab penuh      |
-| **Trust**    | Trustless, kode adalah hukum     | Bug di smart contract berbahaya   |
-| **Censorship** | Tahan sensor                     | Konten ilegal sulit dihapus       |
-| **Cost**     | Tidak perlu server               | Gas fee untuk setiap transaksi    |
-| **Speed**    | Tidak tergantung satu server     | Lebih lambat dari Web2            |
-| **UX**       | Transparansi tinggi              | UX masih kompleks untuk pemula    |
+| Aspek                | Kelebihan                    | Kekurangan                      |
+| -------------------- | ---------------------------- | ------------------------------- |
+| **Control**    | User memiliki kontrol penuh  | User bertanggung jawab penuh    |
+| **Trust**      | Trustless, kode adalah hukum | Bug di smart contract berbahaya |
+| **Censorship** | Tahan sensor                 | Konten ilegal sulit dihapus     |
+| **Cost**       | Tidak perlu server           | Gas fee untuk setiap transaksi  |
+| **Speed**      | Tidak tergantung satu server | Lebih lambat dari Web2          |
+| **UX**         | Transparansi tinggi          | UX masih kompleks untuk pemula  |
 
 ---
 
@@ -132,7 +132,7 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    WEB2 ARCHITECTURE                             │
+│                    WEB2 ARCHITECTURE                            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │   User                                                          │
@@ -151,7 +151,7 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                    WEB3 ARCHITECTURE                             │
+│                    WEB3 ARCHITECTURE                            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │   User                                                          │
@@ -176,16 +176,16 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 
 ### 2.2 Perbandingan Detail
 
-| Aspek                       | Web2                              | Web3                                     |
-| --------------------------- | --------------------------------- | ---------------------------------------- |
-| **Backend**           | Server (AWS, GCP)                 | Smart Contract on Blockchain             |
-| **Database**          | MySQL, PostgreSQL, MongoDB        | Blockchain State                         |
-| **Authentication**    | Username/Password, OAuth          | Wallet Signature (MetaMask)              |
-| **Payment**           | Credit Card, PayPal               | Cryptocurrency                           |
-| **Data Ownership**    | Company owns user data            | User owns their data                     |
-| **Downtime**          | Server bisa down                  | Network selalu online (decentralized)    |
-| **Update**            | Company bisa update kapan saja    | Perlu upgrade mechanism / governance     |
-| **Cost Model**        | User gratis, company bayar server | User bayar gas fee per transaksi         |
+| Aspek                    | Web2                              | Web3                                  |
+| ------------------------ | --------------------------------- | ------------------------------------- |
+| **Backend**        | Server (AWS, GCP)                 | Smart Contract on Blockchain          |
+| **Database**       | MySQL, PostgreSQL, MongoDB        | Blockchain State                      |
+| **Authentication** | Username/Password, OAuth          | Wallet Signature (MetaMask)           |
+| **Payment**        | Credit Card, PayPal               | Cryptocurrency                        |
+| **Data Ownership** | Company owns user data            | User owns their data                  |
+| **Downtime**       | Server bisa down                  | Network selalu online (decentralized) |
+| **Update**         | Company bisa update kapan saja    | Perlu upgrade mechanism / governance  |
+| **Cost Model**     | User gratis, company bayar server | User bayar gas fee per transaksi      |
 
 ### 2.3 Login/Authentication
 
@@ -286,7 +286,7 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    dApp DATA FLOW                                │
+│                    dApp DATA FLOW                               │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  READ (View Function - No Gas)                                  │
@@ -306,7 +306,7 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 │  Frontend ──► ethers.js ──► MetaMask ──► User Signs ──►         │
 │                                              │                  │
 │                                              ▼                  │
-│  Frontend ◄── Tx Hash ◄── RPC Node ◄── Broadcast to Network    │
+│  Frontend ◄── Tx Hash ◄── RPC Node ◄── Broadcast to Network     │
 │     │                                         │                 │
 │     │         Wait for confirmation...        │                 │
 │     │                                         ▼                 │
@@ -375,21 +375,21 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 
 ### 4.2 Frontend Framework Options
 
-| Framework       | Kelebihan                    | Cocok untuk         |
-| --------------- | ---------------------------- | ------------------- |
-| **React**     | Ecosystem besar, banyak tutorial | General purpose     |
-| **Next.js**   | SSR, SEO friendly            | Production dApp     |
-| **Vue**       | Mudah dipelajari             | Tim kecil           |
-| **Svelte**    | Performant, kompilasi optimal | Performa kritis     |
+| Framework         | Kelebihan                        | Cocok untuk     |
+| ----------------- | -------------------------------- | --------------- |
+| **React**   | Ecosystem besar, banyak tutorial | General purpose |
+| **Next.js** | SSR, SEO friendly                | Production dApp |
+| **Vue**     | Mudah dipelajari                 | Tim kecil       |
+| **Svelte**  | Performant, kompilasi optimal    | Performa kritis |
 
 ### 4.3 Web3 Library Comparison
 
-| Library       | Kelebihan                          | Kekurangan           |
-| ------------- | ---------------------------------- | -------------------- |
-| **Ethers.js** | Modular, well-documented, TypeScript | Learning curve       |
-| **Web3.js**   | Mature, banyak resource            | Bundle size besar    |
-| **Viem**      | Modern, TypeScript-first, fast     | Relatif baru         |
-| **Wagmi**     | React hooks, DX bagus              | React only           |
+| Library             | Kelebihan                            | Kekurangan        |
+| ------------------- | ------------------------------------ | ----------------- |
+| **Ethers.js** | Modular, well-documented, TypeScript | Learning curve    |
+| **Web3.js**   | Mature, banyak resource              | Bundle size besar |
+| **Viem**      | Modern, TypeScript-first, fast       | Relatif baru      |
+| **Wagmi**     | React hooks, DX bagus                | React only        |
 
 ### 4.4 Node/RPC Provider
 
@@ -581,7 +581,7 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    RECOMMENDED TECH STACK                        │
+│                    RECOMMENDED TECH STACK                       │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  Frontend:                                                      │
@@ -679,6 +679,7 @@ npx hardhat init
 > Kita akan membuat aplikasi React menggunakan Vite (build tool modern yang sangat cepat). Vite akan menjadi "rumah" untuk frontend dApp kita, tempat user berinteraksi dengan smart contract.
 >
 > **Kenapa Vite?**
+>
 > - Lebih cepat dari Create React App
 > - Hot Module Replacement (HMR) instan
 > - Konfigurasi minimal
@@ -773,6 +774,7 @@ frontend/src/
 > **Apa itu ABI dan kenapa perlu di-copy?**
 >
 > ABI (Application Binary Interface) adalah "kamus" yang menjelaskan function apa saja yang ada di smart contract. Frontend butuh file ini untuk:
+>
 > - Tahu function mana yang bisa dipanggil
 > - Tahu parameter apa yang dibutuhkan
 > - Encode/decode data dengan benar
@@ -791,6 +793,7 @@ cp contracts/artifacts/contracts/CourseReward.sol/CourseReward.json frontend/src
 Atau buat script untuk otomatis copy:
 
 **contracts/scripts/copy-abi.js:**
+
 ```javascript
 const fs = require('fs');
 const path = require('path');
@@ -810,6 +813,7 @@ console.log('ABI copied to frontend!');
 ```
 
 Jalankan:
+
 ```bash
 cd contracts
 node scripts/copy-abi.js
@@ -820,6 +824,7 @@ node scripts/copy-abi.js
 > **Kenapa perlu file addresses.js?**
 >
 > Contract address berbeda di setiap network:
+>
 > - Deploy ke Hardhat local → address A
 > - Deploy ke Sepolia testnet → address B
 > - Deploy ke Ethereum mainnet → address C
@@ -828,12 +833,15 @@ node scripts/copy-abi.js
 >
 > **Cara mendapatkan address:**
 > Setiap kali deploy, catat address dari output terminal:
+>
 > ```
 > CourseReward deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
 > ```
+>
 > Kemudian update file ini sesuai network-nya.
 
 **frontend/src/contracts/addresses.js:**
+
 ```javascript
 // Contract addresses per network
 export const CONTRACT_ADDRESSES = {
@@ -875,22 +883,26 @@ Mari buat dApp sederhana yang bisa connect ke MetaMask dan menampilkan alamat wa
 > **Apa yang akan kita buat?**
 >
 > Sebuah halaman web sederhana dengan tombol "Connect Wallet" yang:
+>
 > 1. Memunculkan popup MetaMask saat diklik
 > 2. Setelah user approve, menampilkan alamat wallet
 > 3. Menampilkan saldo ETH wallet tersebut
 >
 > **Konsep penting yang digunakan:**
+>
 > - `window.ethereum` → objek yang disediakan MetaMask di browser
 > - `eth_requestAccounts` → meminta izin akses ke wallet user
 > - `BrowserProvider` → ethers.js wrapper untuk MetaMask
 > - `useState` & `useEffect` → React hooks untuk state management
 >
 > **Cara kerja singkat:**
+>
 > ```
 > User klik tombol → MetaMask popup → User approve → Dapat address → Tampilkan di UI
 > ```
 
 **frontend/src/App.jsx:**
+
 ```jsx
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
@@ -1040,11 +1052,13 @@ export default App
 > CSS ini memberikan tampilan modern dengan gradient background dan card design. Tidak perlu menghafal semua properti CSS - cukup copy paste dan modifikasi sesuai selera.
 >
 > **Poin penting:**
+>
 > - `.connect-btn` → styling untuk tombol connect
 > - `.wallet-info` → container untuk info wallet setelah terhubung
 > - `.error` → styling untuk pesan error (warna merah)
 
 **frontend/src/App.css:**
+
 ```css
 * {
   box-sizing: border-box;
@@ -1165,12 +1179,14 @@ body {
 ### 9.3 Menjalankan dApp
 
 1. **Terminal 1 - Jalankan Hardhat Node:**
+
 ```bash
 cd contracts
 npx hardhat node
 ```
 
 2. **Terminal 2 - Jalankan Frontend:**
+
 ```bash
 cd frontend
 npm run dev
@@ -1214,13 +1230,13 @@ npm run dev
 
 ## Ringkasan
 
-| Topik               | Poin Penting                                                          |
-| ------------------- | --------------------------------------------------------------------- |
-| **dApp**          | Aplikasi dengan backend di blockchain (smart contract)                |
-| **Web3 vs Web2**  | Decentralized vs centralized, user-owned vs company-owned             |
-| **Komponen dApp** | Frontend + Web3 Library + Wallet + RPC Node + Smart Contract          |
-| **Tech Stack**    | React + Vite + ethers.js + MetaMask + Hardhat                         |
-| **Flow**          | Connect wallet -> Read data -> Send transaction -> Wait confirmation  |
+| Topik                   | Poin Penting                                                         |
+| ----------------------- | -------------------------------------------------------------------- |
+| **dApp**          | Aplikasi dengan backend di blockchain (smart contract)               |
+| **Web3 vs Web2**  | Decentralized vs centralized, user-owned vs company-owned            |
+| **Komponen dApp** | Frontend + Web3 Library + Wallet + RPC Node + Smart Contract         |
+| **Tech Stack**    | React + Vite + ethers.js + MetaMask + Hardhat                        |
+| **Flow**          | Connect wallet -> Read data -> Send transaction -> Wait confirmation |
 
 ---
 
@@ -1251,6 +1267,7 @@ npm run dev
 ### Deliverable
 
 Kumpulkan:
+
 1. Screenshot struktur folder project
 2. Screenshot dApp berjalan (disconnected state)
 3. Screenshot dApp berjalan (connected state dengan address dan balance)
