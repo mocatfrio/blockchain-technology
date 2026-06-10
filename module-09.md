@@ -1,4 +1,4 @@
-# Modul 9. Hardhat Project Setup & Compile
+# Modul 9. Smart Contract dengan Hardhat
 
 ## Deskripsi
 
@@ -482,14 +482,14 @@ describe("Lock", function () {
 
 **Penjelasan sintaks Hardhat 3 (Mocha + Chai + Ethers.js):**
 
-| Sintaks                             | Library        | Fungsi                                  |
-| ----------------------------------- | -------------- | --------------------------------------- |
-| `network.create()`                | Hardhat 3      | Membuat koneksi network                 |
-| `networkHelpers.loadFixture()`    | Hardhat 3      | Menjalankan fixture dengan caching      |
-| `describe()`, `it()`            | Mocha          | Struktur test (test suite & test case)  |
-| `expect().to.equal()`             | Chai           | Assertion (pengecekan hasil)            |
-| `ethers.getSigners()`             | Ethers.js      | Mendapatkan wallet accounts             |
-| `ethers.deployContract()`         | Ethers.js      | Deploy contract langsung                |
+| Sintaks                          | Library   | Fungsi                                 |
+| -------------------------------- | --------- | -------------------------------------- |
+| `network.create()`             | Hardhat 3 | Membuat koneksi network                |
+| `networkHelpers.loadFixture()` | Hardhat 3 | Menjalankan fixture dengan caching     |
+| `describe()`, `it()`         | Mocha     | Struktur test (test suite & test case) |
+| `expect().to.equal()`          | Chai      | Assertion (pengecekan hasil)           |
+| `ethers.getSigners()`          | Ethers.js | Mendapatkan wallet accounts            |
+| `ethers.deployContract()`      | Ethers.js | Deploy contract langsung               |
 
 ### 4.3 Folder artifacts (setelah compile)
 
@@ -576,34 +576,34 @@ export default defineConfig({
 
 ### 5.3 Perbedaan Hardhat 2 vs Hardhat 3
 
-| Aspek                    | Hardhat 2                               | Hardhat 3                                      |
-| ------------------------ | --------------------------------------- | ---------------------------------------------- |
-| **Config**         | `HardhatUserConfig` object            | `defineConfig()` function                    |
-| **Plugins**        | `import "@plugin"` (side effect)      | `plugins: [plugin]` array                    |
-| **Solidity**       | `solidity: "0.8.28"`                  | `solidity: { profiles: { default: {...} } }` |
-| **Networks**       | `networks: { hardhat: {} }`           | `networks: { name: { type: "..." } }`        |
-| **Test**           | `import { ethers } from "hardhat"`    | `await network.create()`                     |
-| **Fixture**        | `loadFixture()` dari `hardhat-network-helpers` | `networkHelpers.loadFixture()`               |
-| **Deploy**         | `await Contract.deploy()`             | `await ethers.deployContract()`              |
+| Aspek              | Hardhat 2                                          | Hardhat 3                                      |
+| ------------------ | -------------------------------------------------- | ---------------------------------------------- |
+| **Config**   | `HardhatUserConfig` object                       | `defineConfig()` function                    |
+| **Plugins**  | `import "@plugin"` (side effect)                 | `plugins: [plugin]` array                    |
+| **Solidity** | `solidity: "0.8.28"`                             | `solidity: { profiles: { default: {...} } }` |
+| **Networks** | `networks: { hardhat: {} }`                      | `networks: { name: { type: "..." } }`        |
+| **Test**     | `import { ethers } from "hardhat"`               | `await network.create()`                     |
+| **Fixture**  | `loadFixture()` dari `hardhat-network-helpers` | `networkHelpers.loadFixture()`               |
+| **Deploy**   | `await Contract.deploy()`                        | `await ethers.deployContract()`              |
 
 ### 5.4 Perbedaan JavaScript vs TypeScript Config
 
-| JavaScript (`hardhat.config.js`) | TypeScript (`hardhat.config.ts`) |
-| ---------------------------------- | ---------------------------------- |
-| `require("...")`                 | `import ... from "..."`          |
+| JavaScript (`hardhat.config.js`) | TypeScript (`hardhat.config.ts`)  |
+| ---------------------------------- | ----------------------------------- |
+| `require("...")`                 | `import ... from "..."`           |
 | `module.exports = { }`           | `export default defineConfig({})` |
-| Tidak ada type checking            | Type checking otomatis             |
+| Tidak ada type checking            | Type checking otomatis              |
 
 ### 5.5 Penjelasan Konfigurasi
 
-| Bagian                          | Fungsi                                    |
-| ------------------------------- | ----------------------------------------- |
-| `defineConfig()`              | Fungsi konfigurasi Hardhat 3              |
-| `plugins: []`                 | Array plugin yang digunakan               |
-| `solidity.profiles`           | Profil compiler (default/production)      |
-| `type: "edr-simulated"`       | Network simulator Hardhat 3               |
-| `type: "http"`                | Network via HTTP RPC                      |
-| `networks.localhost`          | Koneksi ke Hardhat node yang berjalan     |
+| Bagian                    | Fungsi                                |
+| ------------------------- | ------------------------------------- |
+| `defineConfig()`        | Fungsi konfigurasi Hardhat 3          |
+| `plugins: []`           | Array plugin yang digunakan           |
+| `solidity.profiles`     | Profil compiler (default/production)  |
+| `type: "edr-simulated"` | Network simulator Hardhat 3           |
+| `type: "http"`          | Network via HTTP RPC                  |
+| `networks.localhost`    | Koneksi ke Hardhat node yang berjalan |
 
 ### 5.6 Network Options
 

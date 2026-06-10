@@ -195,12 +195,12 @@ console.log(`Owner: ${await courseReward.owner()}`);
 
 ### 3.2 Penjelasan Script
 
-| Kode                              | Penjelasan                                       |
-| --------------------------------- | ------------------------------------------------ |
-| `network.create()`              | Membuat koneksi network Hardhat 3                |
-| `ethers.deployContract()`       | Deploy contract langsung dengan args             |
-| `waitForDeployment()`           | Menunggu transaksi deployment dikonfirmasi       |
-| `getAddress()`                  | Mendapatkan address contract yang sudah dideploy |
+| Kode                        | Penjelasan                                       |
+| --------------------------- | ------------------------------------------------ |
+| `network.create()`        | Membuat koneksi network Hardhat 3                |
+| `ethers.deployContract()` | Deploy contract langsung dengan args             |
+| `waitForDeployment()`     | Menunggu transaksi deployment dikonfirmasi       |
+| `getAddress()`            | Mendapatkan address contract yang sudah dideploy |
 
 ### 3.3 Struktur Deployment Script (Hardhat 3)
 
@@ -257,13 +257,13 @@ npx hardhat ignition deploy ignition/modules/CourseReward.ts --network localhost
 
 **Keuntungan Hardhat Ignition:**
 
-| Fitur                         | Penjelasan                                      |
-| ----------------------------- | ----------------------------------------------- |
-| **Declarative**         | Mendefinisikan "apa yang harus ada"             |
-| **Idempotent**          | Aman dijalankan berkali-kali                    |
-| **Dependency Graph**    | Otomatis menangani urutan deployment            |
-| **Resume Support**      | Bisa melanjutkan deployment yang gagal          |
-| **Multi-chain**         | Mudah deploy ke berbagai network                |
+| Fitur                      | Penjelasan                             |
+| -------------------------- | -------------------------------------- |
+| **Declarative**      | Mendefinisikan "apa yang harus ada"    |
+| **Idempotent**       | Aman dijalankan berkali-kali           |
+| **Dependency Graph** | Otomatis menangani urutan deployment   |
+| **Resume Support**   | Bisa melanjutkan deployment yang gagal |
+| **Multi-chain**      | Mudah deploy ke berbagai network       |
 
 ## 4. Deploy ke Local Network
 

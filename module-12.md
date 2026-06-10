@@ -656,16 +656,16 @@ Sebelum membuat frontend, Anda perlu memilih antara **JavaScript** atau **TypeSc
 
 #### Perbandingan Detail
 
-| Aspek | JavaScript | TypeScript |
-|-------|------------|------------|
-| **Ekstensi file** | `.js`, `.jsx` | `.ts`, `.tsx` |
-| **Deteksi error** | Runtime (saat app jalan) | Compile time (sebelum jalan) |
-| **Autocomplete IDE** | Terbatas | Lengkap dengan tipe data |
-| **Learning curve** | Lebih mudah | Perlu belajar sistem tipe |
-| **Setup** | Langsung jalan | Perlu konfigurasi `tsconfig.json` |
-| **Refactoring** | Rentan error | Aman, IDE bantu cek |
-| **Maintenance** | Lebih sulit di project besar | Lebih mudah di project besar |
-| **Type safety** | Tidak ada | Ada, mencegah bug |
+| Aspek                      | JavaScript                   | TypeScript                          |
+| -------------------------- | ---------------------------- | ----------------------------------- |
+| **Ekstensi file**    | `.js`, `.jsx`            | `.ts`, `.tsx`                   |
+| **Deteksi error**    | Runtime (saat app jalan)     | Compile time (sebelum jalan)        |
+| **Autocomplete IDE** | Terbatas                     | Lengkap dengan tipe data            |
+| **Learning curve**   | Lebih mudah                  | Perlu belajar sistem tipe           |
+| **Setup**            | Langsung jalan               | Perlu konfigurasi `tsconfig.json` |
+| **Refactoring**      | Rentan error                 | Aman, IDE bantu cek                 |
+| **Maintenance**      | Lebih sulit di project besar | Lebih mudah di project besar        |
+| **Type safety**      | Tidak ada                    | Ada, mencegah bug                   |
 
 #### Contoh Perbedaan
 
@@ -717,22 +717,24 @@ console.log(candidate.votecount);  // Lolos! undefined di runtime
 
 #### Rekomendasi
 
-| Situasi | Pilihan | Alasan |
-|---------|---------|--------|
-| **Belajar / tugas kuliah** | JavaScript | Fokus ke konsep, tidak perlu pusing dengan tipe |
-| **Prototype / MVP cepat** | JavaScript | Lebih cepat development |
-| **Production / dApp serius** | TypeScript | Lebih aman, bug terdeteksi lebih awal |
-| **Kerja tim** | TypeScript | Kode lebih readable, maintainable |
-| **Project besar (>5 files)** | TypeScript | Refactoring lebih aman |
+| Situasi                            | Pilihan    | Alasan                                          |
+| ---------------------------------- | ---------- | ----------------------------------------------- |
+| **Belajar / tugas kuliah**   | JavaScript | Fokus ke konsep, tidak perlu pusing dengan tipe |
+| **Prototype / MVP cepat**    | JavaScript | Lebih cepat development                         |
+| **Production / dApp serius** | TypeScript | Lebih aman, bug terdeteksi lebih awal           |
+| **Kerja tim**                | TypeScript | Kode lebih readable, maintainable               |
+| **Project besar (>5 files)** | TypeScript | Refactoring lebih aman                          |
 
 #### Setup Vite
 
 **JavaScript:**
+
 ```bash
 npm create vite@latest frontend -- --template react
 ```
 
 **TypeScript:**
+
 ```bash
 npm create vite@latest frontend -- --template react-ts
 ```
