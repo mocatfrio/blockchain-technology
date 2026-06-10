@@ -33,6 +33,7 @@ Setelah menyelesaikan modul ini, mahasiswa mampu:
 - [4. Komponen dApp](#4-komponen-dapp)
 - [5. Flow Interaksi dApp](#5-flow-interaksi-dapp)
 - [6. Tools dan Library](#6-tools-dan-library)
+  - [6.3 JavaScript vs TypeScript](#63-javascript-vs-typescript)
 - [7. Setup Project dApp](#7-setup-project-dapp)
 - [8. Struktur Project](#8-struktur-project)
 - [9. Hands-on: Hello dApp](#9-hands-on-hello-dapp)
@@ -630,6 +631,113 @@ Untuk modul ini, kita akan menggunakan:
   }
 }
 ```
+
+### 6.3 JavaScript vs TypeScript
+
+Sebelum membuat frontend, Anda perlu memilih antara **JavaScript** atau **TypeScript**:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              JAVASCRIPT vs TYPESCRIPT                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  JavaScript (.js, .jsx)          TypeScript (.ts, .tsx)         │
+│  ┌─────────────────────────┐    ┌─────────────────────────┐     │
+│  │ ✓ Langsung jalan        │    │ ✓ Error saat compile    │     │
+│  │ ✓ Lebih mudah dipelajari│    │ ✓ Autocomplete lengkap  │     │
+│  │ ✓ Setup minimal         │    │ ✓ Refactoring aman      │     │
+│  │ ✗ Error saat runtime    │    │ ✓ Dokumentasi built-in  │     │
+│  │ ✗ Autocomplete terbatas │    │ ✗ Perlu belajar tipe    │     │
+│  │ ✗ Rentan typo           │    │ ✗ Setup lebih kompleks  │     │
+│  └─────────────────────────┘    └─────────────────────────┘     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Perbandingan Detail
+
+| Aspek | JavaScript | TypeScript |
+|-------|------------|------------|
+| **Ekstensi file** | `.js`, `.jsx` | `.ts`, `.tsx` |
+| **Deteksi error** | Runtime (saat app jalan) | Compile time (sebelum jalan) |
+| **Autocomplete IDE** | Terbatas | Lengkap dengan tipe data |
+| **Learning curve** | Lebih mudah | Perlu belajar sistem tipe |
+| **Setup** | Langsung jalan | Perlu konfigurasi `tsconfig.json` |
+| **Refactoring** | Rentan error | Aman, IDE bantu cek |
+| **Maintenance** | Lebih sulit di project besar | Lebih mudah di project besar |
+| **Type safety** | Tidak ada | Ada, mencegah bug |
+
+#### Contoh Perbedaan
+
+**JavaScript** - Error baru muncul saat runtime:
+
+```javascript
+// File: App.jsx
+const candidateId = "1";  // String, bukan number
+await contract.vote(candidateId);  // Lolos! Tapi error di blockchain
+
+// User baru tahu ada error setelah transaksi gagal
+// "Error: invalid BigNumberish value"
+```
+
+**TypeScript** - Error terdeteksi sebelum deploy:
+
+```typescript
+// File: App.tsx
+const candidateId: number = "1";
+// ❌ Error: Type 'string' is not assignable to type 'number'
+
+// IDE langsung kasih warning merah
+// Developer tahu ada error SEBELUM menjalankan app
+```
+
+#### Contoh dengan Smart Contract
+
+```typescript
+// TypeScript dengan tipe yang benar
+interface Candidate {
+  id: bigint;
+  name: string;
+  voteCount: bigint;
+}
+
+// IDE tahu struktur data, autocomplete muncul
+const candidate: Candidate = await contract.candidates(1);
+console.log(candidate.name);       // ✓ Autocomplete
+console.log(candidate.votecount);  // ❌ Error: typo terdeteksi!
+```
+
+```javascript
+// JavaScript tanpa tipe
+const candidate = await contract.candidates(1);
+console.log(candidate.name);       // ✓ OK
+console.log(candidate.votecount);  // Lolos! undefined di runtime
+// Bug tidak terdeteksi sampai user komplain
+```
+
+#### Rekomendasi
+
+| Situasi | Pilihan | Alasan |
+|---------|---------|--------|
+| **Belajar / tugas kuliah** | JavaScript | Fokus ke konsep, tidak perlu pusing dengan tipe |
+| **Prototype / MVP cepat** | JavaScript | Lebih cepat development |
+| **Production / dApp serius** | TypeScript | Lebih aman, bug terdeteksi lebih awal |
+| **Kerja tim** | TypeScript | Kode lebih readable, maintainable |
+| **Project besar (>5 files)** | TypeScript | Refactoring lebih aman |
+
+#### Setup Vite
+
+**JavaScript:**
+```bash
+npm create vite@latest frontend -- --template react
+```
+
+**TypeScript:**
+```bash
+npm create vite@latest frontend -- --template react-ts
+```
+
+> **Catatan**: Tutorial ini menggunakan **JavaScript** untuk kemudahan pembelajaran. Jika ingin TypeScript, ganti ekstensi file `.jsx` → `.tsx` dan `.js` → `.ts`, lalu tambahkan tipe data yang sesuai.
 
 ---
 

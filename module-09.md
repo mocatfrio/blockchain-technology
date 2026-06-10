@@ -39,15 +39,15 @@ npm -v    # 9.x.x atau lebih baru
 - [2. Pengantar Hardhat](#2-pengantar-hardhat)
 - [3. Setup Project Hardhat](#3-setup-project-hardhat)
 - [4. Struktur Project](#4-struktur-project)
+  - [4.2 Contoh File Test (TypeScript + Mocha + Ethers.js)](#42-contoh-file-test-typescript--mocha--ethersjs)
 - [5. Konfigurasi Hardhat](#5-konfigurasi-hardhat)
+  - [5.3 Perbedaan JavaScript vs TypeScript Config](#53-perbedaan-javascript-vs-typescript-config)
 - [6. Menulis Smart Contract](#6-menulis-smart-contract)
 - [7. Compile Contract](#7-compile-contract)
 - [8. Memahami Output Compile](#8-memahami-output-compile)
 - [9. Troubleshooting](#9-troubleshooting)
-- [Ringkasan](#ringkasan)
 - [Tugas](#tugas)
-
----
+- [Referensi](#referensi)
 
 ## 1. Pengenalan Node.js dan npm
 
@@ -124,10 +124,9 @@ Sebelum memulai development dengan Hardhat, kita perlu memahami dan menginstall 
 
 1. **Kunjungi website resmi Node.js**
 
-   Buka browser dan akses: https://nodejs.org
+   Buka browser dan akses: [https://nodejs.org/en/download](https://nodejs.org/en/download)
 2. **Download installer**
 
-   - Pilih versi **LTS (Long Term Support)** - lebih stabil
    - Klik tombol download untuk Windows (file `.msi`)
 3. **Jalankan installer**
 
@@ -152,17 +151,9 @@ Sebelum memulai development dengan Hardhat, kita perlu memahami dan menginstall 
    Output yang diharapkan:
 
    ```text
-   v18.x.x  (atau versi lebih baru)
-   9.x.x    (atau versi lebih baru)
+   v24.16.0
+   11.13.0
    ```
-
-#### Metode 2: Menggunakan Chocolatey (Package Manager Windows)
-
-Jika sudah memiliki Chocolatey terinstall:
-
-```powershell
-choco install nodejs-lts
-```
 
 ### 1.4 Instalasi Node.js di macOS
 
@@ -170,10 +161,9 @@ choco install nodejs-lts
 
 1. **Kunjungi website resmi Node.js**
 
-   Buka browser dan akses: https://nodejs.org
+   Buka browser dan akses: [https://nodejs.org/en/download](https://nodejs.org/en/download)
 2. **Download installer**
 
-   - Pilih versi **LTS (Long Term Support)**
    - Klik tombol download untuk macOS (file `.pkg`)
 3. **Jalankan installer**
 
@@ -190,34 +180,46 @@ choco install nodejs-lts
    npm -v
    ```
 
-#### Metode 2: Menggunakan Homebrew (Recommended)
-
-Homebrew adalah package manager populer untuk macOS. Jika belum terinstall, install dulu dengan:
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-Kemudian install Node.js:
-
-```bash
-brew install node
-```
-
-#### Metode 3: Menggunakan nvm (Node Version Manager)
+#### Metode 2: Menggunakan nvm (Node Version Manager)
 
 nvm memungkinkan kita menginstall dan switch antara berbagai versi Node.js:
 
 ```bash
-# Install nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+# Download and install nvm:
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.5/install.sh | bash
 
-# Restart terminal, kemudian install Node.js
-nvm install --lts
-nvm use --lts
+# in lieu of restarting the shell
+\. "$HOME/.nvm/nvm.sh"
+
+# Download and install Node.js:
+nvm install 24
+
+# Verify the Node.js version:
+node -v # Should print "v24.16.0".
+
+# Verify npm version:
+npm -v # Should print "11.13.0".
 ```
 
-### 1.5 Verifikasi Instalasi
+#### Metode 3: Menggunakan Homebrew (Unofficial)
+
+Homebrew adalah package manager populer untuk macOS.
+
+```bash
+# Download and install Homebrew
+curl -o- https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh | bash
+
+# Download and install Node.js:
+brew install node@24
+
+# Verify the Node.js version:
+node -v # Should print "v24.16.0".
+
+# Verify npm version:
+npm -v # Should print "11.13.0".
+```
+
+#### 1.5 Verifikasi Instalasi
 
 Setelah instalasi selesai, pastikan Node.js dan npm terinstall dengan benar:
 
@@ -235,8 +237,8 @@ node -e "console.log('Hello from Node.js!')"
 **Output yang diharapkan:**
 
 ```text
-v18.x.x
-9.x.x
+v24.16.0
+11.13.0
 Hello from Node.js!
 ```
 
@@ -254,8 +256,6 @@ Hello from Node.js!
 - Selalu gunakan versi **LTS** untuk development karena lebih stabil
 - Restart terminal setelah instalasi agar perubahan PATH ter-apply
 - Jika sering berganti versi Node.js, pertimbangkan menggunakan **nvm**
-
----
 
 ## 2. Pengantar Hardhat
 
@@ -350,21 +350,61 @@ npx hardhat init
 Pilih opsi berikut saat muncul prompt:
 
 ```text
-? What do you want to do?
-  Create a JavaScript project      ← Pilih ini untuk pemula
-  Create a TypeScript project
-  Create a TypeScript project (with Viem)
-  Create an empty hardhat.config.js
-  Quit
-
-? Hardhat project root: (tekan Enter untuk current directory)
-
-? Do you want to add a .gitignore? Yes
-
-? Do you want to install this sample project's dependencies with npm? Yes
+✔ What do you want to do? · Create a TypeScript project (with Mocha + Ethers.js)
+✔ Hardhat project root: · /path/to/project-smart-contract
+✔ Do you want to add a .gitignore? (Y/n) · y
 ```
 
-**Catatan:** Pilih JavaScript project untuk kemudahan belajar. TypeScript bisa dipelajari nanti.
+> **Catatan**: Kita memilih **Mocha + Ethers.js** karena:
+>
+> - Dokumentasi dan tutorial lebih banyak tersedia
+> - Lebih mudah untuk pemula
+> - Sintaks Chai (`expect().to.equal()`) lebih readable
+> - Komunitas besar, mudah mencari solusi jika ada masalah
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    OPSI PROJECT HARDHAT                                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Opsi 1: TypeScript + Mocha + Ethers.js  ← KITA PILIH INI                   │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  Testing: Mocha + Chai                                              │   │
+│  │  Blockchain: Ethers.js                                              │   │
+│  │  Sintaks: expect(value).to.equal(100)                               │   │
+│  │                                                                     │   │
+│  │  + Dokumentasi sangat banyak                                        │   │
+│  │  + Cocok untuk pemula                                               │   │
+│  │  + Komunitas besar                                                  │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│  Opsi 2: TypeScript + Node Test Runner + Viem                               │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  Testing: Node Test Runner (built-in Node.js)                       │   │
+│  │  Blockchain: Viem                                                   │   │
+│  │  Sintaks: assert.strictEqual(value, 100n)                           │   │
+│  │                                                                     │   │
+│  │  + Lebih modern & ringan                                            │   │
+│  │  + Performa lebih baik                                              │   │
+│  │  - Dokumentasi masih sedikit                                        │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+Hardhat akan otomatis menginstall dependencies yang diperlukan:
+
+```text
+✔ Installing dependencies with npm...
+
+  @nomicfoundation/hardhat-toolbox
+  @nomicfoundation/hardhat-chai-matchers
+  @nomicfoundation/hardhat-ethers
+  ethers
+  chai
+  typescript
+  ...
+```
 
 #### Step 5: Verifikasi Instalasi
 
@@ -385,14 +425,15 @@ Setelah inisialisasi, struktur folder project adalah:
 ```text
 project-smart-contract/
 ├── contracts/              ← File smart contract Solidity
-│   └── Lock.sol           ← Sample contract dari Hardhat
-├── ignition/              ← Module deployment (Hardhat Ignition)
+│   └── Lock.sol            ← Sample contract dari Hardhat
+├── ignition/               ← Module deployment (Hardhat Ignition)
 │   └── modules/
-│       └── Lock.js
-├── test/                  ← File unit test
-│   └── Lock.js
-├── hardhat.config.js      ← Konfigurasi Hardhat
-├── package.json           ← Dependencies dan scripts
+│       └── Lock.ts         ← TypeScript deployment module
+├── test/                   ← File unit test
+│   └── Lock.ts             ← TypeScript test file
+├── hardhat.config.ts       ← Konfigurasi Hardhat (TypeScript)
+├── tsconfig.json           ← Konfigurasi TypeScript
+├── package.json            ← Dependencies dan scripts
 ├── package-lock.json
 ├── .gitignore
 └── README.md
@@ -404,12 +445,42 @@ project-smart-contract/
 | --------------------- | ---------------------------------------------- |
 | `contracts/`        | Tempat semua file smart contract (.sol)        |
 | `ignition/`         | Script deployment menggunakan Hardhat Ignition |
-| `test/`             | File unit test untuk smart contract            |
-| `hardhat.config.js` | Konfigurasi compiler, network, plugins         |
+| `test/`             | File unit test untuk smart contract (.ts)      |
+| `hardhat.config.ts` | Konfigurasi compiler, network, plugins         |
+| `tsconfig.json`     | Konfigurasi TypeScript compiler                |
 | `artifacts/`        | Hasil compile (muncul setelah compile)         |
 | `cache/`            | Cache untuk mempercepat compile                |
 
-### 4.2 Folder artifacts (setelah compile)
+### 4.2 Contoh File Test (TypeScript + Mocha + Ethers.js)
+
+File `test/Lock.ts` yang di-generate Hardhat:
+
+```typescript
+import { expect } from "chai";
+import { ethers } from "hardhat";
+
+describe("Lock", function () {
+  it("Should set the right owner", async function () {
+    const [owner] = await ethers.getSigners();
+
+    const Lock = await ethers.getContractFactory("Lock");
+    const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+
+    expect(await lock.owner()).to.equal(owner.address);
+  });
+});
+```
+
+**Penjelasan sintaks Mocha + Chai + Ethers.js:**
+
+| Sintaks                         | Library   | Fungsi                                 |
+| ------------------------------- | --------- | -------------------------------------- |
+| `describe()`, `it()`        | Mocha     | Struktur test (test suite & test case) |
+| `expect().to.equal()`         | Chai      | Assertion (pengecekan hasil)           |
+| `ethers.getSigners()`         | Ethers.js | Mendapatkan wallet accounts            |
+| `ethers.getContractFactory()` | Ethers.js | Membuat factory untuk deploy           |
+
+### 4.3 Folder artifacts (setelah compile)
 
 ```text
 artifacts/
@@ -424,28 +495,30 @@ artifacts/
 
 ## 5. Konfigurasi Hardhat
 
-### 5.1 File hardhat.config.js
+### 5.1 File hardhat.config.ts
 
-Buka file `hardhat.config.js`:
+Buka file `hardhat.config.ts`:
 
-```javascript
-require("@nomicfoundation/hardhat-toolbox");
+```typescript
+import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-toolbox";
 
-/** @type import('hardhat/config').HardhatUserConfig */
-module.exports = {
+const config: HardhatUserConfig = {
   solidity: "0.8.28",
 };
+
+export default config;
 ```
 
 ### 5.2 Konfigurasi Lengkap
 
 Modifikasi menjadi konfigurasi yang lebih lengkap:
 
-```javascript
-require("@nomicfoundation/hardhat-toolbox");
+```typescript
+import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-toolbox";
 
-/** @type import('hardhat/config').HardhatUserConfig */
-module.exports = {
+const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.20",
     settings: {
@@ -472,9 +545,20 @@ module.exports = {
     }
   }
 };
+
+export default config;
 ```
 
-### 5.3 Penjelasan Konfigurasi
+### 5.3 Perbedaan JavaScript vs TypeScript Config
+
+| JavaScript (`hardhat.config.js`) | TypeScript (`hardhat.config.ts`) |
+| ---------------------------------- | ---------------------------------- |
+| `require("...")`                 | `import ... from "..."`          |
+| `module.exports = { }`           | `export default config`          |
+| Tidak ada type checking            | Type checking otomatis             |
+| `/** @type ... */` untuk hints   | Interface `HardhatUserConfig`    |
+
+### 5.4 Penjelasan Konfigurasi
 
 | Bagian                          | Fungsi                                 |
 | ------------------------------- | -------------------------------------- |
@@ -484,7 +568,7 @@ module.exports = {
 | `networks.localhost`          | Koneksi ke Hardhat node yang berjalan  |
 | `networks.ganache`            | Koneksi ke Ganache GUI/CLI             |
 
-### 5.4 Network Options
+### 5.5 Network Options
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -809,7 +893,7 @@ Source Code (Solidity)     Compile      Bytecode (Hex)
 | `DeclarationError: Identifier not found`          | Variable tidak dideklarasi     | Cek nama variable                    |
 | `TypeError: ... is not implicitly convertible`    | Tipe data tidak cocok          | Cek tipe data                        |
 | `CompilerError: Stack too deep`                   | Terlalu banyak local variables | Refactor code                        |
-| `Source file requires different compiler version` | Versi pragma tidak cocok       | Sesuaikan versi di hardhat.config.js |
+| `Source file requires different compiler version` | Versi pragma tidak cocok       | Sesuaikan versi di hardhat.config.ts |
 
 ### 9.2 Contoh Error dan Solusi
 
@@ -828,12 +912,18 @@ uint256 public rewardAmount;
 ```solidity
 // Contract pakai ^0.8.20
 pragma solidity ^0.8.20;
+```
 
-// hardhat.config.js pakai 0.8.17
-solidity: "0.8.17"  // Error!
+```typescript
+// hardhat.config.ts pakai 0.8.17
+const config: HardhatUserConfig = {
+  solidity: "0.8.17"  // Error! Tidak cocok dengan pragma
+};
 
 // Fix: sesuaikan versi
-solidity: "0.8.20"
+const config: HardhatUserConfig = {
+  solidity: "0.8.20"  // Sesuai dengan pragma di contract
+};
 ```
 
 **Error: Typo nama function**
@@ -868,7 +958,8 @@ Sifat: Individu
 ### Tugas 1: Setup Project
 
 1. Buat project Hardhat baru dengan nama `project2-smart-contract`
-2. Konfigurasi `hardhat.config.js` dengan network localhost dan ganache
+2. Pilih opsi **"Create a TypeScript project (with Mocha + Ethers.js)"**
+3. Konfigurasi `hardhat.config.ts` dengan network localhost dan ganache
 
 ### Tugas 2: Buat Smart Contract
 
