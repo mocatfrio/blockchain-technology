@@ -112,23 +112,35 @@ Jika menggunakan Hardhat Toolbox, semua sudah terinstall:
 npm install --save-dev @nomicfoundation/hardhat-toolbox
 ```
 
-### 2.3 Konsep Dasar
+### 2.3 Konsep Dasar (Hardhat 3)
 
-```javascript
+> **Catatan Hardhat 3**: Menggunakan `network.create()` untuk mendapatkan `ethers` dan `networkHelpers`, serta menggunakan fixture pattern dengan `loadFixture()`.
+
+```typescript
+import { expect } from "chai";
+import { network } from "hardhat";
+
+// Buat network connection (top-level await di Hardhat 3)
+const { ethers, networkHelpers } = await network.create();
+
 // Mocha: describe dan it
 describe("Nama Test Suite", function () {
+  // Fixture pattern: deploy contract sekali, di-cache untuk setiap test
+  async function deployFixture() {
+    const [owner] = await ethers.getSigners();
+    const contract = await ethers.deployContract("ContractName", [args]);
+    return { contract, owner };
+  }
+
   it("Nama test case", async function () {
-    // Test code
+    const { contract, owner } = await networkHelpers.loadFixture(deployFixture);
+    // Test code menggunakan contract dan owner
   });
 });
 
 // Chai: expect assertions
 expect(value).to.equal(expectedValue);
 expect(promise).to.be.revertedWith("Error message");
-
-// Ethers.js: berinteraksi dengan contract
-const Contract = await ethers.getContractFactory("ContractName");
-const contract = await Contract.deploy(args);
 ```
 
 ---
@@ -143,54 +155,61 @@ Hapus test sample dan buat file baru:
 rm test/Lock.js
 ```
 
-Buat file `test/CourseReward.test.js`:
+Buat file `test/CourseReward.test.ts`:
 
-```javascript
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+> **Catatan Hardhat 3**: Menggunakan TypeScript dan fixture pattern.
+
+```typescript
+import { expect } from "chai";
+import { network } from "hardhat";
+
+// Buat network connection (top-level await di Hardhat 3)
+const { ethers, networkHelpers } = await network.create();
 
 describe("CourseReward", function () {
-  // Variables untuk menyimpan contract dan accounts
-  let courseReward;
-  let owner;
-  let student1;
-  let student2;
+  const INITIAL_REWARD = 100;
 
-  // Setup sebelum setiap test
-  beforeEach(async function () {
-    // Akan diisi nanti
-  });
+  // Fixture untuk deploy contract (di-cache oleh loadFixture)
+  async function deployFixture() {
+    const [owner, student1, student2] = await ethers.getSigners();
+    const courseReward = await ethers.deployContract("CourseReward", [INITIAL_REWARD]);
+    return { courseReward, owner, student1, student2 };
+  }
 
-  // Test cases
+  // Test cases menggunakan fixture
   it("should do something", async function () {
+    const { courseReward, owner } = await networkHelpers.loadFixture(deployFixture);
     // Test code
   });
 });
 ```
 
-### 3.2 Anatomi Test File
+### 3.2 Anatomi Test File (Hardhat 3 dengan Fixture Pattern)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    STRUKTUR TEST FILE                           │
+│                STRUKTUR TEST FILE (HARDHAT 3)                    │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  1. Import dependencies                                         │
 │     ├── chai (expect)                                           │
-│     └── ethers (dari hardhat)                                   │
+│     └── network (dari hardhat)                                  │
 │                                                                 │
-│  2. describe("Contract Name", function () {                     │
+│  2. await network.create()                                      │
+│     └── Mendapatkan ethers & networkHelpers                     │
+│                                                                 │
+│  3. describe("Contract Name", function () {                     │
 │     │                                                           │
-│     ├── 3. Variables (let contract, owner, user...)             │
-│     │                                                           │
-│     ├── 4. beforeEach(async function () {                       │
-│     │      // Deploy fresh contract sebelum tiap test           │
-│     │   });                                                     │
+│     ├── 4. async function deployFixture() {                     │
+│     │      // Deploy contract dan return semua yang dibutuhkan  │
+│     │      return { contract, owner, user };                    │
+│     │   }                                                       │
 │     │                                                           │
 │     ├── 5. describe("Feature Group", function () {              │
 │     │      │                                                    │
 │     │      ├── it("should do X", async function () {            │
-│     │      │      // Single test case                           │
+│     │      │      const { contract } = await                    │
+│     │      │        networkHelpers.loadFixture(deployFixture);  │
 │     │      │   });                                              │
 │     │      │                                                    │
 │     │      └── it("should do Y", async function () { ... });    │
@@ -202,32 +221,44 @@ describe("CourseReward", function () {
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+### 3.3 Keuntungan Fixture Pattern vs beforeEach
+
+| Aspek                | beforeEach (Hardhat 2)       | Fixture Pattern (Hardhat 3)           |
+| -------------------- | ---------------------------- | ------------------------------------- |
+| **Caching**    | Deploy ulang setiap test     | Di-cache, snapshot blockchain state   |
+| **Performa**   | Lambat untuk banyak test     | Cepat karena state di-reset via snapshot |
+| **Isolation**  | Setiap test independen       | Setiap test independen                |
+| **State**      | Harus reset manual           | Otomatis reset ke snapshot awal       |
+
 ## 4. Setup Test Environment
 
-### 4.1 beforeEach: Deploy Fresh Contract
+### 4.1 Fixture Pattern: Deploy dengan Caching (Hardhat 3)
 
-```javascript
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+> **Catatan Hardhat 3**: Fixture pattern menggantikan `beforeEach`. Fixture di-cache sehingga tidak perlu deploy ulang setiap test - state di-reset via blockchain snapshot.
+
+```typescript
+import { expect } from "chai";
+import { network } from "hardhat";
+
+// Buat network connection (top-level await di Hardhat 3)
+const { ethers, networkHelpers } = await network.create();
 
 describe("CourseReward", function () {
-  let courseReward;
-  let owner;
-  let student1;
-  let student2;
-
   const INITIAL_REWARD = 100;
 
-  beforeEach(async function () {
+  // Fixture untuk deploy contract (di-cache oleh loadFixture)
+  async function deployFixture() {
     // Ambil signers (akun testing)
-    [owner, student1, student2] = await ethers.getSigners();
+    const [owner, student1, student2] = await ethers.getSigners();
 
     // Deploy contract baru
-    const CourseReward = await ethers.getContractFactory("CourseReward");
-    courseReward = await CourseReward.deploy(INITIAL_REWARD);
-  });
+    const courseReward = await ethers.deployContract("CourseReward", [INITIAL_REWARD]);
+
+    return { courseReward, owner, student1, student2 };
+  }
 
   it("should deploy successfully", async function () {
+    const { courseReward } = await networkHelpers.loadFixture(deployFixture);
     expect(await courseReward.rewardAmount()).to.equal(INITIAL_REWARD);
   });
 });
@@ -235,34 +266,38 @@ describe("CourseReward", function () {
 
 ### 4.2 Penjelasan Kode
 
-| Kode                            | Penjelasan                              |
-| ------------------------------- | --------------------------------------- |
-| `ethers.getSigners()`         | Mendapatkan array akun testing          |
-| `[owner, student1, student2]` | Destructuring: akun pertama jadi owner  |
-| `getContractFactory()`        | Mengambil contract yang sudah dicompile |
-| `deploy(INITIAL_REWARD)`      | Deploy dengan parameter constructor     |
-| `beforeEach`                  | Dijalankan sebelum SETIAP test case     |
+| Kode                                        | Penjelasan                                |
+| ------------------------------------------- | ----------------------------------------- |
+| `network.create()`                        | Membuat koneksi network Hardhat 3         |
+| `ethers.getSigners()`                     | Mendapatkan array akun testing            |
+| `ethers.deployContract()`                 | Deploy contract langsung                  |
+| `networkHelpers.loadFixture()`            | Menjalankan fixture dengan caching        |
+| `return { ... }`                          | Mengembalikan semua yang dibutuhkan test  |
 
-### 4.3 Mengapa beforeEach?
+### 4.3 Mengapa Fixture Pattern?
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    BEFORE EACH FLOW                             │
+│                    FIXTURE PATTERN FLOW                          │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  Test 1                    Test 2                    Test 3     │
-│  ┌─────────────────┐      ┌─────────────────┐      ┌───────────┐│
-│  │ beforeEach()    │      │ beforeEach()    │      │beforeEach ││
-│  │ └─► Deploy new  │      │ └─► Deploy new  │      │ └─►Deploy ││
-│  │     contract    │      │     contract    │      │   new     ││
-│  │                 │      │                 │      │           ││
-│  │ it("test 1") {  │      │ it("test 2") {  │      │it("test3")││
-│  │   // fresh      │      │   // fresh      │      │  //fresh  ││
-│  │   // state      │      │   // state      │      │  //state  ││
-│  │ }               │      │ }               │      │}          ││
-│  └─────────────────┘      └─────────────────┘      └───────────┘│
+│  Pertama kali:                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ deployFixture() dijalankan → State disimpan sebagai snapshot││
+│  └─────────────────────────────────────────────────────────────┘│
 │                                                                 │
-│  Setiap test mendapat contract dengan state bersih!             │
+│  Test 1              Test 2              Test 3                 │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐          │
+│  │ loadFixture │    │ loadFixture │    │ loadFixture │          │
+│  │ → Reset ke  │    │ → Reset ke  │    │ → Reset ke  │          │
+│  │   snapshot  │    │   snapshot  │    │   snapshot  │          │
+│  │             │    │             │    │             │          │
+│  │ it("test1") │    │ it("test2") │    │ it("test3") │          │
+│  │ // fresh    │    │ // fresh    │    │ // fresh    │          │
+│  └─────────────┘    └─────────────┘    └─────────────┘          │
+│                                                                 │
+│  ✅ Deploy hanya SEKALI, state di-reset via snapshot!           │
+│  ✅ Lebih cepat daripada beforeEach yang deploy ulang           │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -271,27 +306,32 @@ describe("CourseReward", function () {
 
 ### 5.1 Test Deployment
 
-```javascript
+```typescript
 describe("Deployment", function () {
   it("should set the correct owner", async function () {
+    const { courseReward, owner } = await networkHelpers.loadFixture(deployFixture);
     expect(await courseReward.owner()).to.equal(owner.address);
   });
 
   it("should set the correct initial reward amount", async function () {
+    const { courseReward } = await networkHelpers.loadFixture(deployFixture);
     expect(await courseReward.rewardAmount()).to.equal(INITIAL_REWARD);
   });
 
   it("should have zero rewards for new addresses", async function () {
-    expect(await courseReward.rewards(student1.address)).to.equal(0);
+    const { courseReward, student1 } = await networkHelpers.loadFixture(deployFixture);
+    expect(await courseReward.rewards(student1.address)).to.equal(0n);
   });
 });
 ```
 
 ### 5.2 Test Fungsi Utama: claimReward
 
-```javascript
+```typescript
 describe("Claim Reward", function () {
   it("should allow student to claim reward", async function () {
+    const { courseReward, student1 } = await networkHelpers.loadFixture(deployFixture);
+
     // Student1 claim reward
     await courseReward.connect(student1).claimReward();
 
@@ -303,16 +343,16 @@ describe("Claim Reward", function () {
   });
 
   it("should update rewards mapping correctly", async function () {
+    const { courseReward, student1 } = await networkHelpers.loadFixture(deployFixture);
+
     // Sebelum claim
-    expect(await courseReward.getMyReward({ from: student1.address }))
-      .to.equal(0);
+    expect(await courseReward.connect(student1).getMyReward()).to.equal(0n);
 
     // Claim
     await courseReward.connect(student1).claimReward();
 
     // Setelah claim - pakai connect untuk "impersonate"
-    expect(await courseReward.connect(student1).getMyReward())
-      .to.equal(INITIAL_REWARD);
+    expect(await courseReward.connect(student1).getMyReward()).to.equal(INITIAL_REWARD);
   });
 });
 ```
@@ -374,9 +414,11 @@ Test yang baik tidak hanya mengecek "happy path", tapi juga memastikan error han
 
 ### 6.2 Test: Tidak Boleh Claim Dua Kali
 
-```javascript
+```typescript
 describe("Claim Restrictions", function () {
   it("should not allow student to claim twice", async function () {
+    const { courseReward, student1 } = await networkHelpers.loadFixture(deployFixture);
+
     // Claim pertama - berhasil
     await courseReward.connect(student1).claimReward();
 
@@ -387,6 +429,8 @@ describe("Claim Restrictions", function () {
   });
 
   it("should allow different students to claim", async function () {
+    const { courseReward, student1, student2 } = await networkHelpers.loadFixture(deployFixture);
+
     // Student1 claim
     await courseReward.connect(student1).claimReward();
 
@@ -417,10 +461,11 @@ await expect(
 
 ### 7.1 Test Owner Functions
 
-```javascript
+```typescript
 describe("Access Control", function () {
   describe("setRewardAmount", function () {
     it("should allow owner to change reward amount", async function () {
+      const { courseReward } = await networkHelpers.loadFixture(deployFixture);
       const newAmount = 200;
 
       await courseReward.setRewardAmount(newAmount);
@@ -429,6 +474,8 @@ describe("Access Control", function () {
     });
 
     it("should reject non-owner changing reward amount", async function () {
+      const { courseReward, student1 } = await networkHelpers.loadFixture(deployFixture);
+
       await expect(
         courseReward.connect(student1).setRewardAmount(200)
       ).to.be.revertedWith("Only owner can call this function");
@@ -473,15 +520,18 @@ Event penting untuk:
 
 ### 8.2 Test Event Emission
 
-```javascript
+```typescript
 describe("Events", function () {
   it("should emit RewardClaimed event when student claims", async function () {
+    const { courseReward, student1 } = await networkHelpers.loadFixture(deployFixture);
+
     await expect(courseReward.connect(student1).claimReward())
       .to.emit(courseReward, "RewardClaimed")
       .withArgs(student1.address, INITIAL_REWARD);
   });
 
   it("should emit RewardAmountChanged when owner changes amount", async function () {
+    const { courseReward } = await networkHelpers.loadFixture(deployFixture);
     const oldAmount = INITIAL_REWARD;
     const newAmount = 200;
 
@@ -514,39 +564,40 @@ await expect(transaction)
 
 ### 9.1 File Test Lengkap
 
-Berikut file test lengkap `test/CourseReward.test.js`:
+Berikut file test lengkap `test/CourseReward.test.ts` (Hardhat 3):
 
-```javascript
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+```typescript
+import { expect } from "chai";
+import { network } from "hardhat";
+
+// Buat network connection (top-level await di Hardhat 3)
+const { ethers, networkHelpers } = await network.create();
 
 describe("CourseReward", function () {
-  let courseReward;
-  let owner;
-  let student1;
-  let student2;
-
   const INITIAL_REWARD = 100;
 
-  beforeEach(async function () {
-    [owner, student1, student2] = await ethers.getSigners();
-
-    const CourseReward = await ethers.getContractFactory("CourseReward");
-    courseReward = await CourseReward.deploy(INITIAL_REWARD);
-  });
+  // Fixture untuk deploy contract (di-cache oleh loadFixture)
+  async function deployFixture() {
+    const [owner, student1, student2] = await ethers.getSigners();
+    const courseReward = await ethers.deployContract("CourseReward", [INITIAL_REWARD]);
+    return { courseReward, owner, student1, student2 };
+  }
 
   describe("Deployment", function () {
     it("should set the correct owner", async function () {
+      const { courseReward, owner } = await networkHelpers.loadFixture(deployFixture);
       expect(await courseReward.owner()).to.equal(owner.address);
     });
 
     it("should set the correct initial reward amount", async function () {
+      const { courseReward } = await networkHelpers.loadFixture(deployFixture);
       expect(await courseReward.rewardAmount()).to.equal(INITIAL_REWARD);
     });
   });
 
   describe("Claim Reward", function () {
     it("should allow student to claim reward", async function () {
+      const { courseReward, student1 } = await networkHelpers.loadFixture(deployFixture);
       await courseReward.connect(student1).claimReward();
 
       expect(await courseReward.rewards(student1.address)).to.equal(INITIAL_REWARD);
@@ -554,6 +605,7 @@ describe("CourseReward", function () {
     });
 
     it("should not allow student to claim twice", async function () {
+      const { courseReward, student1 } = await networkHelpers.loadFixture(deployFixture);
       await courseReward.connect(student1).claimReward();
 
       await expect(
@@ -562,6 +614,7 @@ describe("CourseReward", function () {
     });
 
     it("should allow different students to claim", async function () {
+      const { courseReward, student1, student2 } = await networkHelpers.loadFixture(deployFixture);
       await courseReward.connect(student1).claimReward();
       await courseReward.connect(student2).claimReward();
 
@@ -572,11 +625,13 @@ describe("CourseReward", function () {
 
   describe("Access Control", function () {
     it("should allow owner to change reward amount", async function () {
+      const { courseReward } = await networkHelpers.loadFixture(deployFixture);
       await courseReward.setRewardAmount(200);
       expect(await courseReward.rewardAmount()).to.equal(200);
     });
 
     it("should reject non-owner changing reward amount", async function () {
+      const { courseReward, student1 } = await networkHelpers.loadFixture(deployFixture);
       await expect(
         courseReward.connect(student1).setRewardAmount(200)
       ).to.be.revertedWith("Only owner can call this function");
@@ -585,12 +640,14 @@ describe("CourseReward", function () {
 
   describe("Events", function () {
     it("should emit RewardClaimed event", async function () {
+      const { courseReward, student1 } = await networkHelpers.loadFixture(deployFixture);
       await expect(courseReward.connect(student1).claimReward())
         .to.emit(courseReward, "RewardClaimed")
         .withArgs(student1.address, INITIAL_REWARD);
     });
 
     it("should emit RewardAmountChanged event", async function () {
+      const { courseReward } = await networkHelpers.loadFixture(deployFixture);
       await expect(courseReward.setRewardAmount(200))
         .to.emit(courseReward, "RewardAmountChanged")
         .withArgs(INITIAL_REWARD, 200);

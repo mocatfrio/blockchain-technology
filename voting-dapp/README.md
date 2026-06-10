@@ -88,12 +88,10 @@ cd blockchain
 
 npm init -y
 npm install --save-dev hardhat
-npx hardhat init
+npx hardhat --init
 ```
 
 Pilih: **Create a TypeScript project (with Mocha + Ethers.js)**
-
-![image](/Users/mocatfrio/Projects/blockchain-technology/voting-dapp/image/README/1781030655043.png)
 
 Hardhat 3 akan otomatis menginstall dependencies yang diperlukan:
 
@@ -1557,6 +1555,11 @@ Private Key: 0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6
 3. Coba klik **Vote**
 4. Akan muncul error: **"Voting belum dibuka atau sudah ditutup"**
 
+![1781079633939](image/README/1781079633939.png)
+
+![1781079793766](image/README/1781079793766.png)
+
+
 ### Step 11.5: Demo via Hardhat Console (Alternatif)
 
 Jika ingin demo tanpa frontend, gunakan Hardhat console:
@@ -1635,8 +1638,6 @@ await voting.connect(voter4).vote(1);  // Error: Voting belum dibuka atau sudah 
 | "Nama tidak boleh kosong"                | Menambah kandidat tanpa nama | Isi nama kandidat            |
 
 ---
-
-
 
 ## 12. Pengembangan Lebih Lanjut
 

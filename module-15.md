@@ -1170,41 +1170,60 @@ function MyComponent() {
 
 ### 5.2 Update Hardhat Config
 
-**contracts/hardhat.config.js:**
-```javascript
-require("@nomicfoundation/hardhat-toolbox");
-require("dotenv").config();
+**contracts/hardhat.config.ts:**
 
-/** @type import('hardhat/config').HardhatUserConfig */
-module.exports = {
+> **Catatan Hardhat 3**: Menggunakan `defineConfig()` dan `configVariable()` untuk membaca environment variables.
+
+```typescript
+import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+import { configVariable, defineConfig } from "hardhat/config";
+
+export default defineConfig({
+  plugins: [hardhatToolboxMochaEthersPlugin],
   solidity: {
-    version: "0.8.20",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
-      }
-    }
+    profiles: {
+      default: {
+        version: "0.8.28",
+      },
+      production: {
+        version: "0.8.28",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+    },
   },
   networks: {
-    hardhat: {
-      chainId: 31337
+    hardhatMainnet: {
+      type: "edr-simulated",
+      chainType: "l1",
     },
     localhost: {
+      type: "http",
       url: "http://127.0.0.1:8545",
-      chainId: 31337
     },
     sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || "",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 11155111
-    }
+      type: "http",
+      chainType: "l1",
+      url: configVariable("SEPOLIA_RPC_URL"),
+      accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+    },
   },
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY || ""
-  }
-};
+});
 ```
+
+**Penjelasan konfigurasi Hardhat 3:**
+
+| Komponen                  | Penjelasan                                |
+| ------------------------- | ----------------------------------------- |
+| `defineConfig()`        | Fungsi konfigurasi Hardhat 3              |
+| `configVariable()`      | Membaca environment variable              |
+| `type: "http"`          | Network via HTTP RPC                      |
+| `type: "edr-simulated"` | Network simulator Hardhat 3               |
+| `chainType: "l1"`       | Tipe chain (L1/L2)                        |
 
 ### 5.3 Environment Variables
 
@@ -1230,9 +1249,10 @@ module.exports = {
 SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR-API-KEY
 
 # Private key (NEVER commit this!)
-PRIVATE_KEY=your-private-key-here
+# Hardhat 3 menggunakan configVariable() - nama harus sesuai dengan config
+SEPOLIA_PRIVATE_KEY=your-private-key-here
 
-# Etherscan for verification
+# Etherscan for verification (opsional)
 ETHERSCAN_API_KEY=your-etherscan-api-key
 ```
 
@@ -1287,69 +1307,97 @@ ETHERSCAN_API_KEY=your-etherscan-api-key
 > - Contract Address → masukkan ke `addresses.js` di frontend
 > - Etherscan link → untuk verifikasi dan share
 
-**contracts/scripts/deploy-sepolia.js:**
-```javascript
-const hre = require("hardhat");
+**contracts/scripts/deploy-sepolia.ts:**
 
-async function main() {
-  console.log("Deploying to Sepolia...");
+> **Catatan Hardhat 3**: Menggunakan `network.create()` untuk mendapatkan `ethers`.
 
-  const [deployer] = await hre.ethers.getSigners();
-  console.log("Deploying with account:", deployer.address);
+```typescript
+import { network } from "hardhat";
 
-  const balance = await hre.ethers.provider.getBalance(deployer.address);
-  console.log("Account balance:", hre.ethers.formatEther(balance), "ETH");
+const { ethers } = await network.create();
 
-  // Deploy
-  const CourseReward = await hre.ethers.getContractFactory("CourseReward");
-  const courseReward = await CourseReward.deploy(100);
+console.log("Deploying to Sepolia...");
 
-  await courseReward.waitForDeployment();
+const [deployer] = await ethers.getSigners();
+console.log("Deploying with account:", deployer.address);
 
-  const address = await courseReward.getAddress();
-  console.log("CourseReward deployed to:", address);
+const balance = await ethers.provider.getBalance(deployer.address);
+console.log("Account balance:", ethers.formatEther(balance), "ETH");
 
-  // Wait for block confirmations
-  console.log("Waiting for block confirmations...");
-  await courseReward.deploymentTransaction().wait(5);
+// Deploy
+const courseReward = await ethers.deployContract("CourseReward", [100]);
 
-  // Verify on Etherscan
-  console.log("Verifying on Etherscan...");
-  try {
-    await hre.run("verify:verify", {
-      address: address,
-      constructorArguments: [100],
-    });
-    console.log("Contract verified on Etherscan!");
-  } catch (err) {
-    console.log("Verification error:", err.message);
-  }
+await courseReward.waitForDeployment();
 
-  console.log("\n=== DEPLOYMENT COMPLETE ===");
-  console.log("Network: Sepolia");
-  console.log("Contract Address:", address);
-  console.log("Etherscan:", `https://sepolia.etherscan.io/address/${address}`);
+const address = await courseReward.getAddress();
+console.log("CourseReward deployed to:", address);
+
+// Wait for block confirmations
+console.log("Waiting for block confirmations...");
+const deployTx = courseReward.deploymentTransaction();
+if (deployTx) {
+  await deployTx.wait(5);
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+console.log("\n=== DEPLOYMENT COMPLETE ===");
+console.log("Network: Sepolia");
+console.log("Contract Address:", address);
+console.log("Etherscan:", `https://sepolia.etherscan.io/address/${address}`);
 ```
 
-### 5.6 Deploy Command
+### 5.6 Hardhat Ignition untuk Sepolia (Recommended)
+
+Hardhat 3 merekomendasikan penggunaan **Ignition** untuk deployment ke testnet/mainnet.
+
+**contracts/ignition/modules/CourseReward.ts:**
+```typescript
+import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+
+const CourseRewardModule = buildModule("CourseRewardModule", (m) => {
+  // Parameter constructor
+  const initialReward = m.getParameter("initialReward", 100);
+
+  // Deploy contract
+  const courseReward = m.contract("CourseReward", [initialReward]);
+
+  return { courseReward };
+});
+
+export default CourseRewardModule;
+```
+
+**Deploy ke Sepolia dengan Ignition:**
+```bash
+npx hardhat ignition deploy ignition/modules/CourseReward.ts --network sepolia
+```
+
+**Keuntungan Ignition untuk Testnet:**
+
+| Fitur                    | Penjelasan                                   |
+| ------------------------ | -------------------------------------------- |
+| **Resume**         | Melanjutkan jika deployment gagal di tengah  |
+| **Verification**   | Otomatis verify di Etherscan                 |
+| **Parameters**     | Mudah mengubah parameter untuk network berbeda |
+| **Deployment ID**  | Tracking deployment yang sudah dilakukan     |
+
+### 5.7 Deploy Command
 
 > **Checklist Sebelum Deploy:**
 > - [ ] File `.env` sudah terisi dengan benar
 > - [ ] Wallet ada Sepolia ETH (minimal 0.01 ETH)
-> - [ ] Alchemy API key sudah diset
-> - [ ] Private key sudah diset (HATI-HATI jangan sampai commit!)
+> - [ ] Alchemy API key sudah diset (`SEPOLIA_RPC_URL`)
+> - [ ] Private key sudah diset (`SEPOLIA_PRIVATE_KEY`)
 
+**Opsi 1: Menggunakan Script**
 ```bash
 cd contracts
-npx hardhat run scripts/deploy-sepolia.js --network sepolia
+npx hardhat run scripts/deploy-sepolia.ts --network sepolia
+```
+
+**Opsi 2: Menggunakan Hardhat Ignition (Recommended)**
+```bash
+cd contracts
+npx hardhat ignition deploy ignition/modules/CourseReward.ts --network sepolia
 ```
 
 > **Output yang diharapkan:**
@@ -1359,8 +1407,6 @@ npx hardhat run scripts/deploy-sepolia.js --network sepolia
 > Account balance: 0.5 ETH
 > CourseReward deployed to: 0x1234...
 > Waiting for block confirmations...
-> Verifying on Etherscan...
-> Contract verified on Etherscan!
 >
 > === DEPLOYMENT COMPLETE ===
 > Network: Sepolia
@@ -1370,7 +1416,7 @@ npx hardhat run scripts/deploy-sepolia.js --network sepolia
 >
 > **Simpan Contract Address!** Akan digunakan di frontend.
 
-### 5.7 Update Frontend Addresses
+### 5.8 Update Frontend Addresses
 
 **frontend/src/contracts/addresses.js:**
 ```javascript

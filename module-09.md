@@ -392,14 +392,13 @@ Pilih opsi berikut saat muncul prompt:
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Hardhat akan otomatis menginstall dependencies yang diperlukan:
+Hardhat 3 akan otomatis menginstall dependencies yang diperlukan:
 
 ```text
 ✔ Installing dependencies with npm...
 
-  @nomicfoundation/hardhat-toolbox
-  @nomicfoundation/hardhat-chai-matchers
-  @nomicfoundation/hardhat-ethers
+  @nomicfoundation/hardhat-toolbox-mocha-ethers
+  @nomicfoundation/hardhat-ignition
   ethers
   chai
   typescript
@@ -453,32 +452,44 @@ project-smart-contract/
 
 ### 4.2 Contoh File Test (TypeScript + Mocha + Ethers.js)
 
-File `test/Lock.ts` yang di-generate Hardhat:
+File `test/Lock.ts` yang di-generate Hardhat 3:
+
+> **Catatan Hardhat 3**: Menggunakan `network.create()` untuk mendapatkan `ethers` dan `networkHelpers`, serta menggunakan fixture pattern dengan `loadFixture()`.
 
 ```typescript
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { network } from "hardhat";
+
+// Buat network connection (top-level await di Hardhat 3)
+const { ethers, networkHelpers } = await network.create();
 
 describe("Lock", function () {
-  it("Should set the right owner", async function () {
+  // Fixture untuk deploy contract (di-cache oleh loadFixture)
+  async function deployLockFixture() {
     const [owner] = await ethers.getSigners();
+    const unlockTime = Math.floor(Date.now() / 1000) + 60;
+    const lockedAmount = ethers.parseEther("1");
+    const lock = await ethers.deployContract("Lock", [unlockTime], { value: lockedAmount });
+    return { lock, owner, unlockTime, lockedAmount };
+  }
 
-    const Lock = await ethers.getContractFactory("Lock");
-    const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
-
+  it("Should set the right owner", async function () {
+    const { lock, owner } = await networkHelpers.loadFixture(deployLockFixture);
     expect(await lock.owner()).to.equal(owner.address);
   });
 });
 ```
 
-**Penjelasan sintaks Mocha + Chai + Ethers.js:**
+**Penjelasan sintaks Hardhat 3 (Mocha + Chai + Ethers.js):**
 
-| Sintaks                         | Library   | Fungsi                                 |
-| ------------------------------- | --------- | -------------------------------------- |
-| `describe()`, `it()`        | Mocha     | Struktur test (test suite & test case) |
-| `expect().to.equal()`         | Chai      | Assertion (pengecekan hasil)           |
-| `ethers.getSigners()`         | Ethers.js | Mendapatkan wallet accounts            |
-| `ethers.getContractFactory()` | Ethers.js | Membuat factory untuk deploy           |
+| Sintaks                             | Library        | Fungsi                                  |
+| ----------------------------------- | -------------- | --------------------------------------- |
+| `network.create()`                | Hardhat 3      | Membuat koneksi network                 |
+| `networkHelpers.loadFixture()`    | Hardhat 3      | Menjalankan fixture dengan caching      |
+| `describe()`, `it()`            | Mocha          | Struktur test (test suite & test case)  |
+| `expect().to.equal()`             | Chai           | Assertion (pengecekan hasil)            |
+| `ethers.getSigners()`             | Ethers.js      | Mendapatkan wallet accounts             |
+| `ethers.deployContract()`         | Ethers.js      | Deploy contract langsung                |
 
 ### 4.3 Folder artifacts (setelah compile)
 
@@ -499,15 +510,22 @@ artifacts/
 
 Buka file `hardhat.config.ts`:
 
+> **Catatan Hardhat 3**: Menggunakan `defineConfig()` dan format plugin baru.
+
 ```typescript
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
+import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+import { defineConfig } from "hardhat/config";
 
-const config: HardhatUserConfig = {
-  solidity: "0.8.28",
-};
-
-export default config;
+export default defineConfig({
+  plugins: [hardhatToolboxMochaEthersPlugin],
+  solidity: {
+    profiles: {
+      default: {
+        version: "0.8.28",
+      },
+    },
+  },
+});
 ```
 
 ### 5.2 Konfigurasi Lengkap
@@ -515,60 +533,79 @@ export default config;
 Modifikasi menjadi konfigurasi yang lebih lengkap:
 
 ```typescript
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
+import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+import { defineConfig } from "hardhat/config";
 
-const config: HardhatUserConfig = {
+export default defineConfig({
+  plugins: [hardhatToolboxMochaEthersPlugin],
   solidity: {
-    version: "0.8.20",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
-      }
-    }
+    profiles: {
+      default: {
+        version: "0.8.28",
+      },
+      production: {
+        version: "0.8.28",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      },
+    },
   },
   networks: {
-    // Hardhat Network (default, built-in)
-    hardhat: {
-      chainId: 31337
+    // Hardhat Network (simulated, built-in)
+    hardhatMainnet: {
+      type: "edr-simulated",
+      chainType: "l1",
     },
     // Localhost (untuk npx hardhat node)
     localhost: {
+      type: "http",
       url: "http://127.0.0.1:8545",
-      chainId: 31337
     },
     // Ganache (opsional)
     ganache: {
+      type: "http",
       url: "http://127.0.0.1:7545",
-      chainId: 1337
-    }
-  }
-};
-
-export default config;
+    },
+  },
+});
 ```
 
-### 5.3 Perbedaan JavaScript vs TypeScript Config
+### 5.3 Perbedaan Hardhat 2 vs Hardhat 3
+
+| Aspek                    | Hardhat 2                               | Hardhat 3                                      |
+| ------------------------ | --------------------------------------- | ---------------------------------------------- |
+| **Config**         | `HardhatUserConfig` object            | `defineConfig()` function                    |
+| **Plugins**        | `import "@plugin"` (side effect)      | `plugins: [plugin]` array                    |
+| **Solidity**       | `solidity: "0.8.28"`                  | `solidity: { profiles: { default: {...} } }` |
+| **Networks**       | `networks: { hardhat: {} }`           | `networks: { name: { type: "..." } }`        |
+| **Test**           | `import { ethers } from "hardhat"`    | `await network.create()`                     |
+| **Fixture**        | `loadFixture()` dari `hardhat-network-helpers` | `networkHelpers.loadFixture()`               |
+| **Deploy**         | `await Contract.deploy()`             | `await ethers.deployContract()`              |
+
+### 5.4 Perbedaan JavaScript vs TypeScript Config
 
 | JavaScript (`hardhat.config.js`) | TypeScript (`hardhat.config.ts`) |
 | ---------------------------------- | ---------------------------------- |
 | `require("...")`                 | `import ... from "..."`          |
-| `module.exports = { }`           | `export default config`          |
+| `module.exports = { }`           | `export default defineConfig({})` |
 | Tidak ada type checking            | Type checking otomatis             |
-| `/** @type ... */` untuk hints   | Interface `HardhatUserConfig`    |
 
-### 5.4 Penjelasan Konfigurasi
+### 5.5 Penjelasan Konfigurasi
 
-| Bagian                          | Fungsi                                 |
-| ------------------------------- | -------------------------------------- |
-| `solidity.version`            | Versi compiler Solidity                |
-| `solidity.settings.optimizer` | Optimasi bytecode untuk gas efficiency |
-| `networks.hardhat`            | Built-in network untuk testing         |
-| `networks.localhost`          | Koneksi ke Hardhat node yang berjalan  |
-| `networks.ganache`            | Koneksi ke Ganache GUI/CLI             |
+| Bagian                          | Fungsi                                    |
+| ------------------------------- | ----------------------------------------- |
+| `defineConfig()`              | Fungsi konfigurasi Hardhat 3              |
+| `plugins: []`                 | Array plugin yang digunakan               |
+| `solidity.profiles`           | Profil compiler (default/production)      |
+| `type: "edr-simulated"`       | Network simulator Hardhat 3               |
+| `type: "http"`                | Network via HTTP RPC                      |
+| `networks.localhost`          | Koneksi ke Hardhat node yang berjalan     |
 
-### 5.5 Network Options
+### 5.6 Network Options
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -916,14 +953,26 @@ pragma solidity ^0.8.20;
 
 ```typescript
 // hardhat.config.ts pakai 0.8.17
-const config: HardhatUserConfig = {
-  solidity: "0.8.17"  // Error! Tidak cocok dengan pragma
-};
+export default defineConfig({
+  solidity: {
+    profiles: {
+      default: {
+        version: "0.8.17"  // Error! Tidak cocok dengan pragma
+      }
+    }
+  }
+});
 
 // Fix: sesuaikan versi
-const config: HardhatUserConfig = {
-  solidity: "0.8.20"  // Sesuai dengan pragma di contract
-};
+export default defineConfig({
+  solidity: {
+    profiles: {
+      default: {
+        version: "0.8.20"  // Sesuai dengan pragma di contract
+      }
+    }
+  }
+});
 ```
 
 **Error: Typo nama function**

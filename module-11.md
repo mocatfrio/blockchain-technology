@@ -168,61 +168,55 @@ Jika menggunakan Ganache GUI:
 
 ### 3.1 Buat Script Deploy
 
-Buat file `scripts/deploy.js`:
+Buat file `scripts/deploy.ts`:
 
-```javascript
-const hre = require("hardhat");
+> **Catatan Hardhat 3**: Menggunakan `network.create()` untuk mendapatkan `ethers`.
 
-async function main() {
-  console.log("Deploying CourseReward contract...");
+```typescript
+import { network } from "hardhat";
 
-  // Deploy dengan initial reward = 100
-  const CourseReward = await hre.ethers.getContractFactory("CourseReward");
-  const courseReward = await CourseReward.deploy(100);
+const { ethers } = await network.create();
 
-  // Tunggu deployment selesai
-  await courseReward.waitForDeployment();
+console.log("Deploying CourseReward contract...");
 
-  // Ambil address contract
-  const address = await courseReward.getAddress();
+// Deploy dengan initial reward = 100
+const courseReward = await ethers.deployContract("CourseReward", [100]);
 
-  console.log(`CourseReward deployed to: ${address}`);
-  console.log(`Initial reward amount: ${await courseReward.rewardAmount()}`);
-  console.log(`Owner: ${await courseReward.owner()}`);
-}
+// Tunggu deployment selesai
+await courseReward.waitForDeployment();
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+// Ambil address contract
+const address = await courseReward.getAddress();
+
+console.log(`CourseReward deployed to: ${address}`);
+console.log(`Initial reward amount: ${await courseReward.rewardAmount()}`);
+console.log(`Owner: ${await courseReward.owner()}`);
 ```
 
 ### 3.2 Penjelasan Script
 
-| Kode                                | Penjelasan                                       |
-| ----------------------------------- | ------------------------------------------------ |
-| `hre.ethers.getContractFactory()` | Mengambil contract yang sudah dicompile          |
-| `CourseReward.deploy(100)`        | Deploy dengan parameter constructor              |
-| `waitForDeployment()`             | Menunggu transaksi deployment dikonfirmasi       |
-| `getAddress()`                    | Mendapatkan address contract yang sudah dideploy |
+| Kode                              | Penjelasan                                       |
+| --------------------------------- | ------------------------------------------------ |
+| `network.create()`              | Membuat koneksi network Hardhat 3                |
+| `ethers.deployContract()`       | Deploy contract langsung dengan args             |
+| `waitForDeployment()`           | Menunggu transaksi deployment dikonfirmasi       |
+| `getAddress()`                  | Mendapatkan address contract yang sudah dideploy |
 
-### 3.3 Struktur Deployment Script
+### 3.3 Struktur Deployment Script (Hardhat 3)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    DEPLOYMENT SCRIPT FLOW                       │
+│                DEPLOYMENT SCRIPT FLOW (HARDHAT 3)                │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  1. Import hardhat runtime environment                          │
-│     const hre = require("hardhat");                             │
+│  1. Import network dari hardhat                                 │
+│     import { network } from "hardhat";                          │
 │                                                                 │
-│  2. Get contract factory                                        │
-│     const Contract = await hre.ethers.getContractFactory(...);  │
+│  2. Buat network connection                                     │
+│     const { ethers } = await network.create();                  │
 │                                                                 │
-│  3. Deploy contract                                             │
-│     const contract = await Contract.deploy(args);               │
+│  3. Deploy contract langsung                                    │
+│     const contract = await ethers.deployContract("Name", [args]);│
 │                                                                 │
 │  4. Wait for deployment                                         │
 │     await contract.waitForDeployment();                         │
@@ -232,6 +226,44 @@ main()
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+### 3.4 Hardhat Ignition (Recommended)
+
+Hardhat 3 merekomendasikan penggunaan **Ignition** untuk deployment yang lebih deklaratif dan repeatable.
+
+Buat file `ignition/modules/CourseReward.ts`:
+
+```typescript
+import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+
+const CourseRewardModule = buildModule("CourseRewardModule", (m) => {
+  // Parameter constructor
+  const initialReward = m.getParameter("initialReward", 100);
+
+  // Deploy contract
+  const courseReward = m.contract("CourseReward", [initialReward]);
+
+  return { courseReward };
+});
+
+export default CourseRewardModule;
+```
+
+**Deploy dengan Ignition:**
+
+```bash
+npx hardhat ignition deploy ignition/modules/CourseReward.ts --network localhost
+```
+
+**Keuntungan Hardhat Ignition:**
+
+| Fitur                         | Penjelasan                                      |
+| ----------------------------- | ----------------------------------------------- |
+| **Declarative**         | Mendefinisikan "apa yang harus ada"             |
+| **Idempotent**          | Aman dijalankan berkali-kali                    |
+| **Dependency Graph**    | Otomatis menangani urutan deployment            |
+| **Resume Support**      | Bisa melanjutkan deployment yang gagal          |
+| **Multi-chain**         | Mudah deploy ke berbagai network                |
 
 ## 4. Deploy ke Local Network
 
@@ -520,55 +552,49 @@ Setelah transaksi berhasil, perhatikan:
 
 ### 8.1 Buat Script Interaksi
 
-Untuk interaksi yang lebih programmatic, buat `scripts/interact.js`:
+Untuk interaksi yang lebih programmatic, buat `scripts/interact.ts`:
 
-```javascript
-const hre = require("hardhat");
+> **Catatan Hardhat 3**: Menggunakan `network.create()` untuk mendapatkan `ethers`.
 
-async function main() {
-  // Ganti dengan address contract hasil deploy
-  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+```typescript
+import { network } from "hardhat";
 
-  // Ambil contract instance
-  const CourseReward = await hre.ethers.getContractFactory("CourseReward");
-  const courseReward = CourseReward.attach(contractAddress);
+const { ethers } = await network.create();
 
-  // Ambil signers
-  const [owner, student1, student2] = await hre.ethers.getSigners();
+// Ganti dengan address contract hasil deploy
+const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
-  console.log("=== CourseReward Interaction ===\n");
+// Ambil contract instance menggunakan getContractAt
+const courseReward = await ethers.getContractAt("CourseReward", contractAddress);
 
-  // Baca state awal
-  console.log("Owner:", await courseReward.owner());
-  console.log("Reward Amount:", await courseReward.rewardAmount());
-  console.log("Student1 hasClaimed:", await courseReward.hasClaimed(student1.address));
+// Ambil signers
+const [owner, student1, student2] = await ethers.getSigners();
 
-  // Student1 claim reward
-  console.log("\n--- Student1 claiming reward ---");
-  const tx = await courseReward.connect(student1).claimReward();
-  await tx.wait();
-  console.log("Transaction hash:", tx.hash);
+console.log("=== CourseReward Interaction ===\n");
 
-  // Cek state setelah claim
-  console.log("\n--- After claim ---");
-  console.log("Student1 hasClaimed:", await courseReward.hasClaimed(student1.address));
-  console.log("Student1 rewards:", await courseReward.rewards(student1.address));
+// Baca state awal
+console.log("Owner:", await courseReward.owner());
+console.log("Reward Amount:", await courseReward.rewardAmount());
+console.log("Student1 hasClaimed:", await courseReward.hasClaimed(student1.address));
 
-  // Owner ubah reward amount
-  console.log("\n--- Owner changing reward amount ---");
-  const tx2 = await courseReward.setRewardAmount(200);
-  await tx2.wait();
-  console.log("New reward amount:", await courseReward.rewardAmount());
+// Student1 claim reward
+console.log("\n--- Student1 claiming reward ---");
+const tx = await courseReward.connect(student1).claimReward();
+await tx.wait();
+console.log("Transaction hash:", tx.hash);
 
-  console.log("\n=== Done ===");
-}
+// Cek state setelah claim
+console.log("\n--- After claim ---");
+console.log("Student1 hasClaimed:", await courseReward.hasClaimed(student1.address));
+console.log("Student1 rewards:", await courseReward.rewards(student1.address));
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+// Owner ubah reward amount
+console.log("\n--- Owner changing reward amount ---");
+const tx2 = await courseReward.setRewardAmount(200);
+await tx2.wait();
+console.log("New reward amount:", await courseReward.rewardAmount());
+
+console.log("\n=== Done ===");
 ```
 
 ### 8.2 Jalankan Script
@@ -607,12 +633,14 @@ Untuk interaksi interaktif:
 npx hardhat console --network localhost
 ```
 
-Di dalam console:
+Di dalam console (Hardhat 3):
 
 ```javascript
-// Get contract
-const CourseReward = await ethers.getContractFactory("CourseReward");
-const reward = CourseReward.attach("0x5FbDB2315678afecb367f032d93F642f64180aa3");
+// Buat network connection
+const { ethers } = await network.create();
+
+// Get contract menggunakan getContractAt
+const reward = await ethers.getContractAt("CourseReward", "0x5FbDB2315678afecb367f032d93F642f64180aa3");
 
 // Read state
 await reward.rewardAmount();
@@ -751,18 +779,33 @@ contract SimpleStorage {
 }
 ```
 
-**Test:**
+**Test (Hardhat 3):**
 
-```javascript
-const { expect } = require("chai");
+```typescript
+import { expect } from "chai";
+import { network } from "hardhat";
+
+const { ethers, networkHelpers } = await network.create();
 
 describe("SimpleStorage", function () {
+  async function deployFixture() {
+    const storage = await ethers.deployContract("SimpleStorage");
+    return { storage };
+  }
+
   it("should store and retrieve a number", async function () {
-    const SimpleStorage = await ethers.getContractFactory("SimpleStorage");
-    const storage = await SimpleStorage.deploy();
+    const { storage } = await networkHelpers.loadFixture(deployFixture);
 
     await storage.store(42);
-    expect(await storage.retrieve()).to.equal(42);
+    expect(await storage.retrieve()).to.equal(42n);
+  });
+
+  it("should emit NumberChanged event", async function () {
+    const { storage } = await networkHelpers.loadFixture(deployFixture);
+
+    await expect(storage.store(42))
+      .to.emit(storage, "NumberChanged")
+      .withArgs(0n, 42n);
   });
 });
 ```

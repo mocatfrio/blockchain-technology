@@ -14,9 +14,26 @@ Blockchain technology is a database mechanism that enables transparent informati
 - Python
 - Solidity
 - Remix IDE
-- Foundry / Hardhat
+- Hardhat 3 (dengan Hardhat Ignition)
 - Ganache
 - MetaMask
+- Ethers.js v6
+
+### Catatan Hardhat 3
+
+Modul 09-11 dan 15 menggunakan **Hardhat 3** dengan sintaks terbaru:
+
+| Fitur | Hardhat 2 | Hardhat 3 |
+|-------|-----------|-----------|
+| Config | `HardhatUserConfig` object | `defineConfig()` function |
+| Plugins | `import "@plugin"` | `plugins: [plugin]` array |
+| Test | `import { ethers } from "hardhat"` | `await network.create()` |
+| Fixture | `loadFixture()` dari helpers | `networkHelpers.loadFixture()` |
+| Deploy | `await Contract.deploy()` | `await ethers.deployContract()` |
+| Env Vars | `process.env.VAR` | `configVariable("VAR")` |
+| Deployment | Script manual | **Hardhat Ignition** (recommended) |
+
+Untuk contoh lengkap, lihat [voting-dapp/README.md](voting-dapp/README.md).
 
 ## Topics
 
@@ -136,37 +153,37 @@ Blockchain technology is a database mechanism that enables transparent informati
 
 ### 3. Smart Contract (Extension)
 
-| Topic                         | Sub-Topics                            | Module                                         |
-| ----------------------------- | ------------------------------------- | ---------------------------------------------- |
-| **Basic Concepts**      | Definition, Vending Machine Analogy   | [Module 07](module-07.md), [Module 08](module-08.md) |
-| **Remix IDE**           | File Explorer, Compiler, Deploy       | [Module 07](module-07.md)                         |
-| **Solidity Basics**     | State Variable, Function, Constructor | [Module 07](module-07.md)                         |
-| **Access Control**      | msg.sender, require, Owner            | [Module 07](module-07.md)                         |
-| **Python Simulation**   | SmartContract Class, State            | [Module 08](module-08.md)                         |
-| **Contract Deployment** | Deploy to Blockchain                  | [Module 08](module-08.md)                         |
-| **Contract Execution**  | Execute via Transaction               | [Module 08](module-08.md)                         |
-| **Use Case: Escrow**    | Fund Custody                          | [Module 08](module-08.md)                         |
-| **Hardhat Setup**       | Project Setup, Compile, Artifacts     | [Module 09](module-09.md)                         |
-| **Contract Testing**    | Unit Test, Mocha, Chai, Coverage      | [Module 10](module-10.md)                         |
-| **Deployment**          | Local Blockchain, Deploy Script       | [Module 11](module-11.md)                         |
-| **MetaMask**            | Wallet, dApp Connection               | [Module 11](module-11.md)                         |
-| **Security**            | Reentrancy, Access Control, DoS       | [Module 16](module-16.md)                         |
+| Topic                         | Sub-Topics                                  | Module                                         |
+| ----------------------------- | ------------------------------------------- | ---------------------------------------------- |
+| **Basic Concepts**      | Definition, Vending Machine Analogy         | [Module 07](module-07.md), [Module 08](module-08.md) |
+| **Remix IDE**           | File Explorer, Compiler, Deploy             | [Module 07](module-07.md)                         |
+| **Solidity Basics**     | State Variable, Function, Constructor       | [Module 07](module-07.md)                         |
+| **Access Control**      | msg.sender, require, Owner                  | [Module 07](module-07.md)                         |
+| **Python Simulation**   | SmartContract Class, State                  | [Module 08](module-08.md)                         |
+| **Contract Deployment** | Deploy to Blockchain                        | [Module 08](module-08.md)                         |
+| **Contract Execution**  | Execute via Transaction                     | [Module 08](module-08.md)                         |
+| **Use Case: Escrow**    | Fund Custody                                | [Module 08](module-08.md)                         |
+| **Hardhat 3 Setup**     | defineConfig, Plugins, Compile              | [Module 09](module-09.md)                         |
+| **Contract Testing**    | Fixture Pattern, loadFixture, Mocha, Chai   | [Module 10](module-10.md)                         |
+| **Deployment**          | Hardhat Ignition, Deploy Script             | [Module 11](module-11.md)                         |
+| **MetaMask**            | Wallet, dApp Connection                     | [Module 11](module-11.md)                         |
+| **Security**            | Reentrancy, Access Control, DoS             | [Module 16](module-16.md)                         |
 
 ### 4. dApp Development (Integration)
 
-| Topic                         | Sub-Topics                            | Module                                         |
-| ----------------------------- | ------------------------------------- | ---------------------------------------------- |
+| Topic                         | Sub-Topics                              | Module                                         |
+| ----------------------------- | --------------------------------------- | ---------------------------------------------- |
 | **Web3 Architecture**   | Decentralized Apps, Traditional vs Web3 | [Module 12](module-12.md)                       |
-| **dApp Components**     | Frontend, Smart Contract, Wallet      | [Module 12](module-12.md)                       |
-| **Provider Setup**      | Ethers.js Provider, RPC Connection    | [Module 12](module-12.md)                       |
-| **Wallet Integration**  | MetaMask Connection, Account Access   | [Module 12](module-12.md)                       |
-| **Read Operations**     | Contract Instance, View Functions     | [Module 13](module-13.md)                       |
-| **Data Display**        | React State, Blockchain Data          | [Module 13](module-13.md)                       |
-| **Write Operations**    | Signer, State-Changing Functions      | [Module 14](module-14.md)                       |
-| **Transaction Handling**| Confirmation, Receipt, Error Handling | [Module 14](module-14.md)                       |
-| **Event Listening**     | Real-time Updates, WebSocket          | [Module 15](module-15.md)                       |
-| **UX Optimization**     | Loading States, Error Messages        | [Module 15](module-15.md)                       |
-| **Testnet Deployment**  | Sepolia, Vercel, Production Ready     | [Module 15](module-15.md)                       |
+| **dApp Components**     | Frontend, Smart Contract, Wallet        | [Module 12](module-12.md)                       |
+| **Provider Setup**      | Ethers.js v6 Provider, RPC Connection   | [Module 12](module-12.md)                       |
+| **Wallet Integration**  | MetaMask Connection, Account Access     | [Module 12](module-12.md)                       |
+| **Read Operations**     | Contract Instance, View Functions       | [Module 13](module-13.md)                       |
+| **Data Display**        | React State, Blockchain Data            | [Module 13](module-13.md)                       |
+| **Write Operations**    | Signer, State-Changing Functions        | [Module 14](module-14.md)                       |
+| **Transaction Handling**| Confirmation, Receipt, Error Handling   | [Module 14](module-14.md)                       |
+| **Event Listening**     | Real-time Updates, WebSocket            | [Module 15](module-15.md)                       |
+| **UX Optimization**     | Loading States, Error Messages          | [Module 15](module-15.md)                       |
+| **Testnet Deployment**  | Sepolia, Hardhat Ignition, Vercel       | [Module 15](module-15.md)                       |
 
 ### Learning Path
 
@@ -185,7 +202,7 @@ FASE 2: SMART CONTRACT (Minggu 8-11) ──────────────�
                                                                                           CPMK-3
      ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ╔═════════════╗
      │ Module 07-08│────►│  Module 09  │────►│ Module 10-11│────►║   DEMO      ║
-     │ Smart Contr.│     │  Hardhat    │     │ Test+Deploy │     ║  PROYEK 2   ║
+     │ Smart Contr.│     │  Hardhat 3  │     │Test+Ignition│     ║  PROYEK 2   ║
      │ Remix IDE   │     │  Setup      │     │ MetaMask    │     ║  (25%)      ║
      └─────────────┘     └─────────────┘     └─────────────┘     ╚═════════════╝
         Minggu 8            Minggu 9            Minggu 10           Minggu 11
@@ -206,8 +223,8 @@ FASE 3: dApp DEVELOPMENT (Minggu 12-16) ─────────────�
 | Fase | Category | Tools | Module | Minggu |
 |------|----------|-------|--------|--------|
 | 1 | **Blockchain & Cryptocurrency** | Python, Flask, Postman, RSA/ECDSA | Module 01-06 | 1-7 |
-| 2 | **Smart Contract** | Remix IDE, Solidity, Hardhat, MetaMask | Module 07-11 | 8-11 |
-| 3 | **dApp Development** | React, Ethers.js, MetaMask, Vercel, Sepolia | Module 12-15 | 12-16 |
+| 2 | **Smart Contract** | Remix IDE, Solidity, Hardhat 3, Ignition, MetaMask | Module 07-11 | 8-11 |
+| 3 | **dApp Development** | React, Ethers.js v6, MetaMask, Vercel, Sepolia | Module 12-15 | 12-16 |
 
 ---
 
@@ -229,8 +246,8 @@ FASE 3: dApp DEVELOPMENT (Minggu 12-16) ─────────────�
 | Minggu | Sub-CPMK | Deskripsi Sub-CPMK | Topik | Module | Aktivitas | Asesmen |
 |--------|----------|-------------------|-------|--------|-----------|---------|
 | 8 | **Sub-CPMK-3.1** | Mahasiswa mampu menulis smart contract dasar menggunakan Solidity dengan variabel, fungsi, tipe data, dan visibility yang tepat | Smart Contract Basics: Konsep, Solidity, variabel, fungsi, visibility | [Module 07](module-07.md), [Module 08](module-08.md) | Hands-on: Remix IDE, Simple Storage, Voting Contract | Partisipasi Kelas |
-| 9 | **Sub-CPMK-3.2** | Mahasiswa mampu mengidentifikasi kerentanan umum smart contract (reentrancy, access control) dan memperbaiki kontrak yang rentan | Smart Contract Security: Kerentanan umum, reentrancy, access control | [Module 09](module-09.md) | Hands-on: Debug & fix vulnerable contracts | Partisipasi Kelas |
-| 10 | **Sub-CPMK-3.3** | Mahasiswa mampu men-deploy smart contract menggunakan framework Hardhat pada local blockchain | Development Environment: Testing, Deployment, MetaMask Integration | [Module 10](module-10.md), [Module 11](module-11.md) | Hands-on: Testing, deploy contract, interaksi MetaMask | Partisipasi Kelas |
+| 9 | **Sub-CPMK-3.2** | Mahasiswa mampu mengkonfigurasi Hardhat 3 dengan defineConfig() dan memahami fixture pattern untuk testing | Hardhat 3 Setup: defineConfig, plugins, fixture pattern | [Module 09](module-09.md) | Hands-on: Setup Hardhat 3 project | Partisipasi Kelas |
+| 10 | **Sub-CPMK-3.3** | Mahasiswa mampu men-deploy smart contract menggunakan Hardhat 3 dan Hardhat Ignition pada local blockchain | Development Environment: Testing dengan loadFixture, Deployment, MetaMask | [Module 10](module-10.md), [Module 11](module-11.md) | Hands-on: Testing, deploy dengan Ignition, interaksi MetaMask | Partisipasi Kelas |
 | 11 | **Sub-CPMK-3.4** | Mahasiswa mampu mempresentasikan smart contract yang telah dikembangkan dengan mempertimbangkan aspek keamanan | **Demo Proyek 2: Smart Contract** | - | Presentasi smart contract dengan aspek keamanan | **Proyek 2 (25%)** |
 
 ### Fase 3: dApp Development (Minggu 12-16) - CPMK-4
@@ -240,7 +257,7 @@ FASE 3: dApp DEVELOPMENT (Minggu 12-16) ─────────────�
 | 12 | **Sub-CPMK-4.1** | Mahasiswa mampu memahami arsitektur Web3 dan komponen-komponen dApp | Pengenalan dApp: Konsep Web3, arsitektur dApp, komponen-komponen | [Module 12](module-12.md) | Hands-on: Setup project dApp, integrasi MetaMask | Partisipasi Kelas |
 | 13 | **Sub-CPMK-4.2** | Mahasiswa mampu membaca data dari smart contract menggunakan frontend React dan Ethers.js | Frontend Integration Read: Provider, contract instance, view functions | [Module 13](module-13.md) | Hands-on: Read operations dari smart contract | Partisipasi Kelas |
 | 14 | **Sub-CPMK-4.3** | Mahasiswa mampu mengirim transaksi ke smart contract dan menangani state-changing operations | Frontend Integration Write: Signer, transactions, event handling | [Module 14](module-14.md) | Hands-on: Write operations dan transaction handling | Partisipasi Kelas |
-| 15 | **Sub-CPMK-4.4** | Mahasiswa mampu mengimplementasikan fitur lanjutan dan men-deploy dApp ke testnet | dApp Advanced: Real-time events, optimasi UX, deployment ke testnet | [Module 15](module-15.md) | Hands-on: Event listening, deployment ke Sepolia | Partisipasi Kelas |
+| 15 | **Sub-CPMK-4.4** | Mahasiswa mampu mengimplementasikan fitur lanjutan dan men-deploy dApp ke testnet menggunakan Hardhat Ignition | dApp Advanced: Real-time events, optimasi UX, Hardhat Ignition, deployment ke Sepolia | [Module 15](module-15.md) | Hands-on: Event listening, deployment dengan Ignition ke Sepolia | Partisipasi Kelas |
 | 16 | **Sub-CPMK-4.5** | Mahasiswa mampu mempresentasikan dApp lengkap yang mengintegrasikan smart contract, wallet, dan frontend | **Demo Proyek 3: dApp** | - | Presentasi dApp lengkap | **Proyek 3 (25%)** |
 
 ---
